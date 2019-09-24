@@ -1,0 +1,46 @@
+{
+  "name": "phenix-acceptance-testing",
+  "version": "2019.0.0",
+  "description": "Phenix Acceptance Testing CLI",
+  "main": "./src/app.js",
+  "scripts": {
+    "ci-test": "npm run test all all",
+    "ci-posttest": "npm run lint",
+    "ci-bundle": "npm run bundle",
+    "ci-coverage": "npm run coverage",
+    "ci-publish": "npm publish",
+    "preinstall": "npm prune",
+    "test": "node scripts/run test",
+    "bundle": "node scripts/run build",
+    "prebundle": "npm install",
+    "prepack": "npm run bundle",
+    "coverage": "jest --config=test/jest.config.js --coverage --verbose",
+    "clean": "node scripts/run clean",
+    "lint": "eslint --cache --ext .jsx,.js ./",
+    "lint-fix": "eslint --ext .jsx,.js --fix ./"
+  },
+  "author": "Phenix Real Time Solutions, Inc.",
+  "keywords": [
+    "phenix",
+    "acceptance",
+    "testing"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "express": "4.17.1",
+    "hbs": "4.0.4",
+    "testcafe": "1.4.3",
+    "yargs": "14.0.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "10.0.3",
+    "eslint": "5.12.0",
+    "eslint-plugin-jsx-a11y": "6.1.2",
+    "eslint-plugin-lodash": "5.1.0",
+    "eslint-plugin-notice": "0.7.7",
+    "eslint-plugin-react": "7.12.4",
+    "eslint-plugin-react-native": "3.6.0",
+    "eslint-plugin-requirejs": "4.0.0",
+    "phenix-web-sdk": "^2019.2.18"
+  }
+}
