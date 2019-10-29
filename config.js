@@ -15,26 +15,28 @@
  */
 
 const path = require('path');
-const baseUrl = 'https://phenixrts.com';
-const channelAlias = 'clock';
+var backendUri;
+var pcastUri;
+var channelAlias;
 const args = undefined;
 const localServerAddress = '127.0.0.1';
 const localServerPort = '3000';
 const testPageUrl = '';
 const reportsPath = path.join(__dirname, 'test', 'reports'); // eslint-disable-line no-undef
-// Assert values
-const assertAudioBitrateAbove = 30000;
-const assertAudioJitterBelow = 60;
+var videoAssertProfile = {};
+var audioAssertProfile = {};
+const projectDir = __dirname; // eslint-disable-line no-undef
 
 module.exports = {
-  baseUrl: baseUrl,
+  backendUri: backendUri,
+  pcastUri: pcastUri,
   channelAlias: channelAlias,
   args: args,
   localServerAddress: localServerAddress,
   localServerPort: localServerPort,
   testPageUrl: testPageUrl,
   reportsPath: reportsPath,
-
-  assertAudioBitrateAbove: assertAudioBitrateAbove,
-  assertAudioJitterBelow: assertAudioJitterBelow
+  videoAssertProfile: videoAssertProfile,
+  audioAssertProfile: audioAssertProfile,
+  projectDir: projectDir
 };

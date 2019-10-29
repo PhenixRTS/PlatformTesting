@@ -18,24 +18,28 @@ var sdk = window['phenix-web-sdk'];
 var stream = undefined;
 
 document.addEventListener('DOMContentLoaded', () => {
+  log(`[Url loaded] ${Date.now()}`);
   joinChannel(document.getElementById('videoEl'));
 });
 
 function joinChannel(videoEl) {
+  const backendUri = getUrlParams('backendUri');
+  const pcastUri = getUrlParams('pcastUri');
+  log(`Backend uri: ${backendUri}`);
+  log(`Pcast uri: ${pcastUri}`);
+
   const adminApiProxyClient = new sdk.net.AdminApiProxyClient();
-  adminApiProxyClient.setBackendUri('https://demo.phenixrts.com/pcast');
+  adminApiProxyClient.setBackendUri(backendUri);
 
   var features = getUrlParams('features') === undefined ? '' : getUrlParams('features').split(',');
-
-  var channelExpress = new sdk.express.ChannelExpress(
-    {
-      adminApiProxyClient: adminApiProxyClient,
-      features: features
-    }
-  );
+  var channelExpress = new sdk.express.ChannelExpress({
+    adminApiProxyClient: adminApiProxyClient,
+    features: features,
+    uri: pcastUri
+  });
 
   var options = {
-    alias: 'clock',
+    alias: getUrlParams('channelAlias'),
     videoElement: videoEl
   };
 
@@ -44,6 +48,8 @@ function joinChannel(videoEl) {
 
 function joinChannelCallback(error, response) {
   if (error) {
+    log('Failed to join channel!');
+    log(error);
     console.error(error);
   }
 
@@ -69,12 +75,30 @@ function subscriberCallback(error, response) {
     console.error(error);
   }
 
+  if (response.renderer) {
+    log(`[${Date.now()}] Stream renderer received`);
+    response.renderer.on('autoMuted', () => {
+      log(`[${Date.now()}] Stream was autoMuted`);
+      document.getElementById('videoEl').muted = false;
+      document.getElementById('videoEl').play();
+    });
+
+    response.renderer.on('failedToPlay', (reason) => {
+      err(`Failed to play stream. Reason: ${reason}`);
+    });
+  }
+
+  log(`[Stream received] ${Date.now()}`);
   stream = response.mediaStream;
   startStatsLogging();
 }
 
 function startStatsLogging() {
   setInterval(() => {
+    if (stream === undefined) {
+      throw Error('There is no media stream! Is the channel online?');
+    }
+
     stream.getStats(getStatsCallback);
   }, 1000);
 }
@@ -87,6 +111,10 @@ function getStatsCallback(stats) {
 
 function log(msg) {
   console.info(`\n[Acceptance Testing] ${msg}`);
+}
+
+function err(msg) {
+  console.error(`[Acceptance Testing Error] ${msg}`);
 }
 
 function getUrlParams(key) {

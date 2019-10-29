@@ -14,21 +14,24 @@
  * limitations under the License.
  */
 
-import {Selector} from 'testcafe';
-import config from '../../config.js';
-import Asserts from '../models/asserts.js';
+var videoProfile = {
+  minBitrateMeanKbps: 1600,
+  frameWidth: 1280,
+  frameHeight: 720,
+  maxPTTFF: 4300,
+  maxInterframeDelay: 100,
+  maxPlisSentPerMin: 3,
+  maxPacketLossPerMin: 7,
+  maxNacksSentPerMin: 7
+};
 
-export default class ChannelPage {
-  constructor() {
-    this.url = config.testPageUrl;
-    this.offlineTitle = Selector('div').withAttribute('title', 'Offline');
-    this.videoEl = Selector('video');
-    this.stats = {};
-    this.meanVideoStats = {};
-    this.meanAudioStats = {};
-    this.loadedAt = 0;
-    this.streamReceivedAt = 0;
-    this.asserts = new Asserts(this);
-    this.browser;
-  }
-}
+var audioProfile = {
+  minBitrateMeanKbps: 0,
+  minAudioOutputLevel: 0,
+  totalSamplesDurationPerc: 0
+};
+
+module.exports = {
+  videoProfile: videoProfile,
+  audioProfile: audioProfile
+};

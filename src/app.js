@@ -26,7 +26,6 @@ class App {
 
   startServer() {
     const app = express();
-    app.set('view engine', 'hbs');
     app.set('views', path.join(__dirname, 'public')); // eslint-disable-line no-undef
     app.use(express.static(path.join(__dirname, 'public'))); // eslint-disable-line no-undef
 

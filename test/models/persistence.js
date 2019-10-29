@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-import {Selector} from 'testcafe';
+import fs from 'fs';
+import path from 'path';
 import config from '../../config.js';
-import Asserts from '../models/asserts.js';
 
-export default class ChannelPage {
-  constructor() {
-    this.url = config.testPageUrl;
-    this.offlineTitle = Selector('div').withAttribute('title', 'Offline');
-    this.videoEl = Selector('video');
-    this.stats = {};
-    this.meanVideoStats = {};
-    this.meanAudioStats = {};
-    this.loadedAt = 0;
-    this.streamReceivedAt = 0;
-    this.asserts = new Asserts(this);
-    this.browser;
+function saveToFile(fileName, filenamePrefix, content) {
+  const dateNow = new Date();
+
+  if (!fs.existsSync(config.reportsPath)){
+    fs.mkdirSync(config.reportsPath);
   }
+
+  fileName = path.join(
+    config.reportsPath,
+    `${filenamePrefix}-${path.basename(fileName).split('.')[0]}-${dateNow.getDate()}${dateNow.getTime()}.txt`
+  );
+  fs.writeFileSync(fileName, content);
 }
+
+export default {saveToFile: saveToFile};

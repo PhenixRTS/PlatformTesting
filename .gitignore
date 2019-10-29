@@ -38,3 +38,5 @@ node_modules/
 
 # Test reports
 reports/
+configured_browser_profiles/firefox-profile/*
+!configured_browser_profiles/firefox-profile/user.js

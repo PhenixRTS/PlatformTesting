@@ -16,7 +16,7 @@ npm run test -- --browser=<browser> --tests=<path_to/test_file.js> --features=<f
 ```
 
 See all available commands with
-```
+```sh
 npm run test -- --help
 ```
 
@@ -44,4 +44,20 @@ npm run test -- --browser=chrome --tests=test/fixtures/channel-video-audio-quali
 or in multiple browsers:
 ```
 npm run test -- --browser=chrome safari --tests=test/fixtures/channel-video-audio-quality-short.js
+```
+
+## Video and audio profiles
+
+Profiles are used in asserts to detect video and audio quality.
+
+`test/profiles/default.js` holds all the values.
+
+You can pass custom profiles file:
+```sh
+npm run test -- --profileFile=test/profiles/1080p.js
+```
+
+And also override values with flags like this:
+```sh
+npm run test -- --video.frameWidth=1280 --video.frameHeight=720 --audio.minAudioOutputLevel=20
 ```
