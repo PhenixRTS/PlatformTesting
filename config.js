@@ -15,17 +15,17 @@
  */
 
 const path = require('path');
-var backendUri;
-var pcastUri;
-var channelAlias;
+const backendUri = '';
+const pcastUri = '';
+const channelAlias = '';
 const args = undefined;
 const localServerAddress = '127.0.0.1';
 const localServerPort = '3000';
 const testPageUrl = '';
-const reportsPath = path.join(__dirname, 'test', 'reports'); // eslint-disable-line no-undef
-var videoAssertProfile = {};
-var audioAssertProfile = {};
-const projectDir = __dirname; // eslint-disable-line no-undef
+const reportsPath = path.join(__dirname, 'test', 'reports');
+const videoAssertProfile = {};
+const audioAssertProfile = {};
+const projectDir = __dirname;
 
 module.exports = {
   backendUri: backendUri,

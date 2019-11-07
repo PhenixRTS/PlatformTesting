@@ -29,8 +29,8 @@ module.exports = class Asserts {
   }
 
   async assert(name, firstArg, secondArg, sign, tolerance) {
-    var assertionMsg = '';
-    var assertion = false;
+    let assertionMsg = '';
+    let assertion = false;
 
     if ((_.isString(firstArg) && /^\s*$/.test(firstArg)) || (_.isString(secondArg) && /^\s*$/.test(secondArg))) {
       logger.log(`Did not assert '${name}' because there was no collected stats for it`);
@@ -124,7 +124,7 @@ module.exports = class Asserts {
       const msg = `Video interframe max delays per minute expected not more than ${threshold.timesPerMin} times above ${threshold.maxAllowed}`;
 
       this.page.meanVideoStats.interframeDelaysPerMin.forEach((delaysPerMin, index) => {
-        var aboveMax = delaysPerMin.filter(el => el > threshold.maxAllowed);
+        const aboveMax = delaysPerMin.filter(el => el > threshold.maxAllowed);
         const assertion = aboveMax.length <= threshold.timesPerMin;
         const message = `${msg} but in test minute nr${index + 1}. got [${aboveMax}]`;
 

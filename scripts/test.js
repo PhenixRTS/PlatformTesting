@@ -25,23 +25,34 @@ const app = new App();
 const logger = new Logger('Test script');
 const _ = require('lodash');
 const moment = require('moment');
-var argv = require('yargs').help()
+const argv = require('yargs').help()
+  .describe('channelAlias', '')
+  .describe('backendUri', '')
+  .describe('pcastUri', '')
   .describe('browsers', 'Browsers in which to run test. Can run same test in multiple instances, example "chrome, chrome"')
   .describe('tests', 'Path to test file')
   .describe('runtime', 'Runtime of the test in ISO 8601 duration format')
   .describe('profileFile', 'Full path to file containing video and audio profiles that will be used to assert quality')
   .describe('concurrency', 'Runs all tests concurrently')
+  .describe('record', 'Record media duration in ISO 8601 format')
+  .describe('media', 'Record video, audio or both')
+  .describe('screenshotInterval', 'Create screenshot from video element after each duration whole testrun')
+  .describe('screenshotName', 'Name of the screenshots that will be taken if screenshotInterval was provided')
   .default({
+    channelAlias: 'clock',
+    backendUri: 'https://demo.phenixrts.com/pcast',
+    pcastUri: 'https://pcast.phenixrts.com',
     browsers: 'chrome',
     tests: 'all',
     runtime: 'PT1M',
     profileFile: 'test/profiles/default.js',
     concurrency: 1,
     logAllStatsInReport: false,
-    backendUri: 'https://demo.phenixrts.com/pcast',
-    pcastUri: 'https://pcast.phenixrts.com',
-    channelAlias: 'clock',
-    saveConsoleLogs: false
+    saveConsoleLogs: false,
+    record: 0,
+    media: 'video,audio',
+    screenshotInterval: 0,
+    screenshotName: 'phenix_test_screenshot'
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-video-and-audio-quality.js')
   .epilog('Available browsers: chrome chrome:headless firefox firefox:headless safari ie edge opera')
@@ -49,16 +60,24 @@ var argv = require('yargs').help()
 
 async function test() {
   config.args = parseTestArgs();
-  config.testPageUrl = `${config.localServerAddress}:${config.localServerPort}?features=${config.args.features}&channelAlias=${config.channelAlias}&backendUri=${config.backendUri}&pcastUri=${config.pcastUri}`;
+  config.testPageUrl = `${config.localServerAddress}:${config.localServerPort}?` +
+    `features=${config.args.features}` +
+    `&channelAlias=${config.channelAlias}` +
+    `&backendUri=${config.backendUri}` +
+    `&pcastUri=${config.pcastUri}` +
+    `&recordingMs=${config.args.recordingMs}` +
+    `&recordingMedia=${config.args.recordingMedia}` +
+    `&screenshotAfterMs=${config.args.screenshotAfterMs}` +
+    `&downloadImgName=${config.args.downloadImgName}`;
   config.videoAssertProfile = config.args.videoProfile;
   config.audioAssertProfile = config.args.audioProfile;
 
-  var testcafe = null;
+  let testcafe = null;
 
   return createTestCafe('localhost').then(tc => {
     app.startServer();
 
-    let runner = tc.createRunner();
+    const runner = tc.createRunner();
     testcafe = tc;
     logger.log(`Will run: ${config.args.tests}`);
 
@@ -76,12 +95,12 @@ async function test() {
 }
 
 function parseBrowsers(browsers) {
-  var configuredBrowsers = [];
+  const configuredBrowsers = [];
   browsers.map(browser => {
     if (browser === 'chrome' || browser === 'chrome:headless' || browser === 'opera') {
       configuredBrowsers.push(`${browser} --autoplay-policy=no-user-gesture-required`);
     } else if (browser === 'firefox' || browser === 'firefox:headless') {
-      let firefoxProfilePath = p.join(config.projectDir, 'configured_browser_profiles', 'firefox-profile');
+      const firefoxProfilePath = p.join(config.projectDir, 'configured_browser_profiles', 'firefox-profile');
       configuredBrowsers.push(`${browser} -profile ${firefoxProfilePath}`);
     } else {
       configuredBrowsers.push(browser);
@@ -96,24 +115,27 @@ function parseTestArgs() {
   config.pcastUri = argv.pcastUri;
   config.channelAlias = argv.channelAlias;
 
-  var args = {
+  const args = {
     browsers: argv.browsers.replace(/\s/g, '').split(','),
     tests: argv.tests,
     features: argv.features,
     testRuntime: argv.runtime,
-    testRuntimeMs: testRuntimeMs(argv.runtime),
+    testRuntimeMs: parseToMilliseconds(argv.runtime),
     videoProfile: defaultProfiles.videoProfile,
     audioProfile: defaultProfiles.audioProfile,
     concurrency: argv.concurrency,
     logAllStatsInReport: argv.logAllStatsInReport,
-    saveConsoleLogs: argv.saveConsoleLogs
+    saveConsoleLogs: argv.saveConsoleLogs,
+    recordingMs: parseToMilliseconds(argv.record),
+    recordingMedia: argv.media,
+    screenshotAfterMs: parseToMilliseconds(argv.screenshotInterval),
+    downloadImgName: argv.screenshotName
   };
 
   if (args.tests === 'all') {
-    let testsPath = './test/fixtures/';
-    args.tests = '';
+    const testsPath = './test/fixtures/';
+    args.tests = [];
     fs.readdirSync(testsPath).forEach(file => {
-      args.tests = [];
       args.tests.push(p.join(testsPath, file));
     });
   }
@@ -125,7 +147,7 @@ function parseTestArgs() {
   }
 
   if (argv.profileFile) {
-    var customProfile = require(p.join('..', argv.profileFile));
+    const customProfile = require(p.join('..', argv.profileFile));
 
     if (customProfile.videoProfile) {
       _.merge(args.videoProfile, customProfile.videoProfile);
@@ -161,10 +183,10 @@ function parseTestArgs() {
   return args;
 }
 
-function testRuntimeMs(testRuntime) {
-  var testRuntimeAsDuration = moment.duration(testRuntime);
+function parseToMilliseconds(time) {
+  const timeAsDuration = moment.duration(time);
 
-  return testRuntimeAsDuration.asMilliseconds();
+  return timeAsDuration.asMilliseconds();
 }
 
 module.exports = test();

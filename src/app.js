@@ -19,15 +19,15 @@ const express = require('express');
 const config = require('../config.js');
 const Logger = require('../scripts/logger.js');
 const logger = new Logger('Node app');
-var server;
+let server;
 
 class App {
   constructor() {}
 
   startServer() {
     const app = express();
-    app.set('views', path.join(__dirname, 'public')); // eslint-disable-line no-undef
-    app.use(express.static(path.join(__dirname, 'public'))); // eslint-disable-line no-undef
+    app.set('views', path.join(__dirname, 'public'));
+    app.use(express.static(path.join(__dirname, 'public')));
 
     app.get('/', (req, res) => res.render('index'));
 

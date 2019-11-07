@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var videoProfile = {
+const videoProfile = {
   minBitrateMeanKbps: 3000,
   minFramerateMean: 30,
   frameWidth: 1920,

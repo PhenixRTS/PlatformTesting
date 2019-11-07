@@ -46,7 +46,7 @@ test(`Measure channel for ${config.args.testRuntime} and assert quality of video
   await page.asserts.assertVideoQuality();
   await page.asserts.assertAudioQuality();
 }).after(async t => {
-  persistence.saveToFile(__filename, t.ctx.testFailed ? 'FAIL' : 'PASS', await reporter.CreateTestReport(page)); // eslint-disable-line no-undef
+  persistence.saveToFile(__filename, t.ctx.testFailed ? 'FAIL' : 'PASS', await reporter.CreateTestReport(page));
 
   if (config.args.saveConsoleLogs === 'true') {
     persistence.saveToFile(`${page.browser.name}-console-logs`, '', await reporter.CreateConsoleDump());

@@ -39,8 +39,6 @@
     "eslint-plugin-jsx-a11y": "6.1.2",
     "eslint-plugin-lodash": "6.0.0",
     "eslint-plugin-notice": "0.7.7",
-    "eslint-plugin-react": "7.12.4",
-    "eslint-plugin-react-native": "3.6.0",
     "eslint-plugin-requirejs": "4.0.0",
     "phenix-web-sdk": "^2019.2.18"
   }

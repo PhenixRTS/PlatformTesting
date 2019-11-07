@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var videoProfile = {
+const videoProfile = {
   minBitrateMeanKbps: 1600,
   maxBitrateMeanKps: 2000,
   maxDelay: 500,
@@ -45,8 +45,7 @@ var videoProfile = {
     }
   ]
 };
-
-var audioProfile = {
+const audioProfile = {
   minBitrateMeanKbps: 60,
   maxJitter: 30,
   minAudioOutputLevel: 100,

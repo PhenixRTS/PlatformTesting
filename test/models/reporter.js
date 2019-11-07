@@ -31,11 +31,11 @@ function average(arr) {
 async function CollectMediaStreamStats() {
   logger.log('Collecting media stream stats...');
 
-  let streamStatsTitle = '[Acceptance Testing] [Media Stream Stats] ';
-  let urlLoadedTitle = '[Acceptance Testing] [Url loaded] ';
-  let streamReceivedTitle = '[Acceptance Testing] [Stream received] ';
-  let logs = await t.getBrowserConsoleMessages();
-  var collectedStats = {
+  const streamStatsTitle = '[Acceptance Testing] [Media Stream Stats] ';
+  const urlLoadedTitle = '[Acceptance Testing] [Url loaded] ';
+  const streamReceivedTitle = '[Acceptance Testing] [Stream received] ';
+  const logs = await t.getBrowserConsoleMessages();
+  const collectedStats = {
     loadedAt: undefined,
     streamReceivedAt: undefined,
     audio: {},
@@ -61,7 +61,7 @@ async function CollectMediaStreamStats() {
 
     el = el.replace(streamStatsTitle, '');
 
-    let stat = JSON.parse(el);
+    const stat = JSON.parse(el);
 
     if (collectedStats[stat.mediaType][stat.ssrc] === undefined) {
       collectedStats[stat.mediaType][stat.ssrc] = [stat];
@@ -74,8 +74,8 @@ async function CollectMediaStreamStats() {
 }
 
 function chunk(arr, size) {
-  var chunked = [];
-  for (var i = 0, len = arr.length; i < len; i += size) {
+  const chunked = [];
+  for (let i = 0, len = arr.length; i < len; i += size) {
     chunked.push(arr.slice(i, i + size));
   }
 
@@ -83,7 +83,7 @@ function chunk(arr, size) {
 }
 
 async function GetMeanVideoStats(stats) {
-  var meanVideoStats = {
+  const meanVideoStats = {
     downloadRate: null,
     mediaType: null,
     ssrc: null,
@@ -109,18 +109,18 @@ async function GetMeanVideoStats(stats) {
     videoResolutionChangeCount: 0,
     interframeDelaysPerMin: null
   };
-  var targetDelays = [];
-  var currentDelays = [];
-  var meanBitrates = [];
-  var frameWidths = [];
-  var frameHeights = [];
-  var frameRateDecodes = [];
-  var frameRateOutputs = [];
-  var bytesReceived = [];
-  var allInterframeDelayMaxs = [];
+  const targetDelays = [];
+  const currentDelays = [];
+  const meanBitrates = [];
+  const frameWidths = [];
+  const frameHeights = [];
+  const frameRateDecodes = [];
+  const frameRateOutputs = [];
+  const bytesReceived = [];
+  const allInterframeDelayMaxs = [];
 
   Object.keys(stats.video).forEach((key) => {
-    var videoStats = stats.video[key];
+    const videoStats = stats.video[key];
     meanVideoStats.totalStatsReceived += videoStats.length;
     meanVideoStats.framerateMin = videoStats[1].framerateMean.toFixed(2);
 
@@ -175,7 +175,7 @@ async function GetMeanVideoStats(stats) {
 }
 
 async function GetMeanAudioStats(stats) {
-  var meanAudioStats = {
+  const meanAudioStats = {
     downloadRate: null,
     mediaType: null,
     ssrc: null,
@@ -193,15 +193,15 @@ async function GetMeanAudioStats(stats) {
     totalStatsReceived: 0,
     statsCaptureDuration: 0
   };
-  var currentDelays = [];
-  var audioOutputLevels = [];
-  var jitters = [];
-  var jitterBuffers = [];
-  var totalSamplesDurationsSum = 0;
-  var totalAudioEnergies = [];
+  const currentDelays = [];
+  const audioOutputLevels = [];
+  const jitters = [];
+  const jitterBuffers = [];
+  let totalSamplesDurationsSum = 0;
+  const totalAudioEnergies = [];
 
   Object.keys(stats.audio).forEach((key) => {
-    var audioStats = stats.audio[key];
+    const audioStats = stats.audio[key];
     meanAudioStats.totalStatsReceived += audioStats.length;
 
     audioStats.forEach((stat) => {

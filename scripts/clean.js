@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-var fs = require('fs');
-var p = require('path');
+const fs = require('fs');
+const p = require('path');
 
 module.exports = function(path) {
   if (!fs.existsSync(path)) {
@@ -23,7 +23,7 @@ module.exports = function(path) {
   }
 
   fs.readdirSync(path).forEach((file) => {
-    var curPath = p.join(path, file);
+    const curPath = p.join(path, file);
 
     if (fs.lstatSync(curPath).isDirectory()) {
       fs.deleteFolderRecursive(curPath);

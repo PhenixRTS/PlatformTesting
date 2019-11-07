@@ -15,7 +15,7 @@ To run test in browser, execute:
 npm run test -- --browser=<browser> --tests=<path_to/test_file.js> --features=<features>
 ```
 
-See all available commands with
+See all available commands with:
 ```sh
 npm run test -- --help
 ```
@@ -61,3 +61,28 @@ And also override values with flags like this:
 ```sh
 npm run test -- --video.frameWidth=1280 --video.frameHeight=720 --audio.minAudioOutputLevel=20
 ```
+
+## Record media
+
+You can record multimedia (video + audio) from tests by passing duration in `--record` argument:
+```
+npm run test -- --record=PT1M
+```
+
+To record just audio pass additional `--media` argument and specify `audio`
+```
+npm run test -- --record=PT1M --media=audio
+```
+
+Or to record just video use `video`
+```
+npm run test -- --record=PT1M --media=video
+```
+
+## Screenshots
+
+You can pass duration for time interval after which screenshot will be created and downloaded:
+```
+npm run test -- --screenshotInterval=PT10S
+```
+This will create a screenshot after each 10 seconds during the test.

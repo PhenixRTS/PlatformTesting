@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-var videoProfile = {
+const videoProfile = {
   minBitrateMeanKbps: 1600,
   frameWidth: 1280,
   frameHeight: 720,
@@ -24,8 +24,7 @@ var videoProfile = {
   maxPacketLossPerMin: 7,
   maxNacksSentPerMin: 7
 };
-
-var audioProfile = {
+const audioProfile = {
   minBitrateMeanKbps: 60,
   maxJitter: 30,
   minAudioOutputLevel: 100,
