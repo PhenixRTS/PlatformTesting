@@ -64,6 +64,8 @@ npm run test -- --video.frameWidth=1280 --video.frameHeight=720 --audio.minAudio
 
 ## Record media
 
+Recorded media will be saved in browsers default downloads folder.
+
 You can record multimedia (video + audio) from tests by passing duration in `--record` argument:
 ```
 npm run test -- --record=PT1M
@@ -80,6 +82,8 @@ npm run test -- --record=PT1M --media=video
 ```
 
 ## Screenshots
+
+Captured screenshots will be saved in browsers default downloads folder.
 
 You can pass duration for time interval after which screenshot will be created and downloaded:
 ```
