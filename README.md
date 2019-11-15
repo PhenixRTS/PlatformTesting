@@ -1,6 +1,6 @@
-# AcceptanceTestingPrivate
+# Phenix Channel DevOps Tool
 
-Phenix javascript SDK test framework
+The Phenix channel devops tool provides a way to monitor and test channels for uptime and other operational parameters.
 
 ## Setup
 
@@ -14,6 +14,12 @@ To run test in browser, execute:
 ```sh
 npm run test -- --browser=<browser> --tests=<path_to/test_file.js> --features=<features>
 ```
+
+Overwrite backend and channel alias with `--channelAlias=<yourChannelAlias>` and `--backendUri=<yourBackendUri>`:
+```sh
+npm run test -- --tests=<path_to/test_file.js> --channelAlias=<yourChannelAlias> --backendUri=<yourBackend>
+```
+Same for PCast `--pcastUri=<yourPCastUri>`
 
 See all available commands with:
 ```sh
