@@ -21,7 +21,7 @@ const channelAlias = '';
 const args = undefined;
 const localServerAddress = '127.0.0.1';
 const localServerPort = '3000';
-const testPageUrl = '';
+const testPageUrlAttributes = '';
 const reportsPath = path.join(__dirname, 'test', 'reports');
 const videoAssertProfile = {};
 const audioAssertProfile = {};
@@ -34,7 +34,7 @@ module.exports = {
   args: args,
   localServerAddress: localServerAddress,
   localServerPort: localServerPort,
-  testPageUrl: testPageUrl,
+  testPageUrlAttributes: testPageUrlAttributes,
   reportsPath: reportsPath,
   videoAssertProfile: videoAssertProfile,
   audioAssertProfile: audioAssertProfile,

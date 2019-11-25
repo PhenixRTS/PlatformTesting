@@ -43,7 +43,8 @@ const videoProfile = {
       maxAllowed: 900,
       timesPerMin: 1
     }
-  ]
+  ],
+  maxLag: 350
 };
 const audioProfile = {
   minBitrateMeanKbps: 60,
@@ -53,7 +54,8 @@ const audioProfile = {
   maxMeanDelay: 500,
   maxPacketsLossPerMin: 3,
   totalSamplesDurationPerc: 0.8,
-  codecName: 'opus'
+  codecName: 'opus',
+  maxLag: 350
 };
 
 module.exports = {

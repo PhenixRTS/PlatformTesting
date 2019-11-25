@@ -14,48 +14,31 @@
  * limitations under the License.
  */
 
-const sdk = window['phenix-web-sdk'];
+/* global log, getUrlParams, joinChannel, MRecordRTC, RecordRTC */
+
 let stream = undefined;
 
 document.addEventListener('DOMContentLoaded', () => {
   log(`[Url loaded] ${Date.now()}`);
-  joinChannel(document.getElementById('videoEl'));
+  joinChannel(
+    document.getElementById('videoEl'),
+    getUrlParams('channelAlias'),
+    joinChannelCallback,
+    subscriberCallback
+  );
 });
-
-function joinChannel(videoEl) {
-  const backendUri = getUrlParams('backendUri');
-  const pcastUri = getUrlParams('pcastUri');
-  log(`Backend uri: ${backendUri}`);
-  log(`Pcast uri: ${pcastUri}`);
-
-  const adminApiProxyClient = new sdk.net.AdminApiProxyClient();
-  adminApiProxyClient.setBackendUri(backendUri);
-
-  const features = getUrlParams('features') === undefined ? '' : getUrlParams('features').split(',');
-  const channelExpress = new sdk.express.ChannelExpress({
-    adminApiProxyClient: adminApiProxyClient,
-    features: features,
-    uri: pcastUri
-  });
-  const options = {
-    alias: getUrlParams('channelAlias'),
-    videoElement: videoEl
-  };
-
-  channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
-}
 
 function joinChannelCallback(error, response) {
   if (error) {
     log('Failed to join channel!');
     log(error);
-    console.error(error);
+    error(error);
   }
 
   if (response.status === 'room-not-found') {
     console.warn('Room not found');
   } else if (response.status !== 'ok') {
-    console.error(error);
+    error(error);
   }
 
   if (response.status === 'ok' && response.channelService) {
@@ -65,13 +48,13 @@ function joinChannelCallback(error, response) {
 
 function subscriberCallback(error, response) {
   if (error) {
-    console.error(error);
+    error(error);
   }
 
   if (response.status === 'no-stream-playing') {
     console.warn('No stream playing');
   } else if (response.status !== 'ok') {
-    console.error(error);
+    error(error);
   }
 
   if (response.renderer) {
@@ -83,7 +66,7 @@ function subscriberCallback(error, response) {
     });
 
     response.renderer.on('failedToPlay', (reason) => {
-      err(`Failed to play stream. Reason: ${reason}`);
+      error(`Failed to play stream. Reason: ${reason}`);
     });
   }
 
@@ -131,29 +114,8 @@ function getStatsCallback(stats) {
   });
 }
 
-function log(msg) {
-  console.info(`\n[Acceptance Testing] ${msg}`);
-}
-
-function err(msg) {
-  console.error(`[Acceptance Testing Error] ${msg}`);
-}
-
-function getUrlParams(key) {
-  const arr = window.location.search.slice(1).split('&');
-  const params = {};
-
-  for (let i = 0; i < arr.length; i++) {
-    const paramKey = arr[i].split('=')[0];
-    const paramVal = arr[i].split('=')[1];
-    params[paramKey] = paramVal;
-  }
-
-  return params[key];
-}
-
 function startVideoRecordingFor(timeMs) {
-  const videoRecorder = new RecordRTC(stream.Ys, { // eslint-disable-line no-undef
+  const videoRecorder = new RecordRTC(stream.Ys, {
     type: 'video',
     ignoreMutedMedia: false
   });
@@ -168,7 +130,7 @@ function startVideoRecordingFor(timeMs) {
 }
 
 function startAudioRecordingFor(timeMs) {
-  const audioRecorder = new RecordRTC(stream.Ys, {type: 'audio'}); // eslint-disable-line no-undef
+  const audioRecorder = new RecordRTC(stream.Ys, {type: 'audio'});
   audioRecorder.startRecording();
   log(`[Media Recording] Started audio recording for ${timeMs}ms`);
 
@@ -180,7 +142,7 @@ function startAudioRecordingFor(timeMs) {
 }
 
 async function startMultimediaRecordingFor(timeMs) {
-  const mRecordRTC = new MRecordRTC(); // eslint-disable-line no-undef
+  const mRecordRTC = new MRecordRTC();
   mRecordRTC.addStream(stream.Ys);
   mRecordRTC.mediaType = {
     audio: true,

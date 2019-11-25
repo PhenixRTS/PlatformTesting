@@ -23,6 +23,10 @@ class Logger {
     console.log(`[${this.format(new Date())}] [${this.prefix}] ${msg}`);
   }
 
+  error(msg) {
+    console.error(`[Acceptance Testing ERROR] ${msg}`);
+  }
+
   format(datetime) {
     return [
       datetime.getHours().toString().padStart(2, '0'),

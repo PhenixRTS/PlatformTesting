@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://dl.phenixrts.com/WebSDK/2019.2.latest/phenix-web-sdk.min.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/client_lag.js"></script>
+  <title>Phenix Video Test</title>
+</head>
+
+<body>
+  <div style="border-bottom: 1px solid black; padding: 20px 0;">
+    <h2>Publisher</h2>
+    <div style="display: inline-block;">
+      <div style="font-weight: bold;">Canvas:</div>
+      <canvas id="publisherCanvas" width='500' height='500'></canvas>
+    </div>
+    <div style="display: inline-block;">
+      <div style="font-weight: bold;">Video Container:</div>
+      <video id="publisherVideoContainer" width='500' height='500' autoplay controls></video>
+    </div>
+  </div>
+  <div style="padding: 20px 5;">
+    <h2>Subscriber</h2>
+    <div style="display: inline-block;">
+      <div style="font-weight: bold;">Video Container:</div>
+      <video id="subscriberVideoContainer" width='500' height='500' autoplay="false" controls></video>
+    </div>
+    <div style="display: inline-block;">
+        <div style="font-weight: bold;">Canvas:</div>
+        <div id="subscriberCanvasColorVal"></div>
+        <canvas id="subscriberCanvas" width='500' height='500'></canvas>
+      </div>
+    <div>
+      <div style="display: inline-block;">
+        <div style="font-weight: bold;">Audio waveform/oscilloscope:</div>
+        <canvas id="subscriberOscilloscope"></canvas>
+      </div>
+      <div style="display: inline-block;">
+        <div style="font-weight: bold;">Audio frequency graph:</div>
+        <div id="subscriberFreqValue"></div>
+        <canvas id="subscriberFreqGraph"></canvas>
+      </div>
+    </div>
+  </div>
+  <div style="height: 50px;"></div>
+</body>
+
+</html>

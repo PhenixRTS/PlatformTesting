@@ -20,6 +20,7 @@ import {isNull} from 'util';
 import config from '../../config.js';
 import Logger from '../../scripts/logger.js';
 import _ from 'lodash';
+import math from './math.js';
 
 const logger = new Logger('Test');
 
@@ -328,6 +329,149 @@ module.exports = class Asserts {
       this.page.meanAudioStats.codecName,
       config.audioAssertProfile.codecName,
       'eql'
+    );
+  }
+
+  async assertVideoLag() {
+    const colorDiffTolerance = 5;
+    const streamReceivedAt = this.page.stats.streamReceivedAt;
+    const subscriberStats = this.page.stats.subscriber.video;
+    const publisherStats = this.page.stats.publisher.video.filter(el => el.timestamp >= streamReceivedAt - 10);
+
+    this.assert(
+      'Publisher video changes count',
+      publisherStats.length,
+      0,
+      'gt'
+    );
+
+    this.assert(
+      'Subscriber video changes count',
+      subscriberStats.length,
+      0,
+      'gt'
+    );
+
+    this.page.stats.subscriber.video = {
+      meanLagMs: undefined,
+      statsAnalyzed: 0,
+      analyzedData: []
+    };
+
+    subscriberStats.forEach((el) => {
+      var closestPubStat;
+
+      publisherStats.forEach(pubEl => {
+        if (math.getColorDistance(pubEl.color, el.color) < colorDiffTolerance) {
+          var lag = el.timestamp - pubEl.timestamp;
+
+          if ((lag > 0 && closestPubStat === undefined) || (lag > 0 && lag < el.timestamp - closestPubStat.timestamp)) {
+            closestPubStat = pubEl;
+          }
+        }
+      });
+
+      if (closestPubStat) {
+        this.page.stats.subscriber.video.analyzedData.push({
+          colorPublished: closestPubStat.color,
+          colorSubscribed: el.color,
+          lag: el.timestamp - closestPubStat.timestamp
+        });
+        this.page.stats.subscriber.video.statsAnalyzed++;
+      } else {
+        if (t.ctx.errors === undefined) {
+          t.ctx.errors = [];
+        }
+
+        t.ctx.errors.push(`Could not find timestamp when color RGB(${el.color.r}, ${el.color.g}, ${el.color.b}) (${el.timestamp}) was published`);
+      }
+    });
+
+    this.page.stats.subscriber.video.meanLagMs = math.average(this.page.stats.subscriber.video.analyzedData.map(e => e.lag));
+
+    this.assert(
+      'Mean video lag',
+      this.page.stats.subscriber.video.meanLagMs,
+      config.videoAssertProfile.maxLag,
+      'lte'
+    );
+
+    this.assert(
+      'Video stats analyzed count',
+      this.page.stats.subscriber.video.statsAnalyzed,
+      0,
+      'gt'
+    );
+  }
+
+  async assertAudioLag() {
+    const streamReceivedAt = this.page.stats.streamReceivedAt;
+    const subscriberStats = this.page.stats.subscriber.audio;
+    const publisherStats = this.page.stats.publisher.audio.filter(el => el.timestamp >= streamReceivedAt - 10);
+
+    this.assert(
+      'Publisher audio changes count',
+      publisherStats.length,
+      0,
+      'gt'
+    );
+
+    this.assert(
+      'Subscriber audio changes count',
+      subscriberStats.length,
+      0,
+      'gt'
+    );
+
+    this.page.stats.subscriber.audio = {
+      meanLagMs: undefined,
+      statsAnalyzed: 0,
+      analyzedData: []
+    };
+
+    subscriberStats.forEach((el) => {
+      var closestPubStat;
+
+      publisherStats.forEach(pubEl => {
+        if (pubEl.frequency === el.frequency) {
+          var lag = el.timestamp - pubEl.timestamp;
+
+          if ((lag > 0 && closestPubStat === undefined) || (lag > 0 && lag < el.timestamp - closestPubStat.timestamp)) {
+            closestPubStat = pubEl;
+          }
+        }
+      });
+
+      if (closestPubStat) {
+        this.page.stats.subscriber.audio.analyzedData.push({
+          frequencyPublished: closestPubStat.frequency,
+          frequencySubscribed: el.frequency,
+          lag: el.timestamp - closestPubStat.timestamp
+        });
+        this.page.stats.subscriber.audio.statsAnalyzed++;
+      } else {
+        if (t.ctx.errors === undefined) {
+          t.ctx.errors = [];
+        }
+
+        t.ctx.errors.push(`Could not find timestamp when frequency ${el.frequency} (${el.timestamp}) was published`);
+      }
+    });
+
+    this.page.stats.subscriber.audio.meanLagMs = math.average(this.page.stats.subscriber.audio.analyzedData.map(e => e.lag));
+
+    this.assert(
+      'Mean audio lag',
+      this.page.stats.subscriber.audio.meanLagMs,
+      config.audioAssertProfile.maxLag,
+      'lte'
+    );
+
+    this.assert(
+      'Audio stats analyzed count',
+      this.page.stats.subscriber.audio.statsAnalyzed,
+      0,
+      'gt'
     );
   }
 };

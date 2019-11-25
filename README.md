@@ -96,3 +96,30 @@ You can pass duration for time interval after which screenshot will be created a
 npm run test -- --screenshotInterval=PT10S
 ```
 This will create a screenshot after each 10 seconds during the test.
+
+## Lag tests
+
+There are `./test/fixtures/channel-lag-test.js` test for measuring and asserting delay between time when media (audio and video) was published and received.
+
+Example:
+```
+npm run test -- --tests=./test/fixtures/channel-lag-test.js --runtime=PT10S
+```
+
+Add these args to override subscribers backend and pcast uris:
+
+`--backendUri=<backendUri>` and `--pcastUri=<pcastUri>`
+
+And same for publisher uris:
+
+`--publisherBackendUri=<backendUri>` and `--publisherPcastUri=<pcastUri>`
+
+Asserts are made against video and audio profile `maxLag` variables.
+Change them in profile file or override with:
+
+`--video.maxLag=<newValue>` and `--audio.maxLag=<newValue>`
+
+Example:
+```
+npm run test -- --tests=./test/fixtures/channel-lag-test.js --video.maxLag=200 --audio.maxLag=300
+```

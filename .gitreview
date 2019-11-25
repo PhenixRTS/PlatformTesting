@@ -1,6 +1,6 @@
 [gerrit]
 host=gerrit.phenixrts.com
 port=29418
-project=AcceptanceTesting
+project=PlatformTesting
 defaultbranch=master
 defaultrebase=0

@@ -15,18 +15,11 @@
  */
 
 import {t} from 'testcafe';
-import Logger from '../../scripts/logger.js';
-import config from '../../config.js';
+import Logger from '../../../scripts/logger.js';
+import reporter from './common-reporter.js';
+import math from '../math.js';
 
-const logger = new Logger('Test');
-
-function average(arr) {
-  if (arr.length === 0) {
-    return 0;
-  }
-
-  return arr.reduce((p, c) => p + c, 0) / arr.length;
-}
+const logger = new Logger('Quality Test');
 
 async function CollectMediaStreamStats() {
   logger.log('Collecting media stream stats...');
@@ -71,15 +64,6 @@ async function CollectMediaStreamStats() {
   });
 
   return collectedStats;
-}
-
-function chunk(arr, size) {
-  const chunked = [];
-  for (let i = 0, len = arr.length; i < len; i += size) {
-    chunked.push(arr.slice(i, i + size));
-  }
-
-  return chunked;
 }
 
 async function GetMeanVideoStats(stats) {
@@ -157,14 +141,14 @@ async function GetMeanVideoStats(stats) {
       videoStats[videoStats.length - 1].nativeReport.timestamp - videoStats[0].nativeReport.timestamp;
   });
 
-  meanVideoStats.targetDelay = average(targetDelays).toFixed(2);
-  meanVideoStats.currentDelay = average(currentDelays).toFixed(2);
-  meanVideoStats.bitrateMean = (average(meanBitrates) / 1024).toFixed(2);
-  meanVideoStats.avgFrameWidth = average(frameWidths.slice(3));
-  meanVideoStats.avgFrameHeight = average(frameHeights.slice(3));
-  meanVideoStats.avgFrameRateDecoded = average(frameRateDecodes).toFixed(1);
-  meanVideoStats.avgFrameRateOutput = average(frameRateOutputs).toFixed(1);
-  meanVideoStats.interframeDelaysPerMin = chunk(allInterframeDelayMaxs, 60);
+  meanVideoStats.targetDelay = math.average(targetDelays).toFixed(2);
+  meanVideoStats.currentDelay = math.average(currentDelays).toFixed(2);
+  meanVideoStats.bitrateMean = (math.average(meanBitrates) / 1024).toFixed(2);
+  meanVideoStats.avgFrameWidth = math.average(frameWidths.slice(3));
+  meanVideoStats.avgFrameHeight = math.average(frameHeights.slice(3));
+  meanVideoStats.avgFrameRateDecoded = math.average(frameRateDecodes).toFixed(1);
+  meanVideoStats.avgFrameRateOutput = math.average(frameRateOutputs).toFixed(1);
+  meanVideoStats.interframeDelaysPerMin = math.chunk(allInterframeDelayMaxs, 60);
   frameHeights.forEach((h, i) => {
     if (i > 0) {
       meanVideoStats.videoResolutionChangeCount += frameHeights[i - 1] == h ? 0 : 1; // eslint-disable-line eqeqeq
@@ -229,47 +213,29 @@ async function GetMeanAudioStats(stats) {
       audioStats[audioStats.length - 1].nativeReport.timestamp - audioStats[0].nativeReport.timestamp;
   });
 
-  meanAudioStats.currentDelay = average(currentDelays);
-  meanAudioStats.audioOutputLevel = average(audioOutputLevels);
-  meanAudioStats.jitter = average(jitters);
-  meanAudioStats.jitterBuffer = average(jitterBuffers);
+  meanAudioStats.currentDelay = math.average(currentDelays);
+  meanAudioStats.audioOutputLevel = math.average(audioOutputLevels);
+  meanAudioStats.jitter = math.average(jitters);
+  meanAudioStats.jitterBuffer = math.average(jitterBuffers);
   meanAudioStats.totalSamplesDuration = totalSamplesDurationsSum;
-  meanAudioStats.totalAudioEnergy = average(totalAudioEnergies);
+  meanAudioStats.totalAudioEnergy = math.average(totalAudioEnergies);
 
   return meanAudioStats;
 }
 
 async function CreateTestReport(page) {
-  const obj = await t.getBrowserConsoleMessages();
+  const header = '\nPTTFF (page load to first frame): ' + JSON.stringify(page.stats.streamReceivedAt - page.stats.loadedAt, undefined, 2) + ' ms' +
+  '\nInterframe Max delay: ' + page.meanVideoStats.interframeDelayMax;
+  const content = '\n\nMean Video Stats:\n' + JSON.stringify(page.meanVideoStats, undefined, 2) +
+  '\n\nMean Audio Stats:\n' + JSON.stringify(page.meanAudioStats, undefined, 2);
 
-  return new Date() +
-    `\n${config.backendUri}#${config.channelAlias}` +
-    '\n\nBrowser: ' + JSON.stringify(page.browser, undefined, 2) +
-    `\nTest runtime: ${config.args.testRuntime}` +
-    '\nPTTFF (page load to first frame): ' + JSON.stringify(page.stats.streamReceivedAt - page.stats.loadedAt, undefined, 2) + ' ms' +
-    '\nInterframe Max delay: ' + page.meanVideoStats.interframeDelayMax +
-    '\n\nAssertions passed:\n' + JSON.stringify(t.ctx.assertions, undefined, 2) +
-    '\n\nFailures:\n' + JSON.stringify(t.ctx.failedAssertions, undefined, 2) +
-    '\n\nMean Video Stats:\n' + JSON.stringify(page.meanVideoStats, undefined, 2) +
-    '\n\nMean Audio Stats:\n' + JSON.stringify(page.meanAudioStats, undefined, 2) +
-    '\n\nConsole errors:\n' + JSON.stringify(obj.error, undefined, 2) +
-    (config.args.logAllStatsInReport === 'true' ? `\n\nAll Stats:\n + ${JSON.stringify(page.stats, undefined, 2)}` : '');
-}
-
-async function CreateConsoleDump() {
-  const obj = await t.getBrowserConsoleMessages();
-
-  return new Date() +
-    '\n\nERRORS:\n' + JSON.stringify(obj.error, undefined, 2) +
-    '\n\nWARNINGS:\n' + JSON.stringify(obj.warn, undefined, 2) +
-    '\n\nINFO:\n' + JSON.stringify(obj.info, undefined, 2) +
-    '\n\nLOGS:\n' + JSON.stringify(obj.log, undefined, 2);
+  return reporter.CreateTestReport(page, header, content);
 }
 
 export default {
-  CollectMediaStreamStats: CollectMediaStreamStats,
-  GetMeanVideoStats: GetMeanVideoStats,
-  GetMeanAudioStats: GetMeanAudioStats,
-  CreateTestReport: CreateTestReport,
-  CreateConsoleDump: CreateConsoleDump
+  CollectMediaStreamStats,
+  GetMeanVideoStats,
+  GetMeanAudioStats,
+  CreateTestReport,
+  CreateConsoleDump: reporter.CreateConsoleDump
 };

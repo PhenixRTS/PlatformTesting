@@ -14,21 +14,31 @@
  * limitations under the License.
  */
 
-import fs from 'fs';
-import path from 'path';
-import config from '../../config.js';
-import moment from 'moment';
+/* eslint-disable no-unused-vars */
 
-function saveToFile(fileName, filenamePrefix, content) {
-  if (!fs.existsSync(config.reportsPath)){
-    fs.mkdirSync(config.reportsPath);
+module.exports = {
+  average(arr) {
+    if (arr.length === 0) {
+      return 0;
+    }
+
+    return arr.reduce((p, c) => p + c, 0) / arr.length;
+  },
+
+  chunk(arr, size) {
+    const chunked = [];
+    for (let i = 0, len = arr.length; i < len; i += size) {
+      chunked.push(arr.slice(i, i + size));
+    }
+
+    return chunked;
+  },
+
+  getColorDistance(target, actual) {
+    return Math.sqrt(
+      (target.r - actual.r) * (target.r - actual.r) +
+      (target.g - actual.g) * (target.g - actual.g) +
+      (target.b - actual.b) * (target.b - actual.b)
+    );
   }
-
-  fileName = path.join(
-    config.reportsPath,
-    `${filenamePrefix}-${path.basename(fileName).split('.')[0]}-${moment().format('YYYY-MM-DD-HH.mm.ss')}.txt`
-  );
-  fs.writeFileSync(fileName, content);
-}
-
-export default {saveToFile: saveToFile};
+};

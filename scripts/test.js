@@ -25,7 +25,9 @@ const app = new App();
 const logger = new Logger('Test script');
 const _ = require('lodash');
 const moment = require('moment');
-const argv = require('yargs').help()
+const argv = require('yargs')
+  .help()
+  .strict()
   .describe('channelAlias', '')
   .describe('backendUri', '')
   .describe('pcastUri', '')
@@ -38,10 +40,13 @@ const argv = require('yargs').help()
   .describe('media', 'Record video, audio or both')
   .describe('screenshotInterval', 'Create screenshot from video element after each duration whole testrun')
   .describe('screenshotName', 'Name of the screenshots that will be taken if screenshotInterval was provided')
+  .describe('ignoreJsConsoleErrors', 'If true, ignore JavaScript errors logged by tested website')
   .default({
     channelAlias: 'clock',
     backendUri: 'https://demo.phenixrts.com/pcast',
     pcastUri: 'https://pcast.phenixrts.com',
+    publisherBackendUri: 'https://demo.phenixrts.com/pcast',
+    publisherPcastUri: 'https://pcast.phenixrts.com',
     browsers: 'chrome',
     tests: 'all',
     runtime: 'PT1M',
@@ -52,7 +57,10 @@ const argv = require('yargs').help()
     record: 0,
     media: 'video,audio',
     screenshotInterval: 0,
-    screenshotName: 'phenix_test_screenshot'
+    screenshotName: 'phenix_test_screenshot',
+    ignoreJsConsoleErrors: false,
+    audio: undefined,
+    video: undefined
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-video-and-audio-quality.js')
   .epilog('Available browsers: chrome chrome:headless firefox firefox:headless safari ie edge opera')
@@ -60,10 +68,12 @@ const argv = require('yargs').help()
 
 async function test() {
   config.args = parseTestArgs();
-  config.testPageUrl = `${config.localServerAddress}:${config.localServerPort}?` +
-    `features=${config.args.features}` +
+  config.testPageUrlAttributes =
+    `?features=${config.args.features}` +
     `&channelAlias=${config.channelAlias}` +
     `&backendUri=${config.backendUri}` +
+    `&publisherBackendUri=${config.args.publisherBackendUri}` +
+    `&publisherPcastUri=${config.args.publisherPcastUri}` +
     `&pcastUri=${config.pcastUri}` +
     `&recordingMs=${config.args.recordingMs}` +
     `&recordingMedia=${config.args.recordingMedia}` +
@@ -86,7 +96,7 @@ async function test() {
       .browsers(parseBrowsers(config.args.browsers))
       .concurrency(config.args.concurrency)
       .reporter('list')
-      .run();
+      .run({skipJsErrors: config.args.ignoreJsConsoleErrors === 'true'});
   }).then(failedCount => {
     logger.log(`Failed tests: ${failedCount}`);
     app.stopServer();
@@ -98,7 +108,12 @@ function parseBrowsers(browsers) {
   const configuredBrowsers = [];
   browsers.map(browser => {
     if (browser === 'chrome' || browser === 'chrome:headless' || browser === 'opera') {
-      configuredBrowsers.push(`${browser} --autoplay-policy=no-user-gesture-required`);
+      configuredBrowsers.push(
+        `${browser} ` +
+        '--autoplay-policy=no-user-gesture-required ' +
+        '--disable-gesture-requirement-for-media-playback ' +
+        '--use-fake-ui-for-media-stream '
+      );
     } else if (browser === 'firefox' || browser === 'firefox:headless') {
       const firefoxProfilePath = p.join(config.projectDir, 'configured_browser_profiles', 'firefox-profile');
       configuredBrowsers.push(`${browser} -profile ${firefoxProfilePath}`);
@@ -129,7 +144,10 @@ function parseTestArgs() {
     recordingMs: parseToMilliseconds(argv.record),
     recordingMedia: argv.media,
     screenshotAfterMs: parseToMilliseconds(argv.screenshotInterval),
-    downloadImgName: argv.screenshotName
+    downloadImgName: argv.screenshotName,
+    publisherBackendUri: argv.publisherBackendUri,
+    publisherPcastUri: argv.publisherPcastUri,
+    ignoreJsConsoleErrors: argv.ignoreJsConsoleErrors
   };
 
   if (args.tests === 'all') {
@@ -160,6 +178,13 @@ function parseTestArgs() {
 
   if (argv.video) {
     Object.keys(argv.video).forEach((key) => {
+      if (args.videoProfile[key] === undefined) {
+        exitWithMessage(
+          `Error: unsupported argument override - key '${key}' does not exist on video profile!` +
+          `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.videoProfile), undefined, 2)}`
+        )
+      }
+
       if (key === 'interframeDelayTresholds') {
         Object.keys(argv.video.interframeDelayTresholds).forEach((index) => {
           if (args.videoProfile.interframeDelayTresholds[index]) {
@@ -176,11 +201,22 @@ function parseTestArgs() {
 
   if (argv.audio) {
     Object.keys(argv.audio).forEach((key) => {
+      if (args.audioProfile[key] === undefined) {
+        exitWithMessage(
+          `Error: unsupported argument override - key '${key}' does not exist on audio profile!` +
+          `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.audioProfile), undefined, 2)}`
+        )
+      }
       args.audioProfile[key] = argv.audio[key];
     });
   }
 
   return args;
+}
+
+function exitWithMessage(msg) {
+  console.log(msg);
+  process.exit(0);
 }
 
 function parseToMilliseconds(time) {

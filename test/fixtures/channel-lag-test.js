@@ -14,37 +14,34 @@
  * limitations under the License.
  */
 
-import {ClientFunction} from 'testcafe';
+import {ClientFunction, Selector} from 'testcafe';
 import uaParser from 'ua-parser-js';
 import ChannelPage from '../models/channel-page.js';
 import config from '../../config.js';
 import persistence from '../models/persistence.js';
-import reporter from '../models/reporters/quality-reporter.js';
+import reporter from '../models/reporters/lag-reporter.js';
 
 const page = new ChannelPage();
 
-global.fixture('Channel quality test')
-  .page(`${config.localServerAddress}:${config.localServerPort}/${config.testPageUrlAttributes}`);
+global.fixture('Channel lag test')
+  .page(`${config.localServerAddress}:${config.localServerPort}/lag${config.testPageUrlAttributes}`);
 
 const getUA = ClientFunction(() => navigator.userAgent);
 
-test(`Measure channel for ${config.args.testRuntime} and assert quality of video and audio`, async t => {
+test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/audio`, async t => {
   const ua = await getUA();
 
   await t
     .wait(3000)
-    .expect(page.videoEl.exists).ok()
-    .expect(page.offlineTitle.exists).notOk()
+    .expect(Selector('video').withAttribute('id', 'publisherVideoContainer').exists).ok()
+    .expect(Selector('video').withAttribute('id', 'subscriberVideoContainer').exists).ok()
     .wait(config.args.testRuntimeMs);
 
   page.browser = uaParser(ua).browser;
-  page.stats = await reporter.CollectMediaStreamStats();
-  page.meanVideoStats = await reporter.GetMeanVideoStats(page.stats);
-  page.meanAudioStats = await reporter.GetMeanAudioStats(page.stats);
+  page.stats = await reporter.CollectMediaChanges();
 
-  await page.asserts.assertKPIs();
-  await page.asserts.assertVideoQuality();
-  await page.asserts.assertAudioQuality();
+  await page.asserts.assertVideoLag();
+  await page.asserts.assertAudioLag();
 }).after(async t => {
   persistence.saveToFile(__filename, t.ctx.testFailed ? 'FAIL' : 'PASS', await reporter.CreateTestReport(page));
 
