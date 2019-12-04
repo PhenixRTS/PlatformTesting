@@ -33,6 +33,9 @@ class App {
     app.get('/lag', (req, res) => {
       res.sendFile(path.join(__dirname, 'public', 'lag.html')); // eslint-disable-line no-undef
     });
+    app.get('/sync', (req, res) => {
+      res.sendFile(path.join(__dirname, 'public', 'sync.html')); // eslint-disable-line no-undef
+    });
 
     app.get('*', (req, res) => res.status(404).send(
       {message: '404, not found'}

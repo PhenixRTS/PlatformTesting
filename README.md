@@ -123,3 +123,18 @@ Example:
 ```
 npm run test -- --tests=./test/fixtures/channel-lag-test.js --video.maxLag=200 --audio.maxLag=300
 ```
+
+## Media sync tests
+
+To run media sync tests use `./test/fixtures/channel-sync-test.js` test.
+
+Set fps in used video profile or override with `--video.syncPublishedVideoFps=<desiredFPS>`
+
+Example:
+```
+npm run test -- --tests=./test/fixtures/channel-sync-test.js --video.syncPublishedVideoFps=10
+```
+
+Average sync is asserted against value named `maxAverageSync` which is defined in video profile.
+
+Override it with args `--video.maxAverageSync=<maxAllowedAverageVideoAndAudioSyncDelay>`

@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
+/* eslint-disable no-unused-vars */
+
 var sdk = window['phenix-web-sdk'];
 
 function log(msg) {
   console.info(`\n[Acceptance Testing] ${msg}`);
 }
 
-function error(msg) { // eslint-disable-line no-unused-vars
+function error(msg) {
   console.error(`[Acceptance Testing Error] ${msg}`);
 }
 
-function rgbToHex(color) { // eslint-disable-line no-unused-vars
+function rgbToHex(color) {
   return '#' + ((1 << 24) + (color.r << 16) + (color.g << 8) + color.b).toString(16).slice(1);
 }
 
@@ -40,7 +42,7 @@ function getUrlParams(key) {
   return params[key];
 }
 
-function joinChannel(videoEl, channelAlias, joinChannelCallback, subscriberCallback) { // eslint-disable-line no-unused-vars
+function joinChannel(videoEl, channelAlias, joinChannelCallback, subscriberCallback) {
   const backendUri = getUrlParams('backendUri');
   const pcastUri = getUrlParams('pcastUri');
   log(`Subscriber backend uri: ${backendUri}`);
@@ -63,4 +65,56 @@ function joinChannel(videoEl, channelAlias, joinChannelCallback, subscriberCallb
   };
 
   channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
+}
+
+function publishTo(channelAlias, stream, backendUri, pcastUri, channelName, publishCallback) {
+  log(`Publisher backend uri: ${backendUri}`);
+  log(`Publisher PCast uri: ${pcastUri}`);
+
+  const publisherAdminApiProxyClient = new sdk.net.AdminApiProxyClient();
+  publisherAdminApiProxyClient.setBackendUri(backendUri);
+
+  var publishChannelExpress = new sdk.express.ChannelExpress({
+    adminApiProxyClient: publisherAdminApiProxyClient,
+    disableConsoleLogging: true,
+    uri: pcastUri
+  });
+
+  var publishOptions = {
+    capabilities: [
+      'hd',
+      'multi-bitrate'
+    ],
+    room: {
+      alias: channelAlias,
+      name: channelName
+    },
+    userMediaStream: stream
+  };
+
+  publishChannelExpress.publishToChannel(publishOptions, publishCallback);
+}
+
+function startListeningToSubscriberAudioChanges(audioAnalyzer, mediaListenInterval, audioSampleRate, onChange) {
+  if (audioAnalyzer === undefined) {
+    error('Audio analyzer is undefined - cannot listen to audio changes!');
+
+    return;
+  }
+
+  var previousFreq = 0;
+  var frequenciesData = new Float32Array(audioAnalyzer.frequencyBinCount);
+
+  setInterval(() => {
+    audioAnalyzer.getFloatFrequencyData(frequenciesData);
+
+    const indexOfMax = frequenciesData.indexOf(Math.max(... frequenciesData));
+    var frequency = indexOfMax * audioSampleRate / audioAnalyzer.fftSize;
+    frequency = Math.round(frequency / 100) * 100;
+
+    if (frequency !== previousFreq) {
+      onChange(frequency);
+      previousFreq = frequency;
+    }
+  }, mediaListenInterval);
 }

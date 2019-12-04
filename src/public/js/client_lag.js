@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, error, joinChannel, getUrlParams, rgbToHex */
-
-var sdk = window['phenix-web-sdk'];
+/* global log, joinChannel, getUrlParams, rgbToHex, publishTo, startListeningToSubscriberAudioChanges */
 
 var publisherCanvas;
 var publisherCanvasCtx;
@@ -124,30 +122,6 @@ function logSubscriberAudioChanges(timestamp, frequency) {
   subscriberFrequencyValueEl.innerHTML = `Got ${frequency} Hz`;
 }
 
-function listenToSubscriberAudioChanges() {
-  if (subscriberAudioAnalyser === undefined) {
-    error('SubscriberAudioAnalyser is undefined - cannot listen to audio changes!');
-
-    return;
-  }
-
-  var previousFreq = 0;
-  var frequenciesData = new Float32Array(subscriberAudioAnalyser.frequencyBinCount);
-
-  setInterval(() => {
-    subscriberAudioAnalyser.getFloatFrequencyData(frequenciesData);
-
-    const indexOfMax = frequenciesData.indexOf(Math.max(... frequenciesData));
-    var frequency = indexOfMax * audioSampleRate / audioFFTSize;
-    frequency = Math.round(frequency / 100) * 100;
-
-    if (frequency !== previousFreq) {
-      logSubscriberAudioChanges(Date.now(), frequency);
-      previousFreq = frequency;
-    }
-  }, mediaListenInterval);
-}
-
 function updateCanvasColor() {
   setInterval(() => {
     publisherCanvasCtx.fillStyle = nextCanvasColor;
@@ -203,31 +177,7 @@ function getRandomCanvasColor() {
 // MARK: - Publisher
 
 function publish() {
-  log(`Publisher backend uri: ${publisherBackendUri}`);
-  log(`Publisher PCast uri: ${publisherPcastUri}`);
-
-  const publisherAdminApiProxyClient = new sdk.net.AdminApiProxyClient();
-  publisherAdminApiProxyClient.setBackendUri(publisherBackendUri);
-
-  var publishChannelExpress = new sdk.express.ChannelExpress({
-    adminApiProxyClient: publisherAdminApiProxyClient,
-    disableConsoleLogging: true,
-    uri: publisherPcastUri
-  });
-
-  var publishOptions = {
-    capabilities: [
-      'hd',
-      'multi-bitrate'
-    ],
-    room: {
-      alias: channelAlias,
-      name: channelName
-    },
-    userMediaStream: testMediaStream
-  };
-
-  publishChannelExpress.publishToChannel(publishOptions, publishCallback);
+  publishTo(channelAlias, testMediaStream, publisherBackendUri, publisherPcastUri, channelName, publishCallback);
 }
 
 function publishCallback(error, response) {
@@ -336,7 +286,9 @@ function prepareAudioAnalyzer() {
   source.connect(subscriberAudioAnalyser);
   subscriberAudioAnalyser.fftSize = audioFFTSize;
 
-  listenToSubscriberAudioChanges();
+  startListeningToSubscriberAudioChanges(subscriberAudioAnalyser, mediaListenInterval, audioSampleRate, ((frequency) => {
+    logSubscriberAudioChanges(Date.now(), frequency);
+  }));
 
   subscriberAudioTimeDataArray = new Uint8Array(subscriberAudioAnalyser.frequencyBinCount);
   subscriberAudioFrequencyDataArray = new Float32Array(subscriberAudioAnalyser.frequencyBinCount);

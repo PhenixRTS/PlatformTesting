@@ -60,7 +60,8 @@ const argv = require('yargs')
     screenshotName: 'phenix_test_screenshot',
     ignoreJsConsoleErrors: false,
     audio: undefined,
-    video: undefined
+    video: undefined,
+    syncPublishedVideoFps: 1
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-video-and-audio-quality.js')
   .epilog('Available browsers: chrome chrome:headless firefox firefox:headless safari ie edge opera')
@@ -78,7 +79,8 @@ async function test() {
     `&recordingMs=${config.args.recordingMs}` +
     `&recordingMedia=${config.args.recordingMedia}` +
     `&screenshotAfterMs=${config.args.screenshotAfterMs}` +
-    `&downloadImgName=${config.args.downloadImgName}`;
+    `&downloadImgName=${config.args.downloadImgName}` +
+    `&syncFps=${config.args.videoProfile.syncPublishedVideoFps}`;
   config.videoAssertProfile = config.args.videoProfile;
   config.audioAssertProfile = config.args.audioProfile;
 
@@ -182,7 +184,7 @@ function parseTestArgs() {
         exitWithMessage(
           `Error: unsupported argument override - key '${key}' does not exist on video profile!` +
           `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.videoProfile), undefined, 2)}`
-        )
+        );
       }
 
       if (key === 'interframeDelayTresholds') {
@@ -205,8 +207,9 @@ function parseTestArgs() {
         exitWithMessage(
           `Error: unsupported argument override - key '${key}' does not exist on audio profile!` +
           `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.audioProfile), undefined, 2)}`
-        )
+        );
       }
+
       args.audioProfile[key] = argv.audio[key];
     });
   }

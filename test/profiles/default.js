@@ -44,7 +44,10 @@ const videoProfile = {
       timesPerMin: 1
     }
   ],
-  maxLag: 350
+  maxLag: 350,
+  syncPublishedVideoFps: 24,
+  maxAverageSync: 30,
+  maxSingleSync: 70
 };
 const audioProfile = {
   minBitrateMeanKbps: 60,

@@ -474,4 +474,20 @@ module.exports = class Asserts {
       'gt'
     );
   }
+
+  async assertSync() {
+    this.assert(
+      'Average video sync with audio',
+      this.page.stats.averageSync,
+      config.videoAssertProfile.maxAverageSync,
+      'lte'
+    );
+
+    this.assert(
+      'Max video sync with audio',
+      this.page.stats.maxSync,
+      config.videoAssertProfile.maxSingleSync,
+      'lte'
+    );
+  }
 };
