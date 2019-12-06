@@ -24,7 +24,7 @@ import reporter from '../models/reporters/lag-reporter.js';
 const page = new ChannelPage();
 
 global.fixture('Channel lag test')
-  .page(`${config.localServerAddress}:${config.localServerPort}/lag${config.testPageUrlAttributes}`);
+  .page(`${config.localServerAddress}:${config.args.localServerPort}/lag${config.testPageUrlAttributes}`);
 
 const getUA = ClientFunction(() => navigator.userAgent);
 

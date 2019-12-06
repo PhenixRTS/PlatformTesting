@@ -20,7 +20,6 @@ const pcastUri = '';
 const channelAlias = '';
 const args = undefined;
 const localServerAddress = '127.0.0.1';
-const localServerPort = '3000';
 const testPageUrlAttributes = '';
 const reportsPath = path.join(__dirname, 'test', 'reports');
 const videoAssertProfile = {};
@@ -33,7 +32,6 @@ module.exports = {
   channelAlias: channelAlias,
   args: args,
   localServerAddress: localServerAddress,
-  localServerPort: localServerPort,
   testPageUrlAttributes: testPageUrlAttributes,
   reportsPath: reportsPath,
   videoAssertProfile: videoAssertProfile,

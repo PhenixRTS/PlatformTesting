@@ -28,6 +28,7 @@ const moment = require('moment');
 const argv = require('yargs')
   .help()
   .strict()
+  .describe('localServerPort', 'Port that will be used for the server')
   .describe('channelAlias', '')
   .describe('backendUri', '')
   .describe('pcastUri', '')
@@ -42,6 +43,7 @@ const argv = require('yargs')
   .describe('screenshotName', 'Name of the screenshots that will be taken if screenshotInterval was provided')
   .describe('ignoreJsConsoleErrors', 'If true, ignore JavaScript errors logged by tested website')
   .default({
+    localServerPort: 3333,
     channelAlias: 'clock',
     backendUri: 'https://demo.phenixrts.com/pcast',
     pcastUri: 'https://pcast.phenixrts.com',
@@ -87,7 +89,7 @@ async function test() {
   let testcafe = null;
 
   return createTestCafe('localhost').then(tc => {
-    app.startServer();
+    app.startServer(config.args.localServerPort);
 
     const runner = tc.createRunner();
     testcafe = tc;
@@ -133,6 +135,7 @@ function parseTestArgs() {
   config.channelAlias = argv.channelAlias;
 
   const args = {
+    localServerPort: argv.localServerPort,
     browsers: argv.browsers.replace(/\s/g, '').split(','),
     tests: argv.tests,
     features: argv.features,

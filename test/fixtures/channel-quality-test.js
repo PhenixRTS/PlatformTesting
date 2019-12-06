@@ -24,7 +24,7 @@ import reporter from '../models/reporters/quality-reporter.js';
 const page = new ChannelPage();
 
 global.fixture('Channel quality test')
-  .page(`${config.localServerAddress}:${config.localServerPort}/${config.testPageUrlAttributes}`);
+  .page(`${config.localServerAddress}:${config.args.localServerPort}/${config.testPageUrlAttributes}`);
 
 const getUA = ClientFunction(() => navigator.userAgent);
 

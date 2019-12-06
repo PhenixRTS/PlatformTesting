@@ -126,15 +126,18 @@ npm run test -- --tests=./test/fixtures/channel-lag-test.js --video.maxLag=200 -
 
 ## Media sync tests
 
-To run media sync tests use `./test/fixtures/channel-sync-test.js` test.
+Media sync test is defined in `./test/fixtures/channel-sync-test.js`
 
-Set fps in used video profile or override with `--video.syncPublishedVideoFps=<desiredFPS>`
+To set published video fps change the value under the key `syncPublishedVideoFps` in video profile or override with `--video.syncPublishedVideoFps=<desiredFPS>` argument.
 
 Example:
 ```
 npm run test -- --tests=./test/fixtures/channel-sync-test.js --video.syncPublishedVideoFps=10
 ```
+This will run test where published video is at 10 fps and after the test it will assert video and audio synchronisation.
 
 Average sync is asserted against value named `maxAverageSync` which is defined in video profile.
 
-Override it with args `--video.maxAverageSync=<maxAllowedAverageVideoAndAudioSyncDelay>`
+You can override it with argument `--video.maxAverageSync=<maxAllowedAverageVideoAndAudioSyncDelay>` (or change it in the video profile)
+
+Also max single sync value got during the test is asserted. Override it with argument `--video.maxSingleSync=<maxAllowedSingleSyncDelay>`

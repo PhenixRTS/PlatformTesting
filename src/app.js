@@ -24,7 +24,7 @@ let server;
 class App {
   constructor() {}
 
-  startServer() {
+  startServer(localServerPort) {
     const app = express();
     app.set('views', path.join(__dirname, 'public'));
     app.use(express.static(path.join(__dirname, 'public')));
@@ -40,8 +40,8 @@ class App {
     app.get('*', (req, res) => res.status(404).send(
       {message: '404, not found'}
     ));
-    server = app.listen(config.localServerPort, () => {
-      logger.log(`Server started ${config.localServerAddress}:${config.localServerPort}`);
+    server = app.listen(localServerPort, () => {
+      logger.log(`Server started ${config.localServerAddress}:${localServerPort}`);
     });
   }
 

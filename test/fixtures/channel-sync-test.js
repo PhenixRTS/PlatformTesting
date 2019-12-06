@@ -24,7 +24,7 @@ import reporter from '../models/reporters/sync-reporter.js';
 const page = new ChannelPage();
 
 global.fixture('Channel sync test')
-  .page(`${config.localServerAddress}:${config.localServerPort}/sync${config.testPageUrlAttributes}`);
+  .page(`${config.localServerAddress}:${config.args.localServerPort}/sync${config.testPageUrlAttributes}`);
 
 const getUA = ClientFunction(() => navigator.userAgent);
 
