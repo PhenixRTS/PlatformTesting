@@ -68,7 +68,7 @@ And also override values with flags like this:
 npm run test -- --video.frameWidth=1280 --video.frameHeight=720 --audio.minAudioOutputLevel=20
 ```
 
-## Record media
+## Record subscriber media
 
 Recorded media will be saved in browsers default downloads folder.
 
@@ -86,6 +86,15 @@ Or to record just video use `video`
 ```
 npm run test -- --record=PT1M --media=video
 ```
+
+## Record published media
+
+You can also record published multimedia (video + audio) from test by passing duration in `--recordPublisher` argument:
+```
+npm run test -- --recordPublisher=PT1M
+```
+
+Note that in this case, there will be added 5 seconds delay before the recording will start
 
 ## Screenshots
 

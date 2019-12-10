@@ -104,6 +104,14 @@ function prepare() {
   drawCanvas();
   move();
   publish();
+
+  const publisherRecordingMs = getUrlParams('publisherRecordingMs');
+  window.publisherRecordingMs = publisherRecordingMs;
+  if (publisherRecordingMs > 0) {
+    setTimeout(() => {
+      startMultimediaRecordingFor(publisherRecordingMs, testMediaStream);
+    }, 5000);
+  }
 }
 
 function logSubscriberVideoCenter(timestamp) {

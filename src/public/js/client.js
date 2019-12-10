@@ -28,17 +28,17 @@ document.addEventListener('DOMContentLoaded', () => {
   );
 });
 
-function joinChannelCallback(error, response) {
-  if (error) {
+function joinChannelCallback(err, response) {
+  if (err) {
     log('Failed to join channel!');
-    log(error);
-    error(error);
+    log(err);
+    error(err);
   }
 
   if (response.status === 'room-not-found') {
     console.warn('Room not found');
   } else if (response.status !== 'ok') {
-    error(error);
+    error(err);
   }
 
   if (response.status === 'ok' && response.channelService) {
@@ -46,15 +46,15 @@ function joinChannelCallback(error, response) {
   }
 }
 
-function subscriberCallback(error, response) {
-  if (error) {
-    error(error);
+function subscriberCallback(err, response) {
+  if (err) {
+    error(err);
   }
 
   if (response.status === 'no-stream-playing') {
     console.warn('No stream playing');
   } else if (response.status !== 'ok') {
-    error(error);
+    error(err);
   }
 
   if (response.renderer) {
@@ -86,7 +86,7 @@ function startRecordings() {
   }
 
   if (recordingMedia.includes('video') && recordingMedia.includes('audio')) {
-    startMultimediaRecordingFor(recordingMs);
+    startMultimediaRecordingFor(recordingMs, stream.Zo);
   } else {
     if (recordingMedia.includes('audio')) {
       startAudioRecordingFor(recordingMs);
@@ -115,7 +115,7 @@ function getStatsCallback(stats) {
 }
 
 function startVideoRecordingFor(timeMs) {
-  const videoRecorder = new RecordRTC(stream.Ys, {
+  const videoRecorder = new RecordRTC(stream.Zo, {
     type: 'video',
     ignoreMutedMedia: false
   });
@@ -130,46 +130,13 @@ function startVideoRecordingFor(timeMs) {
 }
 
 function startAudioRecordingFor(timeMs) {
-  const audioRecorder = new RecordRTC(stream.Ys, {type: 'audio'});
+  const audioRecorder = new RecordRTC(stream.Zo, {type: 'audio'});
   audioRecorder.startRecording();
   log(`[Media Recording] Started audio recording for ${timeMs}ms`);
 
   setTimeout(() => {
     audioRecorder.stopRecording(() => {
       audioRecorder.save('recording-audio');
-    });
-  }, timeMs);
-}
-
-async function startMultimediaRecordingFor(timeMs) {
-  const mRecordRTC = new MRecordRTC();
-  mRecordRTC.addStream(stream.Ys);
-  mRecordRTC.mediaType = {
-    audio: true,
-    video: true,
-    gif: false
-  };
-  mRecordRTC.mimeType = {
-    audio: 'audio/wav',
-    video: 'video/webm'
-  };
-  mRecordRTC.startRecording();
-  log(`[Media Recording] Started multimedia (video and audio) recording for ${timeMs}ms`);
-
-  setTimeout(() => {
-    mRecordRTC.stopRecording(() => {
-      const audioBlob = mRecordRTC.getBlob().audio;
-      const videoBlob = mRecordRTC.getBlob().video;
-
-      mRecordRTC.writeToDisk({
-        audio: audioBlob,
-        video: videoBlob
-      });
-
-      mRecordRTC.save({
-        audio: 'm-recording-audio',
-        video: 'm-recording-video'
-      });
     });
   }, timeMs);
 }

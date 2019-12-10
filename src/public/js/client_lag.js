@@ -105,8 +105,14 @@ function prepare() {
 
   updateCanvasColor();
   changeAudioTone();
-
   publish();
+
+  const publisherRecordingMs = getUrlParams('publisherRecordingMs');
+  if (publisherRecordingMs > 0) {
+    setTimeout(() => {
+      startMultimediaRecordingFor(publisherRecordingMs, testMediaStream);
+    }, 5000);
+  }
 }
 
 function changeAudioTone() {

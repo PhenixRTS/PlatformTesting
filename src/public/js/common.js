@@ -118,3 +118,36 @@ function startListeningToSubscriberAudioChanges(audioAnalyzer, mediaListenInterv
     }
   }, mediaListenInterval);
 }
+
+async function startMultimediaRecordingFor(timeMs, stream) {
+  const mRecordRTC = new MRecordRTC();
+  mRecordRTC.addStream(stream);
+  mRecordRTC.mediaType = {
+    audio: true,
+    video: true,
+    gif: false
+  };
+  mRecordRTC.mimeType = {
+    audio: 'audio/wav',
+    video: 'video/webm'
+  };
+  mRecordRTC.startRecording();
+  log(`[Media Recording] Started multimedia (video and audio) recording for ${timeMs}ms`);
+
+  setTimeout(() => {
+    mRecordRTC.stopRecording(() => {
+      const audioBlob = mRecordRTC.getBlob().audio;
+      const videoBlob = mRecordRTC.getBlob().video;
+
+      mRecordRTC.writeToDisk({
+        audio: audioBlob,
+        video: videoBlob
+      });
+
+      mRecordRTC.save({
+        audio: 'm-recording-audio',
+        video: 'm-recording-video'
+      });
+    });
+  }, timeMs);
+}

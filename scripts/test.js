@@ -38,6 +38,7 @@ const argv = require('yargs')
   .describe('profileFile', 'Full path to file containing video and audio profiles that will be used to assert quality')
   .describe('concurrency', 'Runs all tests concurrently')
   .describe('record', 'Record media duration in ISO 8601 format')
+  .describe('recordPublisher', 'Record published media for duration in ISO 8601 format')
   .describe('media', 'Record video, audio or both')
   .describe('screenshotInterval', 'Create screenshot from video element after each duration whole testrun')
   .describe('screenshotName', 'Name of the screenshots that will be taken if screenshotInterval was provided')
@@ -57,6 +58,7 @@ const argv = require('yargs')
     logAllStatsInReport: false,
     saveConsoleLogs: false,
     record: 0,
+    recordPublisher: 0,
     media: 'video,audio',
     screenshotInterval: 0,
     screenshotName: 'phenix_test_screenshot',
@@ -80,6 +82,7 @@ async function test() {
     `&pcastUri=${config.pcastUri}` +
     `&recordingMs=${config.args.recordingMs}` +
     `&recordingMedia=${config.args.recordingMedia}` +
+    `&publisherRecordingMs=${config.args.publisherRecordingMs}` +
     `&screenshotAfterMs=${config.args.screenshotAfterMs}` +
     `&downloadImgName=${config.args.downloadImgName}` +
     `&syncFps=${config.args.videoProfile.syncPublishedVideoFps}`;
@@ -105,6 +108,9 @@ async function test() {
     logger.log(`Failed tests: ${failedCount}`);
     app.stopServer();
     testcafe.close();
+    if (failedCount > 0) {
+      process.exit(1);
+    }
   });
 }
 
@@ -148,6 +154,7 @@ function parseTestArgs() {
     saveConsoleLogs: argv.saveConsoleLogs,
     recordingMs: parseToMilliseconds(argv.record),
     recordingMedia: argv.media,
+    publisherRecordingMs: parseToMilliseconds(argv.recordPublisher),
     screenshotAfterMs: parseToMilliseconds(argv.screenshotInterval),
     downloadImgName: argv.screenshotName,
     publisherBackendUri: argv.publisherBackendUri,
