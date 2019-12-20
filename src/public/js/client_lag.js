@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-/* global log, joinChannel, getUrlParams, rgbToHex, publishTo, startListeningToSubscriberAudioChanges */
+/* global log, error, joinChannel, getUrlParams, rgbToHex, publishTo, startListeningToSubscriberAudioChanges, startMultimediaRecordingFor */
+
+const rtmpPush = getUrlParams('rtmpPush') === 'true';
+const channelAlias = getUrlParams('channelAlias');
 
 var publisherCanvas;
 var publisherCanvasCtx;
 var subscriberCanvas;
 var subscriberCanvasCtx;
-var channelAlias = 'ChannelLagTest';
 var channelName = 'Lag test';
 var audioSampleRate = 44100;
 var audioFFTSize = 512;
 
 var publisher;
+var publisherStats;
 var publisherBackendUri = getUrlParams('publisherBackendUri');
 var publisherPcastUri = getUrlParams('publisherPcastUri');
 var publisherVideoEl;
@@ -65,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function prepare() {
   publisherVideoEl = document.getElementById('publisherVideoContainer');
+  publisherStats = document.getElementById('publisherStats');
   subscriberVideoEl = document.getElementById('subscriberVideoContainer');
   subscriberOscilloscopeEl = document.getElementById('subscriberOscilloscope');
   subscriberFrequencyGraphEl = document.getElementById('subscriberFreqGraph');
@@ -103,11 +107,21 @@ function prepare() {
 
   publisherVideoEl.srcObject = testMediaStream;
 
-  updateCanvasColor();
-  changeAudioTone();
-  publish();
+  if (rtmpPush) {
+    publisherStats.innerHTML = 'Using RTMP Push for publishing';
+    document.getElementById('publisherVideoContainerTitle').style.display = 'none';
+    publisherVideoEl.style.display = 'none';
+    document.getElementById('publisherCanvasTitle').style.display = 'none';
+    publisherCanvas.style.display = 'none';
+    subscribe();
+  } else {
+    updateCanvasColor();
+    changeAudioTone();
+    publish();
+  }
 
   const publisherRecordingMs = getUrlParams('publisherRecordingMs');
+
   if (publisherRecordingMs > 0) {
     setTimeout(() => {
       startMultimediaRecordingFor(publisherRecordingMs, testMediaStream);
@@ -224,17 +238,16 @@ function subscribe() {
   );
 }
 
-function joinChannelCallback(error, response) {
-  if (error) {
+function joinChannelCallback(receivedError, response) {
+  if (receivedError) {
     log('Failed to join channel!');
-    log(error);
-    error(error.message);
+    log(receivedError);
   }
 
   if (response.status === 'room-not-found') {
     console.warn('Room not found');
   } else if (response.status !== 'ok') {
-    error(error.message);
+    error(receivedError);
   }
 
   if (response.status === 'ok' && response.channelService) {
@@ -242,15 +255,15 @@ function joinChannelCallback(error, response) {
   }
 }
 
-function subscriberCallback(error, response) {
-  if (error) {
-    error(error.message);
+function subscriberCallback(receivedError, response) {
+  if (receivedError) {
+    error(receivedError);
   }
 
   if (response.status === 'no-stream-playing') {
     console.warn('No stream playing');
   } else if (response.status !== 'ok') {
-    error(error.message);
+    error(receivedError);
   }
 
   if (response.renderer) {
@@ -269,7 +282,11 @@ function subscriberCallback(error, response) {
   log(`[Subscriber Stream received] ${Date.now()}`);
   subscriberStream = response.mediaStream;
 
-  prepareAudioAnalyzer();
+  if (subscriberStream === undefined) {
+    error('subscriberStream is undefined');
+  } else {
+    prepareAudioAnalyzer(subscriberStream.Zo);
+  }
 
   drawToCanvas();
   drawAudioVisualisations();
@@ -283,11 +300,11 @@ function drawToCanvas() {
   requestAnimationFrame(drawToCanvas);
 }
 
-function prepareAudioAnalyzer() {
+function prepareAudioAnalyzer(mediaStream) {
   var subscriberAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
   subscriberAudioCtx.sampleRate = audioSampleRate;
 
-  var source = subscriberAudioCtx.createMediaStreamSource(subscriberStream.Zo);
+  var source = subscriberAudioCtx.createMediaStreamSource(mediaStream);
   subscriberAudioAnalyser = subscriberAudioCtx.createAnalyser();
   source.connect(subscriberAudioAnalyser);
   subscriberAudioAnalyser.fftSize = audioFFTSize;
@@ -304,6 +321,10 @@ function prepareAudioAnalyzer() {
 
 function drawAudioVisualisations() {
   requestAnimationFrame(drawAudioVisualisations);
+
+  if (subscriberAudioAnalyser === undefined) {
+    return;
+  }
 
   subscriberAudioAnalyser.getByteTimeDomainData(subscriberAudioTimeDataArray);
 

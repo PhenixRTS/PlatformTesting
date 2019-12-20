@@ -79,6 +79,7 @@ async function CollectMediaChanges() {
 
   collectedStats.video.forEach(videoEl => {
     let closest = ClosestElement(videoEl.timestamp, collectedStats.audio);
+
     if (closest !== undefined) {
       videoEl.syncWithAudio = Math.abs(videoEl.timestamp - closest.timestamp);
       videoEl.closestAudioTimestamp = moment(closest.timestamp).format('HH:mm:ss.SSS');
@@ -99,6 +100,7 @@ function ClosestElement(number, arr){
 
   arr.forEach(el => {
     var m = Math.abs(number - el.timestamp);
+
     if (m < minDiff) {
       minDiff = m;
       closest = el;

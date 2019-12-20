@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, getUrlParams, joinChannel, MRecordRTC, RecordRTC */
+/* global log, getUrlParams, joinChannel, RecordRTC, error, startMultimediaRecordingFor */
 
 let stream = undefined;
 

@@ -29,6 +29,8 @@
   "dependencies": {
     "express": "4.17.1",
     "moment": "2.24.0",
+    "node-fetch": "2.6.0",
+    "ps-node": "0.1.6",
     "testcafe": "1.4.3",
     "ua-parser-js": "0.7.20",
     "yargs": "14.0.0"

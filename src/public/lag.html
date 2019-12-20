@@ -13,12 +13,15 @@
 <body>
   <div style="border-bottom: 1px solid black; padding: 20px 0;">
     <h2>Publisher</h2>
+    <div>
+      <p id="publisherStats"></p>
+    </div>
     <div style="display: inline-block;">
-      <div style="font-weight: bold;">Canvas:</div>
+      <div id="publisherCanvasTitle" style="font-weight: bold;">Canvas:</div>
       <canvas id="publisherCanvas" width='500' height='500'></canvas>
     </div>
     <div style="display: inline-block;">
-      <div style="font-weight: bold;">Video Container:</div>
+      <div id="publisherVideoContainerTitle" style="font-weight: bold;">Video Container:</div>
       <video id="publisherVideoContainer" width='500' height='500' autoplay controls></video>
     </div>
   </div>

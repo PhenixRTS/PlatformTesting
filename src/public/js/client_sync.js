@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-/* global log, joinChannel, getUrlParams, publishTo, startListeningToSubscriberAudioChanges */
+/* global log, error, joinChannel, getUrlParams, publishTo, startListeningToSubscriberAudioChanges, startMultimediaRecordingFor */
 
-const channelAlias = 'ChannelSyncTest';
+const rtmpPush = getUrlParams('rtmpPush') === 'true';
+const channelAlias = getUrlParams('channelAlias');
 const channelName = 'Sync test';
 const audioSampleRate = 44100;
 const audioFFTSize = 512;
@@ -101,15 +102,25 @@ function prepare() {
 
   publisherVideoEl.srcObject = testMediaStream;
 
-  drawCanvas();
-  move();
-  publish();
+  if (rtmpPush) {
+    publisherStats.innerHTML = 'Using RTMP Push for publishing';
+    document.getElementById('publisherVideoContainerTitle').style.display = 'none';
+    publisherVideoEl.style.display = 'none';
+    document.getElementById('publisherCanvasTitle').style.display = 'none';
+    publisherCanvas.style.display = 'none';
+    subscribe();
+  } else {
+    drawCanvas();
+    move();
+    publish();
+  }
 
   const publisherRecordingMs = getUrlParams('publisherRecordingMs');
   window.publisherRecordingMs = publisherRecordingMs;
+
   if (publisherRecordingMs > 0) {
     setTimeout(() => {
-      startMultimediaRecordingFor(publisherRecordingMs, testMediaStream);
+      startMultimediaRecordingFor(publisherRecordingMs, publisherVideoEl.captureStream());
     }, 5000);
   }
 }
@@ -286,17 +297,17 @@ function subscribe() {
   );
 }
 
-function joinChannelCallback(error, response) {
-  if (error) {
+function joinChannelCallback(receivedError, response) {
+  if (receivedError) {
     log('Failed to join channel!');
-    log(error);
-    error(error.message);
+    log(receivedError);
+    error(receivedError.message);
   }
 
   if (response.status === 'room-not-found') {
     console.warn('Room not found');
   } else if (response.status !== 'ok') {
-    error(error.message);
+    error(receivedError.message);
   }
 
   if (response.status === 'ok' && response.channelService) {
@@ -304,15 +315,15 @@ function joinChannelCallback(error, response) {
   }
 }
 
-function subscriberCallback(error, response) {
-  if (error) {
-    error(error.message);
+function subscriberCallback(receivedError, response) {
+  if (receivedError) {
+    error(receivedError);
   }
 
   if (response.status === 'no-stream-playing') {
     console.warn('No stream playing');
   } else if (response.status !== 'ok') {
-    error(error.message);
+    error(receivedError);
   }
 
   if (response.renderer) {
@@ -332,7 +343,12 @@ function subscriberCallback(error, response) {
   subscriberStream = response.mediaStream;
 
   drawVideoToCanvas();
-  prepareAudioAnalyzer(subscriberStream.Zo);
+
+  if (subscriberStream === undefined) {
+    error('subscriberStream is undefined');
+  } else {
+    prepareAudioAnalyzer(subscriberStream.Zo);
+  }
 }
 
 function prepareAudioAnalyzer(audioStream) {

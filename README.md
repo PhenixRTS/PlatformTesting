@@ -150,3 +150,22 @@ Average sync is asserted against value named `maxAverageSync` which is defined i
 You can override it with argument `--video.maxAverageSync=<maxAllowedAverageVideoAndAudioSyncDelay>` (or change it in the video profile)
 
 Also max single sync value got during the test is asserted. Override it with argument `--video.maxSingleSync=<maxAllowedSingleSyncDelay>`
+
+## RTMP Push
+
+You can also run sync tests with RTMP Push.
+
+First, save published sync video in desired length with:
+```
+npm run test -- --tests=./test/fixtures/channel-sync-test.js --video.syncPublishedVideoFps=30 --runtime=PT5M10S --recordPublisher=PT5M
+```
+
+Then convert it:
+```
+ffmpeg -i sync-5m.webm sync-5m.mp4
+```
+
+And publish it with RTMP Push:
+```
+npm run test -- --tests=./test/fixtures/channel-sync-test.js --applicationId=<yourApplicationId> --secret=<yourSecret> --rtmpPushFile=sync-5m.mp4 --runtime=PT5M
+```

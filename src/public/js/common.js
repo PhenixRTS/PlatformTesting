@@ -15,6 +15,7 @@
  */
 
 /* eslint-disable no-unused-vars */
+/* global MRecordRTC */
 
 var sdk = window['phenix-web-sdk'];
 
@@ -64,6 +65,7 @@ function joinChannel(videoEl, channelAlias, joinChannelCallback, subscriberCallb
     videoElement: videoEl
   };
 
+  log(`Joining channel ${pcastUri}/channel#${channelAlias}`);
   channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
 }
 
@@ -121,29 +123,23 @@ function startListeningToSubscriberAudioChanges(audioAnalyzer, mediaListenInterv
 
 async function startMultimediaRecordingFor(timeMs, stream) {
   const mRecordRTC = new MRecordRTC();
-  mRecordRTC.addStream(stream);
+  mRecordRTC.mimeType = {
+    audio: 'audio/webm',
+    video: 'video/webm'
+  };
   mRecordRTC.mediaType = {
     audio: true,
     video: true,
     gif: false
   };
-  mRecordRTC.mimeType = {
-    audio: 'audio/wav',
-    video: 'video/webm'
-  };
+  mRecordRTC.addStream(stream);
+
   mRecordRTC.startRecording();
   log(`[Media Recording] Started multimedia (video and audio) recording for ${timeMs}ms`);
 
   setTimeout(() => {
     mRecordRTC.stopRecording(() => {
-      const audioBlob = mRecordRTC.getBlob().audio;
-      const videoBlob = mRecordRTC.getBlob().video;
-
-      mRecordRTC.writeToDisk({
-        audio: audioBlob,
-        video: videoBlob
-      });
-
+      mRecordRTC.writeToDisk();
       mRecordRTC.save({
         audio: 'm-recording-audio',
         video: 'm-recording-video'

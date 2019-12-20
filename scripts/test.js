@@ -43,9 +43,13 @@ const argv = require('yargs')
   .describe('screenshotInterval', 'Create screenshot from video element after each duration whole testrun')
   .describe('screenshotName', 'Name of the screenshots that will be taken if screenshotInterval was provided')
   .describe('ignoreJsConsoleErrors', 'If true, ignore JavaScript errors logged by tested website')
+  .describe('rtmpPushFile', 'Video file that will be published with RTMP Push')
+  .describe('applicationId', 'Application ID used with API for managing RTMP push channel')
+  .describe('secret', 'Secret used with API for managing RTMP push channel')
   .default({
     localServerPort: 3333,
-    channelAlias: 'clock',
+    channelAlias: '',
+    features: undefined,
     backendUri: 'https://demo.phenixrts.com/pcast',
     pcastUri: 'https://pcast.phenixrts.com',
     publisherBackendUri: 'https://demo.phenixrts.com/pcast',
@@ -65,7 +69,12 @@ const argv = require('yargs')
     ignoreJsConsoleErrors: false,
     audio: undefined,
     video: undefined,
-    syncPublishedVideoFps: 1
+    syncPublishedVideoFps: 1,
+    rtmpPushFile: '',
+    applicationId: '',
+    secret: '',
+    region: 'ingest-stg-europe-west',
+    capabilities: 'multi-bitrate,streaming,on-demand,hd'
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-video-and-audio-quality.js')
   .epilog('Available browsers: chrome chrome:headless firefox firefox:headless safari ie edge opera')
@@ -85,7 +94,8 @@ async function test() {
     `&publisherRecordingMs=${config.args.publisherRecordingMs}` +
     `&screenshotAfterMs=${config.args.screenshotAfterMs}` +
     `&downloadImgName=${config.args.downloadImgName}` +
-    `&syncFps=${config.args.videoProfile.syncPublishedVideoFps}`;
+    `&syncFps=${config.args.videoProfile.syncPublishedVideoFps}` +
+    `&rtmpPush=${config.args.rtmpPushFile !== ''}`;
   config.videoAssertProfile = config.args.videoProfile;
   config.audioAssertProfile = config.args.audioProfile;
 
@@ -108,6 +118,7 @@ async function test() {
     logger.log(`Failed tests: ${failedCount}`);
     app.stopServer();
     testcafe.close();
+
     if (failedCount > 0) {
       process.exit(1);
     }
@@ -138,7 +149,12 @@ function parseBrowsers(browsers) {
 function parseTestArgs() {
   config.backendUri = argv.backendUri;
   config.pcastUri = argv.pcastUri;
-  config.channelAlias = argv.channelAlias;
+
+  if (argv.channelAlias !== '') {
+    config.channelAlias = argv.channelAlias;
+  } else {
+    config.channelAlias = argv.rtmpPushFile !== '' ? 'PlatformTestingRtmp' : `PlatformTesting-${moment().format('YYYY-MM-DD.HH.mm')}`;
+  }
 
   const args = {
     localServerPort: argv.localServerPort,
@@ -159,7 +175,12 @@ function parseTestArgs() {
     downloadImgName: argv.screenshotName,
     publisherBackendUri: argv.publisherBackendUri,
     publisherPcastUri: argv.publisherPcastUri,
-    ignoreJsConsoleErrors: argv.ignoreJsConsoleErrors
+    ignoreJsConsoleErrors: argv.ignoreJsConsoleErrors,
+    rtmpPushFile: argv.rtmpPushFile,
+    applicationId: argv.applicationId,
+    secret: argv.secret,
+    region: argv.region,
+    capabilities: argv.capabilities
   };
 
   if (args.tests === 'all') {

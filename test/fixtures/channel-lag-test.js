@@ -20,8 +20,12 @@ import ChannelPage from '../models/channel-page.js';
 import config from '../../config.js';
 import persistence from '../models/persistence.js';
 import reporter from '../models/reporters/lag-reporter.js';
+import {ok} from 'assert';
 
+const rtmpPush = require('../models/rtmp-push.js');
+const pcastApi = require('../models/pcastApi.js');
 const page = new ChannelPage();
+let createdChannelId;
 
 global.fixture('Channel lag test')
   .page(`${config.localServerAddress}:${config.args.localServerPort}/lag${config.testPageUrlAttributes}`);
@@ -30,6 +34,13 @@ const getUA = ClientFunction(() => navigator.userAgent);
 
 test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/audio`, async t => {
   const ua = await getUA();
+
+  if (config.args.rtmpPushFile !== '') {
+    let channel = await pcastApi.createChannel(config.channelAlias);
+    ok(channel !== undefined, 'Could not create channel for RTMP Push');
+    createdChannelId = channel.channelId;
+    rtmpPush.startRtmpPush(config.args.rtmpPushFile, config.args.region, channel, config.args.capabilities);
+  }
 
   await t
     .wait(3000)
@@ -43,6 +54,12 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
   await page.asserts.assertVideoLag();
   await page.asserts.assertAudioLag();
 }).after(async t => {
+  if (createdChannelId !== undefined) {
+    rtmpPush.stopRtmpPush();
+    await pcastApi.deleteChannel(createdChannelId);
+    console.log(`Stopped RTMP Push and deleted created channel with id ${createdChannelId}`);
+  }
+
   persistence.saveToFile(__filename, t.ctx.testFailed ? 'FAIL' : 'PASS', await reporter.CreateTestReport(page));
 
   if (config.args.saveConsoleLogs === 'true') {

@@ -7,6 +7,7 @@
   <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
   <script src="js/common.js"></script>
   <script src="js/client_sync.js"></script>
+  <script src="js/rtmp_push.js"></script>
   <title>Phenix Video Test</title>
 </head>
 
@@ -19,11 +20,11 @@
     <div style="display: inline-block;">
       <p id="publishedForSeconds"></p>
       <p id="publishFramerate"></p>
-      <div style="font-weight: bold;">Canvas:</div>
+      <div id="publisherCanvasTitle" style="font-weight: bold;">Canvas:</div>
       <canvas id="publisherCanvas" style="background-color: black;"></canvas>
     </div>
     <div style="display: inline-block;">
-      <div style="font-weight: bold;">Video Container:</div>
+      <div id="publisherVideoContainerTitle" style="font-weight: bold;">Video Container:</div>
       <video id="publisherVideoContainer" style="background-color: black;" autoplay controls></video>
     </div>
   </div>
