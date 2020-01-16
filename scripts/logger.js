@@ -24,7 +24,7 @@ class Logger {
   }
 
   error(msg) {
-    console.error(`[Acceptance Testing ERROR] ${msg}`);
+    console.error(`[${this.format(new Date())}] [${this.prefix} ERROR] ${msg}\n`);
   }
 
   format(datetime) {

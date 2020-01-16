@@ -15,10 +15,10 @@
  */
 
 const videoProfile = {
-  minBitrateMeanKbps: 830,
-  minFramerateMean: 30,
-  frameWidth: 854,
-  frameHeight: 480
+  minBitrateMeanKbps: 3000,
+  minFramerateMean: 29.97,
+  frameWidth: 1920,
+  frameHeight: 1080
 };
 
 module.exports = {videoProfile: videoProfile};

@@ -33,6 +33,17 @@ module.exports = class Asserts {
     let assertionMsg = '';
     let assertion = false;
 
+    if (t.ctx.assertions === undefined) {
+      t.ctx.assertions = [];
+      t.ctx.failedAssertions = [];
+      t.ctx.skippedAssertions = [];
+    }
+
+    if (!secondArg) {
+      t.ctx.skippedAssertions.push(name);
+      return;
+    }
+
     if ((_.isString(firstArg) && /^\s*$/.test(firstArg)) || (_.isString(secondArg) && /^\s*$/.test(secondArg))) {
       logger.log(`Did not assert '${name}' because there was no collected stats for it`);
 
@@ -104,11 +115,6 @@ module.exports = class Asserts {
         throw Error(`Unsupported assert sign operator "${sign}"`);
     }
 
-    if (t.ctx.assertions === undefined) {
-      t.ctx.assertions = [];
-      t.ctx.failedAssertions = [];
-    }
-
     const msg = `${name} expected ${assertionMsg} ${secondArg} was ${firstArg}`;
 
     if (!assertion) {
@@ -121,6 +127,11 @@ module.exports = class Asserts {
   }
 
   async assertInterframeThresholds() {
+    if (config.videoAssertProfile.interframeDelayTresholds === null) {
+      t.ctx.skippedAssertions.push('Video interframe max delays per minute');
+      return;
+    }
+
     config.videoAssertProfile.interframeDelayTresholds.forEach(threshold => {
       const msg = `Video interframe max delays per minute expected not more than ${threshold.timesPerMin} times above ${threshold.maxAllowed}`;
 
@@ -209,7 +220,7 @@ module.exports = class Asserts {
     this.assert(
       'Video packet loss',
       this.page.meanVideoStats.nativeReport.packetsLost,
-      config.videoAssertProfile.maxPacketLossPerMin / 1000 * config.args.testRuntimeMs,
+      config.videoAssertProfile.maxPacketLossPerMin ? config.videoAssertProfile.maxPacketLossPerMin / 1000 * config.args.testRuntimeMs : null,
       'lte'
     );
     this.assert(
@@ -233,7 +244,7 @@ module.exports = class Asserts {
     this.assert(
       'Video nacks sent',
       this.page.meanVideoStats.nativeReport.googNacksSent,
-      config.videoAssertProfile.maxNacksSentPerMin / 1000 * config.args.testRuntimeMs,
+      config.videoAssertProfile.maxNacksSentPerMin ? config.videoAssertProfile.maxNacksSentPerMin / 1000 * config.args.testRuntimeMs : null, 
       'lte'
     );
     this.assert(
@@ -245,7 +256,7 @@ module.exports = class Asserts {
     this.assert(
       'Video plis sent',
       this.page.meanVideoStats.nativeReport.googPlisSent,
-      config.videoAssertProfile.maxPlisSentPerMin / 1000 * config.args.testRuntimeMs,
+      config.videoAssertProfile.maxPlisSentPerMin ? config.videoAssertProfile.maxPlisSentPerMin / 1000 * config.args.testRuntimeMs : null,
       'lte'
     );
     this.assert(
@@ -269,7 +280,7 @@ module.exports = class Asserts {
     this.assert(
       'Video resolution change count',
       this.page.meanVideoStats.videoResolutionChangeCount,
-      config.videoAssertProfile.maxResolutionChangeCountPerMin / 1000 * config.args.testRuntimeMs,
+      config.videoAssertProfile.maxResolutionChangeCountPerMin ? config.videoAssertProfile.maxResolutionChangeCountPerMin / 1000 * config.args.testRuntimeMs : null,
       'lte'
     );
     await this.assertInterframeThresholds();
@@ -315,13 +326,13 @@ module.exports = class Asserts {
     this.assert(
       'Audio packets loss',
       this.page.meanAudioStats.nativeReport.packetsLost,
-      config.audioAssertProfile.maxPacketsLossPerMin / 1000 * config.args.testRuntimeMs,
+      config.audioAssertProfile.maxPacketsLossPerMin ? config.audioAssertProfile.maxPacketsLossPerMin / 1000 * config.args.testRuntimeMs : null,
       'lt'
     );
     this.assert(
       'Audio total samples duration',
       this.page.meanAudioStats.totalSamplesDuration,
-      this.page.meanAudioStats.statsCaptureDuration * config.audioAssertProfile.totalSamplesDurationPerc / 100,
+      config.audioAssertProfile.totalSamplesDurationPerc ? this.page.meanAudioStats.statsCaptureDuration * config.audioAssertProfile.totalSamplesDurationPerc / 100 : null,
       'gte'
     );
     this.assert(
@@ -339,7 +350,7 @@ module.exports = class Asserts {
     const publisherStats = this.page.stats.publisher.video.filter(el => el.timestamp >= streamReceivedAt - 10);
 
     this.assert(
-      'Publisher video changes count',
+      'Publisher video stats count',
       publisherStats.length,
       0,
       'gt'

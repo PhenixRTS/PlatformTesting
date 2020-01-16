@@ -18,9 +18,11 @@
 
 const {exec} = require('child_process');
 const ps = require('ps-node');
+const Logger = require('../../scripts/logger.js');
+const logger = new Logger('RTMP Push');
 
 async function createOnDemandRtmpPush(file, region, channel, duration) {
-  console.log(`Creating on-demand stream (${duration} s)`);
+  logger.log(`Creating on-demand stream (${duration} s)`);
 
   await startRtmpPush(file, region, channel, 'multi-bitrate,streaming,on-demand,hd');
 
@@ -31,11 +33,12 @@ async function createOnDemandRtmpPush(file, region, channel, duration) {
 
 async function startRtmpPush(file, region, channel, capabilities) {
   const link = `rtmp://${region}.phenixrts.com:80/ingest/${channel.streamKey};capabilities=${capabilities}`;
-  console.log(link);
+  logger.log(`Generated link: ${link}`);
 
   exec(`ffmpeg -re -i ${file} -c:a copy -c:v copy -f flv "${link}" > test/reports/ff.txt 2>&1`, err => {
     if (err) {
-      console.log('RTMP push failed/stopped. See ff.txt for more information');
+      logger.error('RTMP push failed/stopped. See ff.txt for more information');
+      process.exit(1);
     }
   });
 }
@@ -53,7 +56,7 @@ async function stopRtmpPush() {
             throw new Error(err);
           }
 
-          console.log(`Process ${process.pid} has been stopped`);
+          logger.log(`Process ${process.pid} has been stopped`);
         });
       }
     }

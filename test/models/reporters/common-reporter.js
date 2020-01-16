@@ -42,6 +42,7 @@ module.exports = {
       (obj.error.length > 0 ? '\n\nConsole errors:\n' + JSON.stringify(obj.error, undefined, 2) : '') +
       '\n\nAssertions passed:\n' + JSON.stringify(t.ctx.assertions, undefined, 2) +
       '\n\nFailures:\n' + JSON.stringify(t.ctx.failedAssertions, undefined, 2) +
+      '\n\nSkipped:\n' + JSON.stringify(t.ctx.skippedAssertions, undefined, 2) +
       content +
       (config.args.logAllStatsInReport === 'true' ? `\n\nAll Stats:\n + ${JSON.stringify(page.stats, undefined, 2)}` : '');
   }

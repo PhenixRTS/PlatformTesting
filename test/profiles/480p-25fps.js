@@ -16,9 +16,19 @@
 
 const videoProfile = {
   minBitrateMeanKbps: 830,
-  minFramerateMean: 30,
+  minFramerateMean: 25,
   frameWidth: 854,
-  frameHeight: 480
+  frameHeight: 480,
+  interframeDelayTresholds: [
+    {
+      maxAllowed: 60,
+      timesPerMin: 5
+    },
+    {
+      maxAllowed: 900,
+      timesPerMin: 0
+    }
+  ]
 };
 
 module.exports = {videoProfile: videoProfile};

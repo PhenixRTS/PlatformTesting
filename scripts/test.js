@@ -55,7 +55,7 @@ const argv = require('yargs')
     publisherBackendUri: 'https://demo.phenixrts.com/pcast',
     publisherPcastUri: 'https://pcast.phenixrts.com',
     browsers: 'chrome',
-    tests: 'all',
+    tests: 'test/fixtures/channel-quality-test.js',
     runtime: 'PT1M',
     profileFile: 'test/profiles/default.js',
     concurrency: 1,
@@ -76,7 +76,7 @@ const argv = require('yargs')
     region: 'ingest-stg-europe-west',
     capabilities: 'multi-bitrate,streaming,on-demand,hd'
   })
-  .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-video-and-audio-quality.js')
+  .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome chrome:headless firefox firefox:headless safari ie edge opera')
   .argv;
 
