@@ -19,10 +19,9 @@ const videoProfile = {
   frameWidth: 1280,
   frameHeight: 720,
   maxPTTFF: 4300,
-  maxInterframeDelay: 100,
-  maxPlisSentPerMin: 3,
-  maxPacketLossPerMin: 7,
-  maxNacksSentPerMin: 7
+  maxPlisSentPerMinute: 3,
+  maxPacketLossPerMinute: 7,
+  maxNacksSentPerMinute: 7
 };
 const audioProfile = {
   minBitrateMeanKbps: 0,

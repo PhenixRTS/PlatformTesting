@@ -23,25 +23,25 @@ const videoProfile = {
   maxFrameRate: 31,
   minFrameRate: 24,
   maxDroppedFrames: 0.01,
-  maxPacketLossPerMin: 3,
+  maxPacketLossPerMinute: 3,
   frameWidth: 1280,
   frameHeight: 720,
   maxMsToFirstFrameDecoded: 1000,
-  maxNacksSentPerMin: 3,
+  maxNacksSentPerMinute: 3,
   firsSent: 0,
-  maxPlisSentPerMin: 2,
+  maxPlisSentPerMinute: 2,
   codecName: 'H264',
   maxVideoFreezes: 0,
   maxPTTFF: 3000,
-  maxResolutionChangeCountPerMin: 2,
+  maxResolutionChangeCountPerMinute: 2,
   interframeDelayTresholds: [
     {
       maxAllowed: 45,
-      timesPerMin: 2
+      timesPerMinute: 2
     },
     {
       maxAllowed: 900,
-      timesPerMin: 1
+      timesPerMinute: 1
     }
   ],
   maxLag: 350,
@@ -55,7 +55,7 @@ const audioProfile = {
   minAudioOutputLevel: 100,
   maxDelay: 500,
   maxMeanDelay: 500,
-  maxPacketsLossPerMin: 3,
+  maxPacketsLossPerMinute: 3,
   totalSamplesDurationPerc: 0.8,
   codecName: 'opus',
   maxLag: 350

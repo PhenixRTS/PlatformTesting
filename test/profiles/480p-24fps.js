@@ -22,11 +22,11 @@ const videoProfile = {
   interframeDelayTresholds: [
     {
       maxAllowed: 60,
-      timesPerMin: 5
+      timesPerMinute: 5
     },
     {
       maxAllowed: 900,
-      timesPerMin: 0
+      timesPerMinute: 0
     }
   ]
 };

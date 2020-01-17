@@ -23,21 +23,21 @@ const videoProfile = {
   maxFrameRate: null,
   minFrameRate: 15,
   maxDroppedFrames: null,
-  maxPacketLossPerMin: null,
+  maxPacketLossPerMinute: null,
   frameWidth: null,
   frameHeight: null,
   maxMsToFirstFrameDecoded: 3000,
-  maxNacksSentPerMin: null,
+  maxNacksSentPerMinute: null,
   firsSent: null,
-  maxPlisSentPerMin: null,
+  maxPlisSentPerMinute: null,
   codecName: null,
   maxVideoFreezes: null,
   maxPTTFF: null,
-  maxResolutionChangeCountPerMin: null,
+  maxResolutionChangeCountPerMinute: null,
   interframeDelayTresholds: [
     {
       maxAllowed: 3000,
-      timesPerMin: 3
+      timesPerMinute: 3
     }
   ],
   maxLag: null,
@@ -52,7 +52,7 @@ const audioProfile = {
   minAudioOutputLevel: null,
   maxDelay: null,
   maxMeanDelay: null,
-  maxPacketsLossPerMin: null,
+  maxPacketsLossPerMinute: null,
   totalSamplesDurationPerc: null,
   codecName: null,
   maxLag: null

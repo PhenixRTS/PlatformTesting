@@ -133,12 +133,12 @@ module.exports = class Asserts {
     }
 
     config.videoAssertProfile.interframeDelayTresholds.forEach(threshold => {
-      const msg = `Video interframe max delays per minute expected not more than ${threshold.timesPerMin} times above ${threshold.maxAllowed}`;
+      const msg = `Video interframe delay treshold of ${threshold.timesPerMinute} times above ${threshold.maxAllowed} milliseconds`;
 
       this.page.meanVideoStats.interframeDelaysPerMin.forEach((delaysPerMin, index) => {
         const aboveMax = delaysPerMin.filter(el => el > threshold.maxAllowed);
-        const assertion = aboveMax.length <= threshold.timesPerMin;
-        const message = `${msg} but in test minute nr${index + 1}. got [${aboveMax}]`;
+        const assertion = aboveMax.length <= threshold.timesPerMinute;
+        const message = `${msg} were exceeded during test minute ${index + 1}. Observations: [${aboveMax}]`;
 
         if (!assertion) {
           t.ctx.testFailed = true;
@@ -220,7 +220,7 @@ module.exports = class Asserts {
     this.assert(
       'Video packet loss',
       this.page.meanVideoStats.nativeReport.packetsLost,
-      config.videoAssertProfile.maxPacketLossPerMin ? config.videoAssertProfile.maxPacketLossPerMin / 1000 * config.args.testRuntimeMs : null,
+      config.videoAssertProfile.maxPacketLossPerMinute ? config.videoAssertProfile.maxPacketLossPerMinute / 1000 * config.args.testRuntimeMs : null,
       'lte'
     );
     this.assert(
@@ -244,7 +244,7 @@ module.exports = class Asserts {
     this.assert(
       'Video nacks sent',
       this.page.meanVideoStats.nativeReport.googNacksSent,
-      config.videoAssertProfile.maxNacksSentPerMin ? config.videoAssertProfile.maxNacksSentPerMin / 1000 * config.args.testRuntimeMs : null, 
+      config.videoAssertProfile.maxNacksSentPerMinute ? config.videoAssertProfile.maxNacksSentPerMinute / 1000 * config.args.testRuntimeMs : null,
       'lte'
     );
     this.assert(
@@ -256,7 +256,7 @@ module.exports = class Asserts {
     this.assert(
       'Video plis sent',
       this.page.meanVideoStats.nativeReport.googPlisSent,
-      config.videoAssertProfile.maxPlisSentPerMin ? config.videoAssertProfile.maxPlisSentPerMin / 1000 * config.args.testRuntimeMs : null,
+      config.videoAssertProfile.maxPlisSentPerMinute ? config.videoAssertProfile.maxPlisSentPerMinute / 1000 * config.args.testRuntimeMs : null,
       'lte'
     );
     this.assert(
@@ -280,7 +280,7 @@ module.exports = class Asserts {
     this.assert(
       'Video resolution change count',
       this.page.meanVideoStats.videoResolutionChangeCount,
-      config.videoAssertProfile.maxResolutionChangeCountPerMin ? config.videoAssertProfile.maxResolutionChangeCountPerMin / 1000 * config.args.testRuntimeMs : null,
+      config.videoAssertProfile.maxResolutionChangeCountPerMinute ? config.videoAssertProfile.maxResolutionChangeCountPerMinute / 1000 * config.args.testRuntimeMs : null,
       'lte'
     );
     await this.assertInterframeThresholds();
@@ -326,7 +326,7 @@ module.exports = class Asserts {
     this.assert(
       'Audio packets loss',
       this.page.meanAudioStats.nativeReport.packetsLost,
-      config.audioAssertProfile.maxPacketsLossPerMin ? config.audioAssertProfile.maxPacketsLossPerMin / 1000 * config.args.testRuntimeMs : null,
+      config.audioAssertProfile.maxPacketsLossPerMinute ? config.audioAssertProfile.maxPacketsLossPerMinute / 1000 * config.args.testRuntimeMs : null,
       'lt'
     );
     this.assert(
