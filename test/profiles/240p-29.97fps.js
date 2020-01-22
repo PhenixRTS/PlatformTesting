@@ -16,7 +16,7 @@
 
 const videoProfile = {
   minBitrateMeanKbps: 350,
-  minFramerateMean: 29.97,
+  minFrameRateMean: 29.97,
   frameWidth: 352,
   frameHeight: 240
 };

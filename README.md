@@ -12,7 +12,7 @@ npm install
 
 To run test in browser, execute:
 ```sh
-npm run test -- --browser=<browser> --tests=<path_to/test_file.js> --features=<features>
+npm run test -- --browsers=<browser> --tests=<path_to/test_file.js> --features=<features>
 ```
 
 Overwrite backend and channel alias with `--channelAlias=<yourChannelAlias>` and `--backendUri=<yourBackendUri>`:
@@ -39,17 +39,17 @@ Note: browser must be installed before you can run tests in desired browser, oth
 
 To run all browsers and all tests defined under 'test/fixtures/' use `all`:
 ```
-npm run test -- --browser=all
+npm run test -- --browsers=all
 ```
 
 Example - run tests defined in test/fixtures/channel-video-audio-quality-short.js file in Google Chrome:
 ```sh
-npm run test -- --browser=chrome --tests=test/fixtures/channel-video-audio-quality-short.js
+npm run test -- --browsers=chrome --tests=test/fixtures/channel-video-audio-quality-short.js
 ```
 
 or in multiple browsers:
 ```
-npm run test -- --browser=chrome safari --tests=test/fixtures/channel-video-audio-quality-short.js
+npm run test -- --browsers=chrome safari --tests=test/fixtures/channel-video-audio-quality-short.js
 ```
 
 ## Video and audio profiles

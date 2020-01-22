@@ -195,13 +195,13 @@ module.exports = class Asserts {
     this.assert(
       'Video dropped frames',
       this.page.meanVideoStats.droppedFrames,
-      config.videoAssertProfile.maxDroppedFrames * config.videoAssertProfile.minFramerateMean,
+      config.videoAssertProfile.maxDroppedFrames * config.videoAssertProfile.minFrameRateMean,
       'lte'
     );
     this.assert(
       'Video mean framerate',
       this.page.meanVideoStats.framerateMean,
-      config.videoAssertProfile.minFramerateMean,
+      config.videoAssertProfile.minFrameRateMean,
       'gte',
       0.05
     );

@@ -19,9 +19,9 @@ const videoProfile = {
   maxBitrateMeanKps: null,
   maxDelay: null,
   maxMeanDelay: 3000,
-  minFramerateMean: 15,
+  minFrameRateMean: 1,
   maxFrameRate: null,
-  minFrameRate: 15,
+  minFrameRate: 1,
   maxDroppedFrames: null,
   maxPacketLossPerMinute: null,
   frameWidth: null,
@@ -32,7 +32,7 @@ const videoProfile = {
   maxPlisSentPerMinute: null,
   codecName: null,
   maxVideoFreezes: null,
-  maxPTTFF: null,
+  maxPTTFF: 25000,
   maxResolutionChangeCountPerMinute: null,
   interframeDelayTresholds: [
     {
@@ -41,7 +41,7 @@ const videoProfile = {
     }
   ],
   maxLag: null,
-  syncPublishedVideoFps: null,
+  syncPublishedVideoFps: 1,
   maxAverageSync: null,
   maxSingleSync: null
 };
