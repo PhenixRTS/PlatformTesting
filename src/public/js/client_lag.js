@@ -203,6 +203,7 @@ function publish() {
 function publishCallback(error, response) {
   if (error) {
     log('PublishCallback returned error=' + error.message);
+    showPublisherMessage(`\nPublish callback returned error: ${error.message}\n`);
     stopPublisher();
 
     throw error;
@@ -210,6 +211,7 @@ function publishCallback(error, response) {
 
   if (response.status !== 'ok' && response.status !== 'ended' && response.status !== 'stream-ended') {
     stopPublisher();
+    showPublisherMessage(`\nError in publish callback. Got response status: ${response.status}\n`);
 
     throw new Error(response.status);
   }
@@ -217,6 +219,7 @@ function publishCallback(error, response) {
   if (response.status === 'ok') {
     publisher = response.publisher;
     subscribe();
+    showPublisherMessage('\nPublished successfully!\n');
   }
 }
 

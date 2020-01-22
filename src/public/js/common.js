@@ -97,6 +97,10 @@ function publishTo(channelAlias, stream, backendUri, pcastUri, channelName, publ
   publishChannelExpress.publishToChannel(publishOptions, publishCallback);
 }
 
+function showPublisherMessage(message) {
+  document.getElementById('publisherError').innerHTML += message;
+}
+
 function startListeningToSubscriberAudioChanges(audioAnalyzer, mediaListenInterval, audioSampleRate, onChange) {
   if (audioAnalyzer === undefined) {
     error('Audio analyzer is undefined - cannot listen to audio changes!');
