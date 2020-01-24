@@ -39,7 +39,7 @@ module.exports = class Asserts {
       t.ctx.skippedAssertions = [];
     }
 
-    if (!secondArg) {
+    if (secondArg === null || tolerance === null) {
       t.ctx.skippedAssertions.push(name);
       return;
     }
@@ -269,7 +269,8 @@ module.exports = class Asserts {
       'Video frame rate decoded',
       this.page.meanVideoStats.avgFrameRateDecoded,
       this.page.meanVideoStats.avgFrameRateOutput,
-      'gte'
+      'gte',
+      config.videoAssertProfile.decodedFrameRateTolerance
     );
     this.assert(
       'Video freeze',
