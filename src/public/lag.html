@@ -5,8 +5,15 @@
   <meta charset="UTF-8" />
   <script src="https://dl.phenixrts.com/WebSDK/2019.2.latest/phenix-web-sdk.min.js"></script>
   <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
+  
+  <script src="/scripts/jsqr/dist/jsQR.js"></script>
+  <script src="/scripts/moment/moment.js"></script>
+
+  <script src="/shared/constants.js"></script>
+
   <script src="js/common.js"></script>
   <script src="js/client_lag.js"></script>
+
   <title>Phenix Video Test</title>
 </head>
 
@@ -30,6 +37,7 @@
     <h2>Subscriber</h2>
     <div style="display: inline-block;">
       <div style="font-weight: bold;">Video Container:</div>
+      <div id="decodedQRTimestamp"></div>
       <video id="subscriberVideoContainer" width='500' height='500' autoplay="false" controls></video>
     </div>
     <div style="display: inline-block;">

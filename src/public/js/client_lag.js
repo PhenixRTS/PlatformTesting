@@ -43,6 +43,7 @@ var subscriberAudioAnalyser;
 var subscriberAudioTimeDataArray;
 var subscriberAudioFrequencyDataArray;
 var subscriberCanvasColorVal;
+var subscriberDecodedTimestamp;
 var previousSubscriberColor = {
   r: 0,
   g: 0,
@@ -60,6 +61,7 @@ var oscillator;
 
 var mediaChangeInterval = 300;
 var mediaListenInterval = 60;
+const timestampDecodeInterval = 1000;
 
 document.addEventListener('DOMContentLoaded', () => {
   log(`[Url loaded] ${Date.now()}`);
@@ -70,6 +72,7 @@ function prepare() {
   publisherVideoEl = document.getElementById('publisherVideoContainer');
   publisherStats = document.getElementById('publisherStats');
   subscriberVideoEl = document.getElementById('subscriberVideoContainer');
+  subscriberDecodedTimestamp = document.getElementById('decodedQRTimestamp');
   subscriberOscilloscopeEl = document.getElementById('subscriberOscilloscope');
   subscriberFrequencyGraphEl = document.getElementById('subscriberFreqGraph');
   subscriberFrequencyValueEl = document.getElementById('subscriberFreqValue');
@@ -155,12 +158,42 @@ function updateCanvasColor() {
 }
 
 function logSubscriberVideoChange(timestamp, color) {
-  log(`[Subscriber Video] {"timestamp": ${timestamp}, "color": {"r": ${color.r}, "g": ${color.g}, "b": ${color.b}}}`);
+  const {r,g,b} = color;
+
+  log(`[Subscriber Video] {"type": "${constants.lagType.color}", "timestamp": ${timestamp}, "color": {"r": ${r}, "g": ${g}, "b": ${b}}}`);
   subscriberCanvasColorVal.innerHTML = `Got: HEX ${rgbToHex(color)} | RGB ${JSON.stringify(color)}`;
 }
 
+function logDecodedTimestamp() {
+  setInterval(() => {
+    decodeQR();
+  }, 1000);
+}
+
+function decodeQR() {
+  const { height, width, position } = constants.qrCode;
+  const timeReceived = Date.now();
+
+  const qrImageData = subscriberCanvasCtx.getImageData(
+    position.x,
+    position.y,
+    width,
+    height
+  ).data;
+  const qrCode = jsQR(qrImageData, width, height);
+
+  if (qrCode) {
+    const qrTime = moment.utc(Number(qrCode.data)).format();
+
+    subscriberDecodedTimestamp.innerHTML = `QR Code data: ${qrTime}`;
+    log(
+      `[Subscriber Video] {"type": "${constants.lagType.time}", "timestamp": ${timeReceived}, "qrTimestamp": ${qrCode.data}}`
+    );
+  }
+}
+
 function listenToSubscriberVideoChanges() {
-  var imgData = subscriberCanvasCtx.getImageData(10, 10, 1, 1).data;
+  var imgData = subscriberCanvasCtx.getImageData(200, 200, 1, 1).data;
   var color = {
     r: imgData[0],
     g: imgData[1],
@@ -289,6 +322,7 @@ function subscriberCallback(receivedError, response) {
     error('subscriberStream is undefined');
   } else {
     prepareAudioAnalyzer(subscriberStream.Zo);
+    logDecodedTimestamp();
   }
 
   drawToCanvas();
@@ -297,7 +331,7 @@ function subscriberCallback(receivedError, response) {
 
 function drawToCanvas() {
   subscriberCanvasCtx.clearRect(0, 0, subscriberCanvas.width, subscriberCanvas.height);
-  subscriberCanvasCtx.drawImage(subscriberVideoEl, 0, 0, subscriberVideoEl.videoWidth, subscriberVideoEl.videoHeight);
+  subscriberCanvasCtx.drawImage(subscriberVideoEl, 0, 0, 500, 500);
   listenToSubscriberVideoChanges();
 
   requestAnimationFrame(drawToCanvas);

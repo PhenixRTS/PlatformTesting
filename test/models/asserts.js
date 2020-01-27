@@ -17,9 +17,11 @@
 import {t} from 'testcafe';
 import {ok} from 'assert';
 import {isNull} from 'util';
+import _ from 'lodash';
+
 import config from '../../config.js';
 import Logger from '../../scripts/logger.js';
-import _ from 'lodash';
+import constants from '../../shared/constants';
 import math from './math.js';
 
 const logger = new Logger('Test');
@@ -345,6 +347,7 @@ module.exports = class Asserts {
   }
 
   async assertVideoLag() {
+    const {lagType} = constants;
     const colorDiffTolerance = 5;
     const streamReceivedAt = this.page.stats.streamReceivedAt;
     const subscriberStats = this.page.stats.subscriber.video;
@@ -372,6 +375,27 @@ module.exports = class Asserts {
 
     subscriberStats.forEach((el) => {
       var closestPubStat;
+
+      if (el.type === lagType.time) {
+        const {timestamp, qrTimestamp} = el;
+        const lag = timestamp - qrTimestamp;
+
+        if (!this.page.stats.subscriber.video.rtmp) {
+          this.page.stats.subscriber.video.rtmp = {
+            analyzedData: [],
+            statsAnalyzed: 0
+          };
+        }
+
+        this.page.stats.subscriber.video.rtmp.analyzedData.push({
+          timestamp,
+          qrTimestamp,
+          lag
+        });
+        this.page.stats.subscriber.video.rtmp.statsAnalyzed++;
+
+        return;
+      }
 
       publisherStats.forEach(pubEl => {
         if (math.getColorDistance(pubEl.color, el.color) < colorDiffTolerance) {
@@ -414,6 +438,26 @@ module.exports = class Asserts {
       0,
       'gt'
     );
+
+    if (this.page.stats.subscriber.video.rtmp) {
+      const {rtmp} = this.page.stats.subscriber.video;
+
+      rtmp.meanLagMs = math.average(rtmp.analyzedData.map(e => e.lag));
+
+      this.assert(
+        'RTMP push mean video lag',
+        rtmp.meanLagMs,
+        config.videoAssertProfile.maxRTMPLag,
+        'lte'
+      );
+  
+      this.assert(
+        'RTMP push video stats analyzed count',
+        rtmp.statsAnalyzed,
+        0,
+        'gt'
+      );
+    }
   }
 
   async assertAudioLag() {

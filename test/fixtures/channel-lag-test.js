@@ -39,7 +39,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
     let channel = await pcastApi.createChannel(config.channelAlias);
     ok(channel !== undefined, 'Could not create channel for RTMP Push');
     createdChannelId = channel.channelId;
-    rtmpPush.startRtmpPush(config.args.rtmpPushFile, config.args.region, channel, config.args.capabilities);
+    rtmpPush.startRtmpPush('lag_test', config.args.rtmpPushFile, config.args.region, channel, config.args.capabilities);
   }
 
   await t

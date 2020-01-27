@@ -42,6 +42,7 @@ const videoProfile = {
     }
   ],
   maxLag: null,
+  maxRTMPLag: null,
   syncPublishedVideoFps: 1,
   maxAverageSync: null,
   maxSingleSync: null

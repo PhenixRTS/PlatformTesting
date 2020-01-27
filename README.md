@@ -162,7 +162,7 @@ npm run test -- --tests=./test/fixtures/channel-sync-test.js --video.syncPublish
 
 Then convert it:
 ```
-ffmpeg -i sync-5m.webm sync-5m.mp4
+ffmpeg -i sync-5m.webm -filter:v fps=fps=<desired_fps> -max_muxing_queue_size 400 sync-5m.mp4
 ```
 
 And publish it with RTMP Push:
