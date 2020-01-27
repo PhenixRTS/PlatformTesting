@@ -50,7 +50,7 @@ const argv = require('yargs')
     localServerPort: 3333,
     channelAlias: '',
     features: undefined,
-    backendUri: 'https://demo.phenixrts.com/pcast',
+    backendUri: 'https://demo.phenixrts.com',
     pcastUri: 'https://pcast.phenixrts.com',
     publisherBackendUri: 'https://demo.phenixrts.com/pcast',
     publisherPcastUri: 'https://pcast.phenixrts.com',

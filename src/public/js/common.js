@@ -49,8 +49,11 @@ function joinChannel(videoEl, channelAlias, joinChannelCallback, subscriberCallb
   log(`Subscriber backend uri: ${backendUri}`);
   log(`Subscriber PCast uri: ${pcastUri}`);
 
+  let lastPart = backendUri.substr(backendUri.lastIndexOf('/') + 1)
+  let backendUriWithPcast = lastPart === 'pcast' ? backendUri : backendUri + '/pcast'
+
   const adminApiProxyClient = new sdk.net.AdminApiProxyClient();
-  adminApiProxyClient.setBackendUri(backendUri);
+  adminApiProxyClient.setBackendUri(backendUriWithPcast);
 
   var features = getUrlParams('features') === undefined ? '' : getUrlParams('features').split(',');
   var channelExpress = new sdk.express.ChannelExpress({
@@ -65,7 +68,7 @@ function joinChannel(videoEl, channelAlias, joinChannelCallback, subscriberCallb
     videoElement: videoEl
   };
 
-  log(`Joining channel ${pcastUri}/channel#${channelAlias}`);
+  log(`Joining channel ${backendUri}/channel#${channelAlias}`);
   channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
 }
 
