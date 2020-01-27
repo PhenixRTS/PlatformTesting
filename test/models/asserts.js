@@ -219,8 +219,8 @@ module.exports = class Asserts {
     );
     this.assert(
       'Video packet loss',
-      this.page.meanVideoStats.nativeReport.packetsLost,
-      config.videoAssertProfile.maxPacketLossPerMinute ? config.videoAssertProfile.maxPacketLossPerMinute / 1000 * config.args.testRuntimeMs : null,
+      this.page.meanVideoStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000),
+      config.videoAssertProfile.maxPacketLossPerMinute,
       'lte'
     );
     this.assert(
@@ -243,8 +243,8 @@ module.exports = class Asserts {
     );
     this.assert(
       'Video nacks sent',
-      this.page.meanVideoStats.nativeReport.googNacksSent,
-      config.videoAssertProfile.maxNacksSentPerMinute ? config.videoAssertProfile.maxNacksSentPerMinute / 1000 * config.args.testRuntimeMs : null,
+      this.page.meanVideoStats.nativeReport.googNacksSent / (config.args.testRuntimeMs / 60000),
+      config.videoAssertProfile.maxNacksSentPerMinute,
       'lte'
     );
     this.assert(
@@ -255,8 +255,8 @@ module.exports = class Asserts {
     );
     this.assert(
       'Video plis sent',
-      this.page.meanVideoStats.nativeReport.googPlisSent,
-      config.videoAssertProfile.maxPlisSentPerMinute ? config.videoAssertProfile.maxPlisSentPerMinute / 1000 * config.args.testRuntimeMs : null,
+      this.page.meanVideoStats.nativeReport.googPlisSent / (config.args.testRuntimeMs / 60000),
+      config.videoAssertProfile.maxPlisSentPerMinute,
       'lte'
     );
     this.assert(
@@ -280,8 +280,8 @@ module.exports = class Asserts {
     );
     this.assert(
       'Video resolution change count',
-      this.page.meanVideoStats.videoResolutionChangeCount,
-      config.videoAssertProfile.maxResolutionChangeCountPerMinute ? config.videoAssertProfile.maxResolutionChangeCountPerMinute / 1000 * config.args.testRuntimeMs : null,
+      this.page.meanVideoStats.videoResolutionChangeCount / (config.args.testRuntimeMs / 60000),
+      config.videoAssertProfile.maxResolutionChangeCountPerMinute,
       'lte'
     );
     await this.assertInterframeThresholds();
@@ -326,8 +326,8 @@ module.exports = class Asserts {
     );
     this.assert(
       'Audio packets loss',
-      this.page.meanAudioStats.nativeReport.packetsLost,
-      config.audioAssertProfile.maxPacketsLossPerMinute ? config.audioAssertProfile.maxPacketsLossPerMinute / 1000 * config.args.testRuntimeMs : null,
+      this.page.meanAudioStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000),
+      config.audioAssertProfile.maxPacketsLossPerMinute,
       'lt'
     );
     this.assert(
