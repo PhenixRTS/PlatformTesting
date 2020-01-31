@@ -43,32 +43,42 @@ function getUrlParams(key) {
   return params[key];
 }
 
-function joinChannel(videoEl, channelAlias, joinChannelCallback, subscriberCallback) {
+function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriberCallback) {
   const backendUri = getUrlParams('backendUri');
   const pcastUri = getUrlParams('pcastUri');
-  log(`Subscriber backend uri: ${backendUri}`);
-  log(`Subscriber PCast uri: ${pcastUri}`);
+  const featuresParam = getUrlParams('features');
 
-  let lastPart = backendUri.substr(backendUri.lastIndexOf('/') + 1)
-  let backendUriWithPcast = lastPart === 'pcast' ? backendUri : backendUri + '/pcast'
+  const features = featuresParam === undefined ? [] : featuresParam.split(',');
+
+  const isBEPcastUri = backendUri.substring(backendUri.lastIndexOf('/') + 1) === 'pcast';
+  const backendUriWithPcast = isBEPcastUri ? backendUri : `${backendUri}/pcast`;
+
+  let channelUriBase = backendUri;
+  if (isBEPcastUri) {
+    channelUriBase = channelUriBase.substring(0, channelUriBase.lastIndexOf('/'));
+  }
+
+  const channelUri = `${channelUriBase}/channel#${channelAlias}`;
 
   const adminApiProxyClient = new sdk.net.AdminApiProxyClient();
   adminApiProxyClient.setBackendUri(backendUriWithPcast);
 
-  var features = getUrlParams('features') === undefined ? '' : getUrlParams('features').split(',');
-  var channelExpress = new sdk.express.ChannelExpress({
-    adminApiProxyClient: adminApiProxyClient,
+  const channelExpress = new sdk.express.ChannelExpress({
+    adminApiProxyClient,
+    features,
     disableConsoleLogging: true,
-    features: features,
     uri: pcastUri
   });
 
-  var options = {
-    alias: channelAlias,
-    videoElement: videoEl
+  const options = {
+    videoElement,
+    alias: channelAlias
   };
 
-  log(`Joining channel ${backendUri}/channel#${channelAlias}`);
+  log(`Subscriber backend uri: ${backendUriWithPcast}`);
+  log(`Subscriber PCast uri: ${pcastUri}`);
+  log(`Joining channel ${channelUri}`);
+
   channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
 }
 
