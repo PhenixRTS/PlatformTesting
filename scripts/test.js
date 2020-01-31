@@ -212,7 +212,7 @@ function parseTestArgs() {
   if (argv.video) {
     Object.keys(argv.video).forEach((key) => {
       if (args.videoProfile[key] === undefined) {
-        exitWithMessage(
+        exitWithErrorMessage(
           `Error: unsupported argument override - key '${key}' does not exist on video profile!` +
           `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.videoProfile), undefined, 2)}`
         );
@@ -235,7 +235,7 @@ function parseTestArgs() {
   if (argv.audio) {
     Object.keys(argv.audio).forEach((key) => {
       if (args.audioProfile[key] === undefined) {
-        exitWithMessage(
+        exitWithErrorMessage(
           `Error: unsupported argument override - key '${key}' does not exist on audio profile!` +
           `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.audioProfile), undefined, 2)}`
         );
@@ -248,9 +248,9 @@ function parseTestArgs() {
   return args;
 }
 
-function exitWithMessage(msg) {
+function exitWithErrorMessage(msg) {
   console.log(msg);
-  process.exit(0);
+  process.exit(1);
 }
 
 function parseToMilliseconds(time) {
