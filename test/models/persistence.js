@@ -16,19 +16,23 @@
 
 import fs from 'fs';
 import path from 'path';
-import config from '../../config.js';
 import moment from 'moment';
 
+import config from '../../config.js';
+
 function saveToFile(fileName, filenamePrefix, content) {
-  if (!fs.existsSync(config.reportsPath)){
-    fs.mkdirSync(config.reportsPath);
+  const {reportsPath} = config;
+
+  if (!fs.existsSync(reportsPath)){
+    fs.mkdirSync(reportsPath);
   }
 
   fileName = path.join(
-    config.reportsPath,
-    `${filenamePrefix}-${path.basename(fileName).split('.')[0]}-${moment().format('YYYY-MM-DD-HH.mm.ss')}.txt`
+    reportsPath,
+    `${filenamePrefix}-${fileName}-${moment().format('YYYY-MM-DD-HH.mm.ss')}.txt`
   );
+
   fs.writeFileSync(fileName, content);
 }
 
-export default {saveToFile: saveToFile};
+export default {saveToFile};

@@ -36,7 +36,11 @@ node_modules/
 # Visual studio code
 .vscode/*
 
+# macOS
+.DS_Store
+
 # Test reports
 reports/
+assets/
 configured_browser_profiles/firefox-profile/*
 !configured_browser_profiles/firefox-profile/user.js

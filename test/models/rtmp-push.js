@@ -16,6 +16,7 @@
 
 /* eslint-disable no-unused-vars */
 
+import fs from 'fs';
 const {exec} = require('child_process');
 const QRCode = require('qrcode');
 const path = require('path');
@@ -40,13 +41,14 @@ async function createOnDemandRtmpPush(file, region, channel, duration) {
 }
 
 async function startRtmpPush(testType, file, region, channel, capabilities) {
+  const {assetsPath} = config;
   const link = `rtmp://${region}.phenixrts.com:80/ingest/${channel.streamKey};capabilities=${capabilities}`;
   logger.log(`Generated link: ${link}`);
 
-  const timestampFile = path.join(config.reportsPath, 'qr-timestamp.png');
-  const newTimestamp = path.join(config.reportsPath, 'qr-timestamp2.png');
+  const timestampFile = path.join(assetsPath, 'qr-timestamp.png');
+  const newTimestamp = path.join(assetsPath, 'qr-timestamp2.png');
 
-  generateQRTimestampFile(timestampFile, Date.now().toString());
+  await generateQRTimestampFile(timestampFile, Date.now().toString());
 
   qrGenerationInterval = setInterval(() => {
     generateQRTimestampFile(newTimestamp, Date.now().toString()).then(() => {
@@ -97,11 +99,16 @@ function logFfmpegError(error) {
   }
 }
 
-async function generateQRTimestampFile(fileName, content) {
+async function generateQRTimestampFile(qrImgPath, content) {
+  const {assetsPath} = config;
   const {width, height} = constants.qrCode;
 
+  if (!fs.existsSync(assetsPath)){
+    fs.mkdirSync(assetsPath);
+  }
+
   try {
-    await QRCode.toFile(fileName, content, { width, height });
+    await QRCode.toFile(qrImgPath, content, { width, height });
     return true;
   } catch (err) {
     console.error(err);

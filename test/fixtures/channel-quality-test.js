@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-import {ClientFunction} from 'testcafe';
 import uaParser from 'ua-parser-js';
-import ChannelPage from '../models/channel-page.js';
+
 import config from '../../config.js';
-import persistence from '../models/persistence.js';
+import ChannelPage from '../models/channel-page.js';
 import reporter from '../models/reporters/quality-reporter.js';
+
+const common = require('./common');
 
 const page = new ChannelPage();
 
 global.fixture('Channel quality test')
   .page(`${config.localServerAddress}:${config.args.localServerPort}/${config.testPageUrlAttributes}`);
 
-const getUA = ClientFunction(() => navigator.userAgent);
-
 test(`Measure channel for ${config.args.testRuntime} and assert quality of video and audio`, async t => {
-  const ua = await getUA();
+  const ua = await common.getUA();
 
   await t
     .wait(3000)
@@ -46,9 +45,5 @@ test(`Measure channel for ${config.args.testRuntime} and assert quality of video
   await page.asserts.assertVideoQuality();
   await page.asserts.assertAudioQuality();
 }).after(async t => {
-  persistence.saveToFile(__filename, t.ctx.testFailed ? 'FAIL' : 'PASS', await reporter.CreateTestReport(page));
-
-  if (config.args.saveConsoleLogs === 'true') {
-    persistence.saveToFile(`${page.browser.name}-console-logs`, '', await reporter.CreateConsoleDump());
-  }
+  await common.finishAndReport(__filename, t.ctx.testFailed, page, t);
 });

@@ -14,32 +14,35 @@
  * limitations under the License.
  */
 
-import {ClientFunction, Selector} from 'testcafe';
+import {Selector} from 'testcafe';
 import uaParser from 'ua-parser-js';
-import ChannelPage from '../models/channel-page.js';
-import config from '../../config.js';
-import persistence from '../models/persistence.js';
-import reporter from '../models/reporters/sync-reporter.js';
-import {ok} from 'assert';
 
-const rtmpPush = require('../models/rtmp-push.js');
-const pcastApi = require('../models/pcastApi.js');
+import config from '../../config.js';
+import ChannelPage from '../models/channel-page.js';
+import reporter from '../models/reporters/sync-reporter.js';
+
+const common = require('./common');
+
 const page = new ChannelPage();
-let createdChannelId;
+let createdChannel;
 
 global.fixture('Channel sync test')
   .page(`${config.localServerAddress}:${config.args.localServerPort}/sync${config.testPageUrlAttributes}`);
 
-const getUA = ClientFunction(() => navigator.userAgent);
-
 test(`Publish to channel for ${config.args.testRuntime} and assert sync of video and audio`, async t => {
-  const ua = await getUA();
+  const {rtmpPushFile, testRuntimeMs, channelJoinRetries} = config.args;
+  const ua = await common.getUA();
 
-  if (config.args.rtmpPushFile !== '') {
-    let channel = await pcastApi.createChannel(config.channelAlias);
-    ok(channel !== undefined, 'Could not create channel for RTMP Push');
-    createdChannelId = channel.channelId;
-    rtmpPush.startRtmpPush('sync_test', config.args.rtmpPushFile, config.args.region, channel, config.args.capabilities);
+  if (rtmpPushFile !== '') {
+    createdChannel = await common.initRtmpPush('sync_test');
+
+    const joinTimeout = channelJoinRetries === 0 ? 30000 : channelJoinRetries * 5000;
+
+    await t
+      .expect(Selector('#channelStatus').innerText)
+      .contains('ok', 'Failed to join the channel', {
+        timeout: joinTimeout
+      });
   }
 
   await t
@@ -47,22 +50,12 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync of video
     .expect(Selector('video').withAttribute('id', 'subscriberVideoContainer').exists).ok()
     .wait(35 * 1000)
     .expect(Selector('#publisherError').innerText).notContains('error', 'Got an error in publish callback')
-    .wait(config.args.testRuntimeMs);
+    .wait(testRuntimeMs);
 
   page.browser = uaParser(ua).browser;
   page.stats = await reporter.CollectMediaChanges();
 
   await page.asserts.assertSync();
 }).after(async t => {
-  if (createdChannelId !== undefined) {
-    rtmpPush.stopRtmpPush();
-    await pcastApi.deleteChannel(createdChannelId);
-    console.log(`Stopped RTMP Push and deleted created channel with id ${createdChannelId}`);
-  }
-
-  persistence.saveToFile(__filename, t.ctx.testFailed ? 'FAIL' : 'PASS', await reporter.CreateTestReport(page));
-
-  if (config.args.saveConsoleLogs === 'true') {
-    persistence.saveToFile(`${page.browser.name}-console-logs`, '', await reporter.CreateConsoleDump());
-  }
+  await common.finishAndReport(__filename, t.ctx.testFailed, page, t, createdChannel);
 });

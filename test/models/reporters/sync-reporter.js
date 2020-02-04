@@ -110,7 +110,7 @@ function ClosestElement(number, arr){
   return closest;
 }
 
-async function CreateTestReport(page) {
+async function CreateTestReport(testController, page, channel = {}) {
   const header = '\nSubscriber stream received at ' +
   `${moment(page.stats.streamReceivedAt).format('HH:mm:ss.SSS')} (${page.stats.streamReceivedAt})` +
   `\n\nAverage Sync: ${page.stats.averageSync} ms` +
@@ -118,7 +118,15 @@ async function CreateTestReport(page) {
   const content = `\n\nVideo Stats:\n` + JSON.stringify(page.stats.video, undefined, 2) +
   `\n\nAudio Stats:\n` + JSON.stringify(page.stats.audio, undefined, 2);
 
-  return reporter.CreateTestReport(page, header, content);
+  let additionalInfo = '';
+
+  if (channel.channelId) {
+    const {applicationId, channelId, streamKey, created} = channel;
+
+    additionalInfo = `\n\nApplication ID: ${applicationId}\nChannel ID: ${channelId}\nStream Key: ${streamKey}\nCreated: ${created}\n`;
+  }
+
+  return reporter.CreateTestReport(testController, page, header, content, additionalInfo);
 }
 
 export default {

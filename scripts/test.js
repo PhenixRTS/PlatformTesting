@@ -46,6 +46,7 @@ const argv = require('yargs')
   .describe('rtmpPushFile', 'Video file that will be published with RTMP Push')
   .describe('applicationId', 'Application ID used with API for managing RTMP push channel')
   .describe('secret', 'Secret used with API for managing RTMP push channel')
+  .describe('channelJoinRetries', 'Max retry attempt count for joining the channel')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -73,6 +74,7 @@ const argv = require('yargs')
     rtmpPushFile: '',
     applicationId: '',
     secret: '',
+    channelJoinRetries: 10,
     region: 'ingest-stg-europe-west',
     capabilities: 'multi-bitrate,streaming,on-demand,hd'
   })
@@ -95,7 +97,8 @@ async function test() {
     `&screenshotAfterMs=${config.args.screenshotAfterMs}` +
     `&downloadImgName=${config.args.downloadImgName}` +
     `&syncFps=${config.args.videoProfile.syncPublishedVideoFps}` +
-    `&rtmpPush=${config.args.rtmpPushFile !== ''}`;
+    `&rtmpPush=${config.args.rtmpPushFile !== ''}` +
+    `&channelJoinRetries=${config.args.channelJoinRetries}`;
   config.videoAssertProfile = config.args.videoProfile;
   config.audioAssertProfile = config.args.audioProfile;
 
@@ -179,6 +182,7 @@ function parseTestArgs() {
     rtmpPushFile: argv.rtmpPushFile,
     applicationId: argv.applicationId,
     secret: argv.secret,
+    channelJoinRetries: argv.channelJoinRetries,
     region: argv.region,
     capabilities: argv.capabilities
   };

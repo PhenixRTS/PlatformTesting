@@ -223,13 +223,13 @@ async function GetMeanAudioStats(stats) {
   return meanAudioStats;
 }
 
-async function CreateTestReport(page) {
+async function CreateTestReport(testController, page) {
   const header = '\nPTTFF (page load to first frame): ' + JSON.stringify(page.stats.streamReceivedAt - page.stats.loadedAt, undefined, 2) + ' ms' +
   '\nInterframe Max delay: ' + page.meanVideoStats.interframeDelayMax;
   const content = '\n\nMean Video Stats:\n' + JSON.stringify(page.meanVideoStats, undefined, 2) +
   '\n\nMean Audio Stats:\n' + JSON.stringify(page.meanAudioStats, undefined, 2);
 
-  return reporter.CreateTestReport(page, header, content);
+  return reporter.CreateTestReport(testController, page, header, content);
 }
 
 export default {

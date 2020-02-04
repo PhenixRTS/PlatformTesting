@@ -15,6 +15,7 @@
  */
 
 const path = require('path');
+
 const backendUri = '';
 const pcastUri = '';
 const channelAlias = '';
@@ -22,19 +23,21 @@ const args = undefined;
 const localServerAddress = '127.0.0.1';
 const testPageUrlAttributes = '';
 const reportsPath = path.join(__dirname, 'test', 'reports');
+const assetsPath = path.join(__dirname, 'test', 'assets');
 const videoAssertProfile = {};
 const audioAssertProfile = {};
 const projectDir = __dirname;
 
 module.exports = {
-  backendUri: backendUri,
-  pcastUri: pcastUri,
-  channelAlias: channelAlias,
-  args: args,
-  localServerAddress: localServerAddress,
-  testPageUrlAttributes: testPageUrlAttributes,
-  reportsPath: reportsPath,
-  videoAssertProfile: videoAssertProfile,
-  audioAssertProfile: audioAssertProfile,
-  projectDir: projectDir
+  backendUri,
+  pcastUri,
+  channelAlias,
+  args,
+  localServerAddress,
+  testPageUrlAttributes,
+  assetsPath,
+  reportsPath,
+  videoAssertProfile,
+  audioAssertProfile,
+  projectDir
 };

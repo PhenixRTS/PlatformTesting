@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-/* global log, error, joinChannel, getUrlParams, rgbToHex, publishTo, startListeningToSubscriberAudioChanges, startMultimediaRecordingFor */
+/* global log, error, joinChannel, rejoinChannel, getUrlParams, rgbToHex, publishTo, startListeningToSubscriberAudioChanges, startMultimediaRecordingFor */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelAlias = getUrlParams('channelAlias');
+let channelJoinRetries = getUrlParams('channelJoinRetries');
+let channelExpress = null;
 
 var publisherCanvas;
 var publisherCanvasCtx;
@@ -266,7 +268,7 @@ function stopPublisher() {
 // MARK: - Subscriber
 
 function subscribe() {
-  joinChannel(
+  channelExpress = joinChannel(
     subscriberVideoEl,
     channelAlias,
     joinChannelCallback,
@@ -296,18 +298,38 @@ function subscriberCallback(receivedError, response) {
     error(receivedError);
   }
 
+  let state = 'Joining channel';
+  
   if (response.status === 'no-stream-playing') {
     console.warn('No stream playing');
   } else if (response.status !== 'ok') {
     error(receivedError);
+
+    state = channelJoinRetries === 0 ? 'Failed to join channel' : 'Rejoining to channel';
+
+    if (channelJoinRetries > 0) {
+      channelJoinRetries--;
+
+      setTimeout(rejoinChannel(
+        channelExpress,
+        subscriberVideoEl,
+        channelAlias,
+        joinChannelCallback,
+        subscriberCallback
+      ), 1000);
+    }
   }
+
+  showChannelStatus(`${state}. Got response status: ${response.status}`);
 
   if (response.renderer) {
     log(`[${Date.now()}] Stream renderer received`);
+
     response.renderer.on('autoMuted', () => {
       log(`[${Date.now()}] Stream was autoMuted`);
-      document.getElementById('videoEl').muted = false;
-      document.getElementById('videoEl').play();
+
+      subscriberVideoEl.muted = false;
+      subscriberVideoEl.play();
     });
 
     response.renderer.on('failedToPlay', (reason) => {

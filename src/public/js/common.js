@@ -80,6 +80,18 @@ function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriber
   log(`Joining channel ${channelUri}`);
 
   channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
+
+  return channelExpress;
+}
+
+function rejoinChannel(channelExpress, videoElement, alias, joinChannelCallback, subscriberCallback) {
+  const options = {
+    alias,
+    videoElement
+  };
+
+  log(`Rejoining to the channel`);
+  channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
 }
 
 function publishTo(channelAlias, stream, backendUri, pcastUri, channelName, publishCallback) {
@@ -112,6 +124,10 @@ function publishTo(channelAlias, stream, backendUri, pcastUri, channelName, publ
 
 function showPublisherMessage(message) {
   document.getElementById('publisherError').innerHTML += message;
+}
+
+function showChannelStatus(message) {
+  document.getElementById('channelStatus').innerHTML += `<br />${message}`;
 }
 
 function startListeningToSubscriberAudioChanges(audioAnalyzer, mediaListenInterval, audioSampleRate, onChange) {
