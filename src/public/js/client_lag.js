@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, error, joinChannel, rejoinChannel, getUrlParams, rgbToHex, publishTo, startListeningToSubscriberAudioChanges, startMultimediaRecordingFor */
+/* global log, error, joinChannel, rejoinChannel, getUrlParams, rgbToHex, publishTo, startListeningToSubscriberAudioChanges, startMultimediaRecordingFor, constants, jsQR, moment, constants, showPublisherMessage, showChannelStatus */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelAlias = getUrlParams('channelAlias');
@@ -160,7 +160,7 @@ function updateCanvasColor() {
 }
 
 function logSubscriberVideoChange(timestamp, color) {
-  const {r,g,b} = color;
+  const {r, g, b} = color;
 
   log(`[Subscriber Video] {"type": "${constants.lagType.color}", "timestamp": ${timestamp}, "color": {"r": ${r}, "g": ${g}, "b": ${b}}}`);
   subscriberCanvasColorVal.innerHTML = `Got: HEX ${rgbToHex(color)} | RGB ${JSON.stringify(color)}`;
@@ -169,13 +169,12 @@ function logSubscriberVideoChange(timestamp, color) {
 function logDecodedTimestamp() {
   setInterval(() => {
     decodeQR();
-  }, 1000);
+  }, timestampDecodeInterval);
 }
 
 function decodeQR() {
-  const { height, width, position } = constants.qrCode;
+  const {height, width, position} = constants.qrCode;
   const timeReceived = Date.now();
-
   const qrImageData = subscriberCanvasCtx.getImageData(
     position.x,
     position.y,
@@ -299,7 +298,7 @@ function subscriberCallback(receivedError, response) {
   }
 
   let state = 'Joining channel';
-  
+
   if (response.status === 'no-stream-playing') {
     console.warn('No stream playing');
   } else if (response.status !== 'ok') {

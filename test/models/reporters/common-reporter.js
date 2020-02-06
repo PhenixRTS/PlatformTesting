@@ -30,7 +30,7 @@ module.exports = {
       '\n\nLOGS:\n' + JSON.stringify(log, undefined, 2);
   },
 
-  async CreateTestReport(testController, page, header, content, additionalInfo = "") {
+  async CreateTestReport(testController, page, header, content, additionalInfo = '') {
     const {backendUri, channelAlias, args} = config;
     const {assertions, failedAssertions, errors, skippedAssertions} = testController.ctx;
     const obj = await testController.getBrowserConsoleMessages();

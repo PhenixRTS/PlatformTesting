@@ -26,7 +26,7 @@ async function request(method, endpoint, body) {
     method: method,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Basic ${base64authData}`
+      Authorization: `Basic ${base64authData}`
     },
     body: JSON.stringify(body)
   });

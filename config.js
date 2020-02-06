@@ -15,7 +15,6 @@
  */
 
 const path = require('path');
-
 const backendUri = '';
 const pcastUri = '';
 const channelAlias = '';

@@ -21,13 +21,10 @@ const {exec} = require('child_process');
 const QRCode = require('qrcode');
 const path = require('path');
 const ps = require('ps-node');
-
 const config = require('../../config.js');
 const Logger = require('../../scripts/logger.js');
 const constants = require('../../shared/constants.js');
-
 const logger = new Logger('RTMP Push');
-
 let qrGenerationInterval = null;
 
 async function createOnDemandRtmpPush(file, region, channel, duration) {
@@ -75,6 +72,7 @@ async function startRtmpPush(testType, file, region, channel, capabilities) {
           logFfmpegError(err);
         }
       );
+
       break;
     default:
       exec(
@@ -90,7 +88,7 @@ function logFfmpegError(error) {
   const moreInformationMessage = `See ${path.join(config.reportsPath, 'ff.txt')} for more information`;
 
   if (error) {
-    if (error.code == 255) {
+    if (error.code === 255) {
       console.log(`RTMP push stopped. ${moreInformationMessage}`);
     } else {
       console.log(`RTMP push failed. ${moreInformationMessage}`);
@@ -108,13 +106,18 @@ async function generateQRTimestampFile(qrImgPath, content) {
   }
 
   try {
-    await QRCode.toFile(qrImgPath, content, { width, height });
+    await QRCode.toFile(qrImgPath, content, {
+      width,
+      height
+    });
+
     return true;
   } catch (err) {
     console.error(err);
+
     return false;
   }
-};
+}
 
 async function stopRtmpPush() {
   clearInterval(qrGenerationInterval);

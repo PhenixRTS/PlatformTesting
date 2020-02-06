@@ -5,10 +5,10 @@
   "main": "./src/app.js",
   "scripts": {
     "ci-test": "npm run test all all",
-    "ci-posttest": "npm run lint",
     "ci-bundle": "npm run bundle",
     "ci-coverage": "npm run coverage",
     "ci-publish": "npm publish",
+    "postci-test": "npm run lint",
     "preinstall": "npm prune",
     "test": "node scripts/run test",
     "bundle": "node scripts/run build",

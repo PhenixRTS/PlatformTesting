@@ -117,7 +117,6 @@ async function CreateTestReport(testController, page, channel = {}) {
   `\nMax Sync: ${page.stats.maxSync}`;
   const content = `\n\nVideo Stats:\n` + JSON.stringify(page.stats.video, undefined, 2) +
   `\n\nAudio Stats:\n` + JSON.stringify(page.stats.audio, undefined, 2);
-
   let additionalInfo = '';
 
   if (channel.channelId) {

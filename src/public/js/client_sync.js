@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-/* global log, error, joinChannel, rejoinChannel, getUrlParams, publishTo, startListeningToSubscriberAudioChanges, startMultimediaRecordingFor */
+/* global log, error, joinChannel, rejoinChannel, getUrlParams, publishTo, startListeningToSubscriberAudioChanges, startMultimediaRecordingFor, showPublisherMessage, showChannelStatus */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelAlias = getUrlParams('channelAlias');
 let channelJoinRetries = getUrlParams('channelJoinRetries');
 const channelName = 'Sync test';
 let channelExpress = null;
-
 const audioSampleRate = 44100;
 const audioFFTSize = 512;
 const publisherBackendUri = getUrlParams('publisherBackendUri');
@@ -337,7 +336,7 @@ function subscriberCallback(receivedError, response) {
 
     if (channelJoinRetries > 0) {
       channelJoinRetries--;
-      
+
       setTimeout(rejoinChannel(
         channelExpress,
         subscriberVideoEl,

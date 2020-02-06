@@ -25,7 +25,7 @@
   };
 
   exports.lagType = {
-    color: "color",
-    time: "time"
+    color: 'color',
+    time: 'time'
   };
-}(typeof exports === 'undefined' ? this["constants"] = {} : exports));
+}(typeof exports === 'undefined' ? this['constants'] = {} : exports));

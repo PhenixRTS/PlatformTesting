@@ -22,7 +22,6 @@ import ChannelPage from '../models/channel-page.js';
 import reporter from '../models/reporters/lag-reporter.js';
 
 const common = require('./common');
-
 const page = new ChannelPage();
 let createdChannel;
 
@@ -40,9 +39,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
 
     await t
       .expect(Selector('#channelStatus').innerText)
-      .contains('ok', 'Failed to join the channel', {
-        timeout: joinTimeout
-      });
+      .contains('ok', 'Failed to join the channel', {timeout: joinTimeout});
   }
 
   await t
@@ -60,4 +57,3 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
 }).after(async t => {
   await common.finishAndReport(__filename, t.ctx.testFailed, page, t, createdChannel);
 });
- 

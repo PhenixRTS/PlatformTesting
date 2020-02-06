@@ -29,8 +29,8 @@ class App {
     app.set('views', path.join(__dirname, 'public'));
     app.use(express.static(path.join(__dirname, 'public')));
 
-    app.use('/scripts', express.static(path.join(__dirname, '../' , 'node_modules')));
-    app.use('/shared', express.static(path.join(__dirname, '../' , 'shared')));
+    app.use('/scripts', express.static(path.join(__dirname, '../', 'node_modules')));
+    app.use('/shared', express.static(path.join(__dirname, '../', 'shared')));
 
     app.get('/', (req, res) => res.render('index'));
     app.get('/lag', (req, res) => {

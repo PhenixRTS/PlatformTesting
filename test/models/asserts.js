@@ -43,6 +43,7 @@ module.exports = class Asserts {
 
     if (secondArg === null || tolerance === null) {
       t.ctx.skippedAssertions.push(name);
+
       return;
     }
 
@@ -131,6 +132,7 @@ module.exports = class Asserts {
   async assertInterframeThresholds() {
     if (config.videoAssertProfile.interframeDelayTresholds === null) {
       t.ctx.skippedAssertions.push('Video interframe max delays per minute');
+
       return;
     }
 
@@ -432,7 +434,7 @@ module.exports = class Asserts {
         config.videoAssertProfile.maxRTMPLag,
         'lte'
       );
-  
+
       this.assert(
         'RTMP push video stats analyzed count',
         rtmp.statsAnalyzed,
@@ -472,7 +474,9 @@ module.exports = class Asserts {
     const subscriberStats = this.page.stats.subscriber.audio;
     const publisherStats = this.page.stats.publisher.audio.filter(el => el.timestamp >= streamReceivedAt - 10);
 
-    if (rtmpPush) return;
+    if (rtmpPush) {
+      return;
+    }
 
     this.assert(
       'Publisher audio changes count',

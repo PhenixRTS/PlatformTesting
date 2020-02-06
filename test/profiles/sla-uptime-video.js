@@ -47,7 +47,6 @@ const videoProfile = {
   maxAverageSync: null,
   maxSingleSync: null
 };
-
 const audioProfile = {
   minBitrateMeanKbps: null,
   maxJitter: null,

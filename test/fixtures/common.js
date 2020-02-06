@@ -15,7 +15,7 @@
  */
 
 import {ok} from 'assert';
-import {ClientFunction} from 'testcafe'
+import {ClientFunction} from 'testcafe';
 
 import path from 'path';
 import config from '../../config';
@@ -24,13 +24,10 @@ import reporter from '../models/reporters/lag-reporter.js';
 
 const pcastApi = require('../models/pcastApi.js');
 const rtmpPush = require('../models/rtmp-push.js');
-
 const getUA = ClientFunction(() => navigator.userAgent);
-
-const initRtmpPush = async (testType) => {
+const initRtmpPush = async(testType) => {
   const {channelAlias, args} = config;
   const {rtmpPushFile, region, capabilities} = args;
-
   const channel = await pcastApi.createChannel(channelAlias);
   ok(channel !== undefined, 'Could not create channel for RTMP Push');
 
@@ -39,7 +36,7 @@ const initRtmpPush = async (testType) => {
   return channel;
 };
 
-const finishAndReport = async (testFile, testFailed, page, tc, createdChannel = {}) => {
+const finishAndReport = async(testFile, testFailed, page, tc, createdChannel = {}) => {
   const {saveConsoleLogs} = config.args;
   let reportFileName = `${path.basename(testFile).split('.')[0]}`;
 

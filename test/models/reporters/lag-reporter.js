@@ -95,7 +95,6 @@ async function CreateTestReport(testController, page, channel = {}) {
   const header = '\nSubscriber stream received at ' + `${moment(page.stats.streamReceivedAt).format('HH:mm:ss.SSS')} (${page.stats.streamReceivedAt})`;
   const content = `\n\nVideo Stats:\n` + (page.stats.length > 0 ? JSON.stringify(page.stats['subscriber']['video'], undefined, 2) : '') +
   `\n\nAudio Stats:\n` + (page.stats.length > 0 ? JSON.stringify(page.stats['subscriber']['audio'], undefined, 2) : '');
-
   let additionalInfo = '';
 
   if (channel.channelId) {

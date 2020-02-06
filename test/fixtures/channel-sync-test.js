@@ -22,7 +22,6 @@ import ChannelPage from '../models/channel-page.js';
 import reporter from '../models/reporters/sync-reporter.js';
 
 const common = require('./common');
-
 const page = new ChannelPage();
 let createdChannel;
 
@@ -40,9 +39,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync of video
 
     await t
       .expect(Selector('#channelStatus').innerText)
-      .contains('ok', 'Failed to join the channel', {
-        timeout: joinTimeout
-      });
+      .contains('ok', 'Failed to join the channel', {timeout: joinTimeout});
   }
 
   await t

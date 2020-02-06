@@ -47,20 +47,18 @@ function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriber
   const backendUri = getUrlParams('backendUri');
   const pcastUri = getUrlParams('pcastUri');
   const featuresParam = getUrlParams('features');
-
   const features = featuresParam === undefined ? [] : featuresParam.split(',');
-
   const isBEPcastUri = backendUri.substring(backendUri.lastIndexOf('/') + 1) === 'pcast';
   const backendUriWithPcast = isBEPcastUri ? backendUri : `${backendUri}/pcast`;
-
   let channelUriBase = backendUri;
+
   if (isBEPcastUri) {
     channelUriBase = channelUriBase.substring(0, channelUriBase.lastIndexOf('/'));
   }
 
   const channelUri = `${channelUriBase}/channel#${channelAlias}`;
-
   const adminApiProxyClient = new sdk.net.AdminApiProxyClient();
+
   adminApiProxyClient.setBackendUri(backendUriWithPcast);
 
   const channelExpress = new sdk.express.ChannelExpress({
@@ -69,7 +67,6 @@ function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriber
     disableConsoleLogging: true,
     uri: pcastUri
   });
-
   const options = {
     videoElement,
     alias: channelAlias

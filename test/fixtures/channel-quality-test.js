@@ -21,7 +21,6 @@ import ChannelPage from '../models/channel-page.js';
 import reporter from '../models/reporters/quality-reporter.js';
 
 const common = require('./common');
-
 const page = new ChannelPage();
 
 global.fixture('Channel quality test')
