@@ -118,7 +118,6 @@ function prepare() {
     publisherVideoEl.style.display = 'none';
     document.getElementById('publisherCanvasTitle').style.display = 'none';
     publisherCanvas.style.display = 'none';
-    subscribe();
   } else {
     updateCanvasColor();
     changeAudioTone();

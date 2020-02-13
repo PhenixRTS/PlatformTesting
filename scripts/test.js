@@ -47,6 +47,7 @@ const argv = require('yargs')
   .describe('applicationId', 'Application ID used with API for managing RTMP push channel')
   .describe('secret', 'Secret used with API for managing RTMP push channel')
   .describe('channelJoinRetries', 'Max retry attempt count for joining the channel')
+  .describe('publisherWaitTime', 'Time how log to wait for publisher to subscribe to channel in ISO 8601 format')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -74,7 +75,8 @@ const argv = require('yargs')
     rtmpPushFile: '',
     applicationId: '',
     secret: '',
-    channelJoinRetries: 10,
+    channelJoinRetries: 0,
+    publisherWaitTime: 'PT8S',
     region: 'ingest-stg-europe-west',
     capabilities: 'multi-bitrate,streaming,on-demand,hd'
   })
@@ -183,6 +185,7 @@ function parseTestArgs() {
     applicationId: argv.applicationId,
     secret: argv.secret,
     channelJoinRetries: argv.channelJoinRetries,
+    publisherWaitTime: parseToMilliseconds(argv.publisherWaitTime),
     region: argv.region,
     capabilities: argv.capabilities
   };

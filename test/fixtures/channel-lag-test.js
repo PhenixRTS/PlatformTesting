@@ -25,21 +25,23 @@ const common = require('./common');
 const page = new ChannelPage();
 let createdChannel;
 
-global.fixture('Channel lag test')
+global.fixture(`Channel lag test${config.args.rtmpPushFile === '' ? '' : ' with RTMP push'}`)
   .page(`${config.localServerAddress}:${config.args.localServerPort}/lag${config.testPageUrlAttributes}`);
 
 test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/audio`, async t => {
-  const {rtmpPushFile, testRuntimeMs, channelJoinRetries} = config.args;
+  const {rtmpPushFile, testRuntimeMs} = config.args;
   const ua = await common.getUA();
+  const isRtmpPush = rtmpPushFile !== '';
 
-  if (rtmpPushFile !== '') {
+  if (isRtmpPush) {
     createdChannel = await common.initRtmpPush('lag_test');
-
-    const joinTimeout = channelJoinRetries === 0 ? 30000 : channelJoinRetries * 5000;
+    const publisherCount = await common.waitForPublisher(createdChannel.channelId);
 
     await t
-      .expect(Selector('#channelStatus').innerText)
-      .contains('ok', 'Failed to join the channel', {timeout: joinTimeout});
+      .expect(publisherCount)
+      .eql(1, 'Failed to join the channel: publisher not ready');
+
+    await common.subscribeFromClient(createdChannel.channelId);
   }
 
   await t

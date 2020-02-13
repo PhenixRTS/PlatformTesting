@@ -21,25 +21,22 @@ const applicationId = config.args.applicationId;
 const secret = config.args.secret;
 const base64authData = Buffer.from(`${applicationId}:${secret}`).toString('base64');
 
-async function request(method, endpoint, body) {
-  const response = await fetch(baseUrl + endpoint, {
-    method: method,
+async function request(method, endpoint, body = null) {
+  const requestConf = {
+    method,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Basic ${base64authData}`
-    },
-    body: JSON.stringify(body)
-  });
-  let responseBody = await response.text();
+    }
+  };
 
-  try {
-    responseBody = JSON.parse(responseBody);
-  } catch (err) {
-    console.log(responseBody);
-    console.log(err);
+  if (body !== null) {
+    requestConf.body = JSON.stringify(body);
   }
 
-  return responseBody;
+  const response = await fetch(baseUrl + endpoint, requestConf);
+
+  return await response.json();
 }
 
 async function createChannel(name, description = '', options = []) {
@@ -54,6 +51,13 @@ async function createChannel(name, description = '', options = []) {
   const response = await request('PUT', '/channel', body);
 
   return response.channel;
+}
+
+async function getChannelState(channelId) {
+  const endpoint = `/channel/${encodeURIComponent(channelId)}/publishers/count`;
+  const response = await request('GET', endpoint);
+
+  return response;
 }
 
 async function deleteChannel(channelId) {
@@ -72,5 +76,6 @@ async function terminateStream(streamId, reason) {
 module.exports = {
   createChannel,
   deleteChannel,
+  getChannelState,
   terminateStream
 };

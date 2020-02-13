@@ -25,6 +25,27 @@ import reporter from '../models/reporters/lag-reporter.js';
 const pcastApi = require('../models/pcastApi.js');
 const rtmpPush = require('../models/rtmp-push.js');
 const getUA = ClientFunction(() => navigator.userAgent);
+const subscribeFromClient = ClientFunction(() => subscribe());
+
+const waitForPublisher = channelId =>
+  new Promise(resolve => {
+    const statusInterval = setInterval(() => {
+      pcastApi.getChannelState(channelId).then(publisherCount => {
+        if (publisherCount === 0) {
+          return;
+        }
+
+        clearInterval(statusInterval);
+
+        setTimeout(() => {
+          pcastApi.getChannelState(channelId).then(pCount => {
+            resolve(pCount);
+          });
+        }, config.args.publisherWaitTime);
+      });
+    }, 1000);
+  });
+
 const initRtmpPush = async(testType) => {
   const {channelAlias, args} = config;
   const {rtmpPushFile, region, capabilities} = args;
@@ -65,5 +86,7 @@ const finishAndReport = async(testFile, testFailed, page, tc, createdChannel = {
 module.exports = {
   finishAndReport,
   getUA,
-  initRtmpPush
+  initRtmpPush,
+  subscribeFromClient,
+  waitForPublisher
 };
