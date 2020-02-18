@@ -17,8 +17,8 @@
 const videoProfile = {
   minBitrateMeanKbps: 1600,
   maxBitrateMeanKps: 2000,
-  maxDelay: 500,
-  maxMeanDelay: 500,
+  maxDelay: 'PT0.5S',
+  maxMeanDelay: 'PT0.5S',
   minFrameRateMean: 30,
   maxFrameRate: 31,
   minFrameRate: 24,
@@ -26,7 +26,7 @@ const videoProfile = {
   maxPacketLossPerMinute: 3,
   frameWidth: 1280,
   frameHeight: 720,
-  maxMsToFirstFrameDecoded: 1000,
+  timeToFirstFrameDecoded: 'PT1S',
   decodedFrameRateTolerance: 0.1,
   maxNacksSentPerMinute: 3,
   firsSent: 0,
@@ -45,8 +45,8 @@ const videoProfile = {
       timesPerMinute: 1
     }
   ],
-  maxLag: 350,
-  maxRTMPLag: 2500,
+  maxLag: 'PT0.35S',
+  maxRTMPLag: 'PT2.5S',
   syncPublishedVideoFps: 24,
   maxAverageSync: 30,
   maxSingleSync: 70
@@ -55,12 +55,12 @@ const audioProfile = {
   minBitrateMeanKbps: 60,
   maxJitter: 30,
   minAudioOutputLevel: 100,
-  maxDelay: 500,
-  maxMeanDelay: 500,
+  maxDelay: 'PT0.5S',
+  maxMeanDelay: 'PT0.5S',
   maxPacketsLossPerMinute: 3,
   totalSamplesDurationPerc: 0.8,
   codecName: 'opus',
-  maxLag: 350
+  maxLag: 'PT0.35S'
 };
 
 module.exports = {

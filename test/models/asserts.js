@@ -22,7 +22,9 @@ import _ from 'lodash';
 import config from '../../config.js';
 import Logger from '../../scripts/logger.js';
 import constants from '../../shared/constants';
-import math from './math.js';
+
+import format from './format';
+import math from './math';
 
 const logger = new Logger('Test');
 
@@ -31,7 +33,7 @@ module.exports = class Asserts {
     this.page = page;
   }
 
-  async assert(name, firstArg, secondArg, sign, tolerance) {
+  async assert(name, actualValue, expectedValue, sign, tolerance) {
     let assertionMsg = '';
     let assertion = false;
 
@@ -41,74 +43,81 @@ module.exports = class Asserts {
       t.ctx.skippedAssertions = [];
     }
 
-    if (secondArg === null || tolerance === null) {
+    let actual = actualValue;
+    let expected = expectedValue;
+
+    if (expected === null || tolerance === null) {
       t.ctx.skippedAssertions.push(name);
 
       return;
     }
 
-    if ((_.isString(firstArg) && /^\s*$/.test(firstArg)) || (_.isString(secondArg) && /^\s*$/.test(secondArg))) {
+    if ((_.isString(actual) && /^\s*$/.test(actual)) || (_.isString(expected) && /^\s*$/.test(expected))) {
       logger.log(`Did not assert '${name}' because there was no collected stats for it`);
 
       return;
-    } else if (_.isNumber(firstArg) && isNull(firstArg) || _.isNumber(secondArg) && isNull(secondArg)) {
+    } else if (_.isNumber(actual) && isNull(actual) || _.isNumber(expected) && isNull(expected)) {
       logger.log(`Did not assert '${name}' because there was no collected stats for it`);
 
       return;
     }
 
+    if (format.isISO8601(expected)) {
+      expected = format.formatTime(expected, 'ms');
+    }
+
     switch (sign) {
       case 'deql':
-        assertion = firstArg === secondArg;
+        assertion = actual === expected;
         assertionMsg = 'deep equal to';
 
         break;
       case 'eql':
-        assertion = firstArg == secondArg; // eslint-disable-line eqeqeq
+        assertion = actual == expected; // eslint-disable-line eqeqeq
         assertionMsg = 'equal to';
 
         break;
       case 'gt':
-        assertion = firstArg > secondArg;
+        assertion = actual > expected;
         assertionMsg = 'above';
 
         if (tolerance > 0 && !assertion) {
-          firstArg = parseFloat(firstArg) + parseFloat(tolerance);
-          assertion = firstArg > secondArg;
-          assertionMsg = `(with tolerance ${tolerance}) above`;
+          actual = parseFloat(actual) + parseFloat(tolerance);
+          assertion = actual > expected;
+          assertionMsg = `(with tolerance ${tolerance}) ${assertionMsg}`;
         }
 
         break;
       case 'gte':
-        assertion = firstArg >= secondArg;
+        assertion = actual >= expected;
         assertionMsg = 'greater or equal to';
 
         if (tolerance > 0 && !assertion) {
-          firstArg = parseFloat(firstArg) + parseFloat(tolerance);
-          assertion = firstArg >= secondArg;
-          assertionMsg = `(with tolerance ${tolerance}) greater or equal to`;
+          actual = parseFloat(actual) + parseFloat(tolerance);
+          assertion = actual >= expected;
+          assertionMsg = `(with tolerance ${tolerance}) ${assertionMsg}`;
         }
 
         break;
       case 'lt':
-        assertion = firstArg < secondArg;
+        assertion = actual < expected;
         assertionMsg = 'below';
 
         if (tolerance > 0 && !assertion) {
-          firstArg = parseFloat(firstArg) - parseFloat(tolerance);
-          assertion = firstArg < secondArg;
-          assertionMsg = `(with tolerance ${tolerance}) below`;
+          actual = parseFloat(actual) - parseFloat(tolerance);
+          assertion = actual < expected;
+          assertionMsg = `(with tolerance ${tolerance}) ${assertionMsg}`;
         }
 
         break;
       case 'lte':
-        assertion = firstArg <= secondArg;
+        assertion = actual <= expected;
         assertionMsg = 'less or equal to';
 
         if (tolerance > 0 && !assertion) {
-          firstArg = parseFloat(firstArg) - parseFloat(tolerance);
-          assertion = firstArg <= secondArg;
-          assertionMsg = `(with tolerance ${tolerance}) less or equal to`;
+          actual = parseFloat(actual) - parseFloat(tolerance);
+          assertion = actual <= expected;
+          assertionMsg = `(with tolerance ${tolerance}) ${assertionMsg}`;
         }
 
         break;
@@ -118,7 +127,13 @@ module.exports = class Asserts {
         throw Error(`Unsupported assert sign operator "${sign}"`);
     }
 
-    const msg = `${name} expected ${assertionMsg} ${secondArg} was ${firstArg}`;
+    actual = format.round(actual, 1);
+
+    if (format.isISO8601(expected)) {
+      actual = format.formatTime(actual);
+    }
+
+    const msg = `${name} expected ${assertionMsg} ${expected} was ${actual}`;
 
     if (!assertion) {
       t.ctx.testFailed = true;
@@ -126,7 +141,7 @@ module.exports = class Asserts {
     }
 
     ok(assertion, msg);
-    t.ctx.assertions.push(`${name} ${assertionMsg} ${secondArg}`);
+    t.ctx.assertions.push(`${name} ${assertionMsg} ${expected} (was ${actual})`);
   }
 
   async assertInterframeThresholds() {
@@ -137,7 +152,7 @@ module.exports = class Asserts {
     }
 
     config.videoAssertProfile.interframeDelayTresholds.forEach(threshold => {
-      const msg = `Video interframe delay treshold of ${threshold.timesPerMinute} times above ${threshold.maxAllowed} milliseconds`;
+      const msg = `Video interframe delay treshold ${threshold.timesPerMinute} times above ${threshold.maxAllowed} milliseconds`;
 
       this.page.meanVideoStats.interframeDelaysPerMin.forEach((delaysPerMin, index) => {
         const aboveMax = delaysPerMin.filter(el => el > threshold.maxAllowed);
@@ -240,9 +255,9 @@ module.exports = class Asserts {
       'eql'
     );
     this.assert(
-      'Video first frame received to decode ms',
+      'Video first frame received to decode',
       this.page.meanVideoStats.nativeReport.googFirstFrameReceivedToDecodedMs,
-      config.videoAssertProfile.maxMsToFirstFrameDecoded,
+      config.videoAssertProfile.timeToFirstFrameDecoded,
       'lte'
     );
     this.assert(

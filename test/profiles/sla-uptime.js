@@ -18,7 +18,7 @@ const videoProfile = {
   minBitrateMeanKbps: 100,
   maxBitrateMeanKps: null,
   maxDelay: null,
-  maxMeanDelay: 3000,
+  maxMeanDelay: 'PT3S',
   minFrameRateMean: 1,
   maxFrameRate: null,
   minFrameRate: 1,
@@ -26,7 +26,7 @@ const videoProfile = {
   maxPacketLossPerMinute: null,
   frameWidth: null,
   frameHeight: null,
-  maxMsToFirstFrameDecoded: 3000,
+  timeToFirstFrameDecoded: 'PT3S',
   decodedFrameRateTolerance: null,
   maxNacksSentPerMinute: null,
   firsSent: null,
@@ -56,7 +56,7 @@ const audioProfile = {
   maxPacketsLossPerMinute: null,
   totalSamplesDurationPerc: 0.1,
   codecName: null,
-  maxLag: 1500
+  maxLag: 'PT1.5S'
 };
 
 module.exports = {

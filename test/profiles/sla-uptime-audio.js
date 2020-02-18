@@ -49,7 +49,7 @@ const audioProfile = {
   maxPacketsLossPerMinute: null,
   totalSamplesDurationPerc: 0.1,
   codecName: null,
-  maxLag: 1500
+  maxLag: 'PT1.5S'
 };
 
 module.exports = {
