@@ -14,55 +14,23 @@
  * limitations under the License.
  */
 
-/* global log, error, joinChannel, rejoinChannel, getUrlParams, publishTo, startListeningToSubscriberAudioChanges, startMultimediaRecordingFor, showPublisherMessage, showChannelStatus */
+/* global canvasWidth, canvasHeight, publish, audioSampleRate, beepFrequency, fps, oneUnit, log, error, joinChannel, rejoinChannel, getUrlParams, startListeningToSubscriberAudioChanges, showChannelStatus */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
+const channelName = 'Sync test';
 const channelAlias = getUrlParams('channelAlias');
 let channelJoinRetries = getUrlParams('channelJoinRetries');
-const channelName = 'Sync test';
-let channelExpress = null;
-const audioSampleRate = 44100;
-const audioFFTSize = 512;
 const publisherBackendUri = getUrlParams('publisherBackendUri');
 const publisherPcastUri = getUrlParams('publisherPcastUri');
-const fps = getUrlParams('syncFps');
-const fpsInterval = 1000 / fps;
-const oneUnit = 16;
-const dotRadius = oneUnit / 2;
-const canvasHeight = 512;
-const canvasWidth = 512;
-const beepFrequency = 200;
-const beepDuration = 1000 / fps;
+let channelExpress = null;
+const audioFFTSize = 512;
 const mediaListenInterval = 10;
 
-var publisherCanvas;
-var publisherCanvasCtx;
-var publisherStats;
-var publisher;
-var publisherVideoEl;
-var publisherSourceNode;
-var testMediaStream;
-
-var streamDestination;
 var subscriberCanvas;
 var subscriberCanvasCtx;
 var subscriberVideoEl;
 var subscriberStream;
 var subscriberStats;
-var oscillator;
-var audioCtx;
-
-var now;
-var elapsed;
-var then = Date.now();
-var startTime = then;
-var frameCount = 0;
-var currentPosX = oneUnit / 2;
-var currentPosY = canvasHeight / 2;
-var currentDotPosX = canvasWidth / 2;
-var currentDotPosY = dotRadius;
-var moveRight = false;
-var moveDown = false;
 var lastTimeCentered = new Date();
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -72,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function prepare() {
   subscriberVideoEl = document.getElementById('subscriberVideoContainer');
-  publisherStats = document.getElementById('publisherStats');
   subscriberVideoEl.width = canvasWidth;
   subscriberVideoEl.height = canvasHeight;
   subscriberCanvas = document.getElementById('subscriberCanvas');
@@ -81,48 +48,12 @@ function prepare() {
   subscriberCanvas.height = canvasHeight;
   subscriberCanvasCtx = subscriberCanvas.getContext('2d');
 
-  publisherVideoEl = document.getElementById('publisherVideoContainer');
-  publisherCanvas = document.getElementById('publisherCanvas');
-  publisherCanvas.width = canvasWidth;
-  publisherCanvas.height = canvasHeight;
-  publisherCanvasCtx = publisherCanvas.getContext('2d');
-
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  audioCtx.sampleRate = audioSampleRate;
-
-  streamDestination = audioCtx.createMediaStreamDestination();
-  publisherSourceNode = audioCtx.createMediaElementSource(publisherVideoEl);
-  publisherSourceNode.connect(streamDestination);
-
-  publisherSourceNode.connect(streamDestination);
-  publisherSourceNode.connect(audioCtx.destination);
-
-  var audioTrack = streamDestination.stream.getAudioTracks()[0];
-
-  testMediaStream = publisherCanvas.captureStream();
-  testMediaStream.addTrack(audioTrack);
-
-  publisherVideoEl.srcObject = testMediaStream;
-
   if (rtmpPush) {
-    publisherStats.innerHTML = 'Using RTMP Push for publishing';
-    document.getElementById('publisherVideoContainerTitle').style.display = 'none';
-    publisherVideoEl.style.display = 'none';
-    document.getElementById('publisherCanvasTitle').style.display = 'none';
-    publisherCanvas.style.display = 'none';
+    document.getElementById('publisherStats').innerHTML =
+      'Using RTMP Push for publishing';
+    document.getElementById('publisher').style.display = 'none';
   } else {
-    drawCanvas();
-    move();
-    publish();
-  }
-
-  const publisherRecordingMs = getUrlParams('publisherRecordingMs');
-  window.publisherRecordingMs = publisherRecordingMs;
-
-  if (publisherRecordingMs > 0) {
-    setTimeout(() => {
-      startMultimediaRecordingFor(publisherRecordingMs, publisherVideoEl.captureStream());
-    }, 5000);
+    publish(channelAlias, publisherBackendUri, publisherPcastUri, channelName);
   }
 }
 
@@ -136,162 +67,8 @@ function logSubscriberAudioBeep(timestamp) {
   subscriberStats.innerHTML += `Audio heard at ${timestamp}\n`;
 }
 
-// MARK: - Publisher
-
-function drawCanvas() {
-  publisherCanvasCtx.clearRect(0, 0, publisherCanvas.width, publisherCanvas.height);
-  drawHorizontalGrid();
-}
-
-function drawHorizontalGrid() {
-  publisherCanvasCtx.beginPath();
-  publisherCanvasCtx.lineWidth = 2;
-  publisherCanvasCtx.strokeStyle = '#c3061f';
-
-  publisherCanvasCtx.moveTo(0, publisherCanvas.height / 2);
-  publisherCanvasCtx.lineTo(publisherCanvas.width, publisherCanvas.height / 2);
-  publisherCanvasCtx.stroke();
-
-  publisherCanvasCtx.moveTo(publisherCanvas.width / 2, 0);
-  publisherCanvasCtx.lineTo(publisherCanvas.width / 2, publisherCanvas.height);
-  publisherCanvasCtx.stroke();
-
-  var number = canvasWidth / oneUnit / 2 + 1;
-  for (let i = -oneUnit; i < canvasWidth; i += oneUnit) {
-    drawText(number, 12, i, publisherCanvas.height / 2 + 40);
-    number += (i <= canvasWidth / 2 - oneUnit) ? -1 : 1;
-  }
-}
-
-function drawText(text, size, posX, posY) {
-  publisherCanvasCtx.beginPath();
-  publisherCanvasCtx.fillStyle = '#000000';
-  publisherCanvasCtx.fillRect(posX, posY, oneUnit, oneUnit / 2);
-
-  publisherCanvasCtx.font = `${size}px Arial`;
-  publisherCanvasCtx.fillStyle = '#e79ba5';
-  publisherCanvasCtx.textAlign = 'center';
-  publisherCanvasCtx.fillText(text, posX, posY);
-}
-
-function drawHorizontalMarkers() {
-  for (let i = 0; i < canvasWidth; i += oneUnit) {
-    publisherCanvasCtx.beginPath();
-    publisherCanvasCtx.moveTo(i, publisherCanvas.height / 2);
-    publisherCanvasCtx.lineTo(i, publisherCanvas.height / 2 + 20);
-    publisherCanvasCtx.strokeStyle = '#e79ba5';
-    publisherCanvasCtx.stroke();
-  }
-}
-
-function drawRectAt(x, y, sizeX, sizeY, color) {
-  publisherCanvasCtx.beginPath();
-  publisherCanvasCtx.fillStyle = color;
-  publisherCanvasCtx.fillRect(x, y, sizeX, sizeY);
-}
-
-function updateRectPosition() {
-  if (currentPosX >= publisherCanvas.width - 2 * oneUnit || currentPosX === oneUnit / 2) {
-    moveRight = !moveRight;
-    drawHorizontalMarkers();
-
-    var posY = canvasHeight - canvasHeight / 4;
-    drawRectAt(canvasWidth / 4 - 50, posY - 50, 100, 100, '#000000');
-    drawRectAt(canvasWidth - canvasWidth / 4 - 50, posY - 50, 100, 100, '#000000');
-    drawText(moveRight ? 'VIDEO late' : 'AUDIO late', 18, canvasWidth / 4, posY);
-    drawText(moveRight ? 'AUDIO late' : 'VIDEO late', 18, canvasWidth - canvasWidth / 4, posY);
-  }
-
-  drawRectAt(currentPosX, currentPosY, oneUnit, oneUnit / 2, '#000000');
-  currentPosX += moveRight ? oneUnit : -oneUnit;
-  drawRectAt(currentPosX, currentPosY, oneUnit, oneUnit / 2, '#ffffff');
-
-  if (currentPosX === canvasWidth / 2 - oneUnit / 2) {
-    playBeep();
-  }
-}
-
-function drawDotAt(x, y, color) {
-  publisherCanvasCtx.beginPath();
-  publisherCanvasCtx.fillStyle = color;
-  publisherCanvasCtx.arc(x, y, oneUnit / 2 + (color === '#000000' ? 1 : 0), 0, Math.PI * 2, false);
-  publisherCanvasCtx.fill();
-}
-
-function updateDotPosition() {
-  if (currentDotPosY === publisherCanvas.height / 2 - dotRadius || currentDotPosY === dotRadius) {
-    moveDown = !moveDown;
-  }
-
-  drawDotAt(currentDotPosX, currentDotPosY, '#000000');
-  currentDotPosY += moveDown ? oneUnit : -oneUnit;
-  drawDotAt(currentDotPosX, currentDotPosY, '#ffffff');
-}
-
-function move() {
-  requestAnimationFrame(move);
-  now = Date.now();
-  elapsed = now - then;
-
-  if (elapsed >= fpsInterval) {
-    then = now - (elapsed % fpsInterval);
-
-    updateRectPosition();
-    updateDotPosition();
-
-    var sinceStart = now - startTime;
-    publisherStats.innerText = 'Publishing ' + (Math.round(sinceStart / 1000 * 100) / 100) + ' seconds @ ' + (Math.round(1000 / (sinceStart / ++frameCount) * 100) / 100) + ' fps';
-  }
-}
-
-function playBeep() {
-  oscillator = audioCtx.createOscillator();
-  oscillator.frequency.value = beepFrequency;
-  oscillator.type = 'square';
-  oscillator.connect(streamDestination);
-  oscillator.start(audioCtx.currentTime);
-
-  setTimeout(() => {
-    oscillator.stop(audioCtx.currentTime);
-  }, beepDuration);
-}
-
-function publish() {
-  publishTo(channelAlias, testMediaStream, publisherBackendUri, publisherPcastUri, channelName, publishCallback);
-}
-
-function publishCallback(error, response) {
-  if (error) {
-    log('PublishCallback returned error=' + error.message);
-    showPublisherMessage(`\nPublish callback returned error: ${error.message}\n`);
-    stopPublisher();
-
-    throw error;
-  }
-
-  if (response.status !== 'ok' && response.status !== 'ended' && response.status !== 'stream-ended') {
-    stopPublisher();
-    showPublisherMessage(`\nError in publish callback. Got response status: ${response.status}\n`);
-
-    throw new Error(response.status);
-  }
-
-  if (response.status === 'ok') {
-    publisher = response.publisher;
-    subscribe();
-    showPublisherMessage('\nPublished successfully!\n');
-  }
-}
-
-function stopPublisher() {
-  if (publisher) {
-    publisher.stop();
-    publisher = null;
-  }
-}
-
 // MARK: - Subscriber
-
+// eslint-disable-next-line no-unused-vars
 function subscribe() {
   channelExpress = joinChannel(
     subscriberVideoEl,
@@ -331,18 +108,24 @@ function subscriberCallback(receivedError, response) {
   } else if (response.status !== 'ok') {
     error(receivedError);
 
-    state = channelJoinRetries === 0 ? 'Failed to join channel' : 'Rejoining to channel';
+    state =
+      channelJoinRetries === 0
+        ? 'Failed to join channel'
+        : 'Rejoining to channel';
 
     if (channelJoinRetries > 0) {
       channelJoinRetries--;
 
-      setTimeout(rejoinChannel(
-        channelExpress,
-        subscriberVideoEl,
-        channelAlias,
-        joinChannelCallback,
-        subscriberCallback
-      ), 1000);
+      setTimeout(
+        rejoinChannel(
+          channelExpress,
+          subscriberVideoEl,
+          channelAlias,
+          joinChannelCallback,
+          subscriberCallback
+        ),
+        1000
+      );
     }
   }
 
@@ -356,7 +139,7 @@ function subscriberCallback(receivedError, response) {
       document.getElementById('videoEl').play();
     });
 
-    response.renderer.on('failedToPlay', (reason) => {
+    response.renderer.on('failedToPlay', reason => {
       error(`Failed to play stream. Reason: ${reason}`);
     });
   }
@@ -374,7 +157,8 @@ function subscriberCallback(receivedError, response) {
 }
 
 function prepareAudioAnalyzer(audioStream) {
-  var subscriberAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  var subscriberAudioCtx = new (window.AudioContext ||
+    window.webkitAudioContext)();
   subscriberAudioCtx.sampleRate = audioSampleRate;
 
   var source = subscriberAudioCtx.createMediaStreamSource(audioStream);
@@ -382,16 +166,27 @@ function prepareAudioAnalyzer(audioStream) {
   source.connect(subscriberAudioAnalyser);
   subscriberAudioAnalyser.fftSize = audioFFTSize;
 
-  startListeningToSubscriberAudioChanges(subscriberAudioAnalyser, mediaListenInterval, audioSampleRate, ((frequency) => {
-    if (frequency === beepFrequency) {
-      logSubscriberAudioBeep(Date.now());
+  startListeningToSubscriberAudioChanges(
+    subscriberAudioAnalyser,
+    mediaListenInterval,
+    audioSampleRate,
+    frequency => {
+      if (frequency === beepFrequency) {
+        logSubscriberAudioBeep(Date.now());
+      }
     }
-  }));
+  );
 }
 
 function drawVideoToCanvas() {
   subscriberCanvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-  subscriberCanvasCtx.drawImage(subscriberVideoEl, 0, 0, canvasWidth, canvasHeight);
+  subscriberCanvasCtx.drawImage(
+    subscriberVideoEl,
+    0,
+    0,
+    canvasWidth,
+    canvasHeight
+  );
 
   if (isCenterPixelColorWhite()) {
     logSubscriberVideoCenter(Date.now());
@@ -409,11 +204,16 @@ function isCenterPixelColorWhite() {
 
   lastTimeCentered = now;
 
-  let imgData = subscriberCanvasCtx.getImageData((canvasWidth / 2) - (oneUnit / 2), canvasHeight / 2, oneUnit, oneUnit / 2).data;
+  let imgData = subscriberCanvasCtx.getImageData(
+    canvasWidth / 2 - oneUnit / 2,
+    canvasHeight / 2,
+    oneUnit,
+    oneUnit / 2
+  ).data;
   let diff = Math.sqrt(
     (imgData[0] - 255) * (imgData[0] - 255) +
-    (imgData[1] - 255) * (imgData[1] - 255) +
-    (imgData[2] - 255) * (imgData[2] - 255)
+      (imgData[1] - 255) * (imgData[1] - 255) +
+      (imgData[2] - 255) * (imgData[2] - 255)
   );
 
   return diff <= 65;
