@@ -13,6 +13,7 @@
 
   <script src="js/common.js"></script>
   <script src="js/client_lag.js"></script>
+  <script src="js/lag/publisher.js"></script>
 
   <title>Phenix Video Test</title>
 </head>
@@ -23,15 +24,17 @@
     <div>
       <p id="publisherStats"></p>
     </div>
-    <div style="display: inline-block;">
-      <div id="publisherCanvasTitle" style="font-weight: bold;">Canvas:</div>
-      <canvas id="publisherCanvas" width='500' height='500'></canvas>
+    <div id="publisher">
+      <div style="display: inline-block;">
+        <div id="publisherCanvasTitle" style="font-weight: bold;">Canvas:</div>
+        <canvas id="publisherCanvas" width='500' height='500'></canvas>
+      </div>
+      <div style="display: inline-block;">
+        <div id="publisherVideoContainerTitle" style="font-weight: bold;">Video Container:</div>
+        <video id="publisherVideoContainer" width='500' height='500' autoplay controls></video>
+      </div>
+      <div style="padding: 10px 0;" id="publisherError"></div>
     </div>
-    <div style="display: inline-block;">
-      <div id="publisherVideoContainerTitle" style="font-weight: bold;">Video Container:</div>
-      <video id="publisherVideoContainer" width='500' height='500' autoplay controls></video>
-    </div>
-    <div style="padding: 10px 0;" id="publisherError"></div>
   </div>
   <div style="padding: 20px 5;">
     <h2>Subscriber</h2>

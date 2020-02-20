@@ -14,37 +14,30 @@
  * limitations under the License.
  */
 
-/* global log, error, joinChannel, rejoinChannel, getUrlParams, rgbToHex, publishTo, startListeningToSubscriberAudioChanges, startMultimediaRecordingFor, constants, jsQR, moment, constants, showPublisherMessage, showChannelStatus */
+/* global log, error, joinChannel, rejoinChannel, getUrlParams, rgbToHex, startListeningToSubscriberAudioChanges, constants, jsQR, moment, showChannelStatus, publish */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
+const channelName = 'Lag test';
 const channelAlias = getUrlParams('channelAlias');
 let channelJoinRetries = getUrlParams('channelJoinRetries');
 let channelExpress = null;
 
-var publisherCanvas;
-var publisherCanvasCtx;
-var subscriberCanvas;
-var subscriberCanvasCtx;
-var channelName = 'Lag test';
-var audioSampleRate = 44100;
-var audioFFTSize = 512;
-
-var publisher;
-var publisherStats;
 var publisherBackendUri = getUrlParams('publisherBackendUri');
 var publisherPcastUri = getUrlParams('publisherPcastUri');
-var publisherVideoEl;
 
 var subscriberVideoEl;
-var subscriberStream;
+var subscriberCanvas;
+var subscriberCanvasCtx;
+var subscriberCanvasColorVal;
 
 var subscriberOscilloscopeEl;
 var subscriberFrequencyGraphEl;
 var subscriberFrequencyValueEl;
 var subscriberAudioAnalyser;
-var subscriberAudioTimeDataArray;
 var subscriberAudioFrequencyDataArray;
-var subscriberCanvasColorVal;
+var subscriberAudioTimeDataArray;
+
+var subscriberStream;
 var subscriberDecodedTimestamp;
 var previousSubscriberColor = {
   r: 0,
@@ -52,16 +45,9 @@ var previousSubscriberColor = {
   b: 0
 };
 
-var testMediaStream;
-var canvasColorArr = ['#ffff00', '#009900', '#ff0000', '#0000ff', '#000000'];
-var nextCanvasColor = canvasColorArr[0];
-var audioFrequencies = [200, 400, 600, 800, 1000, 1200, 1400, 1500, 1700, 1900, 2100];
-var nextFrequencyIndex = 0;
+var audioSampleRate = 44100;
+var audioFFTSize = 512;
 
-var audioCtx;
-var oscillator;
-
-var mediaChangeInterval = 300;
 var mediaListenInterval = 60;
 const timestampDecodeInterval = 1000;
 
@@ -71,98 +57,32 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function prepare() {
-  publisherVideoEl = document.getElementById('publisherVideoContainer');
-  publisherStats = document.getElementById('publisherStats');
   subscriberVideoEl = document.getElementById('subscriberVideoContainer');
-  subscriberDecodedTimestamp = document.getElementById('decodedQRTimestamp');
   subscriberOscilloscopeEl = document.getElementById('subscriberOscilloscope');
   subscriberFrequencyGraphEl = document.getElementById('subscriberFreqGraph');
   subscriberFrequencyValueEl = document.getElementById('subscriberFreqValue');
-  publisherCanvas = document.getElementById('publisherCanvas');
+  subscriberDecodedTimestamp = document.getElementById('decodedQRTimestamp');
+
   subscriberCanvas = document.getElementById('subscriberCanvas');
   subscriberCanvasCtx = subscriberCanvas.getContext('2d');
-  subscriberCanvasColorVal = document.getElementById('subscriberCanvasColorVal');
-
-  publisherCanvas.width = 500;
-  publisherCanvas.height = 500;
-  publisherCanvasCtx = publisherCanvas.getContext('2d');
-
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  audioCtx.sampleRate = audioSampleRate;
-  oscillator = audioCtx.createOscillator(audioCtx.currentTime);
-  oscillator.type = 'sine';
-
-  oscillator.frequency.value = audioFrequencies[nextFrequencyIndex];
-  oscillator.detune.value = 0;
-  oscillator.start();
-
-  var streamDestination = audioCtx.createMediaStreamDestination();
-  var sourceNode = audioCtx.createMediaElementSource(publisherVideoEl);
-  var volume = audioCtx.createGain();
-  volume.gain.value = 0.5;
-  volume.connect(streamDestination);
-  oscillator.connect(volume);
-  sourceNode.connect(streamDestination);
-  sourceNode.connect(audioCtx.destination);
-
-  var audioTrack = streamDestination.stream.getAudioTracks()[0];
-
-  testMediaStream = publisherCanvas.captureStream();
-  testMediaStream.addTrack(audioTrack);
-
-  publisherVideoEl.srcObject = testMediaStream;
+  subscriberCanvasColorVal = document.getElementById(
+    'subscriberCanvasColorVal'
+  );
 
   if (rtmpPush) {
-    publisherStats.innerHTML = 'Using RTMP Push for publishing';
-    document.getElementById('publisherVideoContainerTitle').style.display = 'none';
-    publisherVideoEl.style.display = 'none';
-    document.getElementById('publisherCanvasTitle').style.display = 'none';
-    publisherCanvas.style.display = 'none';
+    document.getElementById('publisherStats').innerHTML =
+      'Using RTMP Push for publishing';
+    document.getElementById('publisher').style.display = 'none';
   } else {
-    updateCanvasColor();
-    changeAudioTone();
-    publish();
+    publish(channelAlias, publisherBackendUri, publisherPcastUri, channelName);
   }
-
-  const publisherRecordingMs = getUrlParams('publisherRecordingMs');
-
-  if (publisherRecordingMs > 0) {
-    setTimeout(() => {
-      startMultimediaRecordingFor(publisherRecordingMs, testMediaStream);
-    }, 5000);
-  }
-}
-
-function changeAudioTone() {
-  setInterval(() => {
-    oscillator.frequency.setValueAtTime(audioFrequencies[nextFrequencyIndex], audioCtx.currentTime);
-    log(`[Publisher Audio] {"timestamp": ${Date.now()}, "frequency": ${audioFrequencies[nextFrequencyIndex]}}`);
-    setNextAudioFrequencyIndex();
-  }, mediaChangeInterval);
 }
 
 function logSubscriberAudioChanges(timestamp, frequency) {
-  log(`[Subscriber Audio] {"timestamp": ${timestamp}, "frequency": ${frequency}}`);
+  log(
+    `[Subscriber Audio] {"timestamp": ${timestamp}, "frequency": ${frequency}}`
+  );
   subscriberFrequencyValueEl.innerHTML = `Got ${frequency} Hz`;
-}
-
-function updateCanvasColor() {
-  setInterval(() => {
-    publisherCanvasCtx.fillStyle = nextCanvasColor;
-    publisherCanvasCtx.fillRect(0, 0, publisherCanvas.width, publisherCanvas.height);
-    publisherCanvasCtx.fill();
-
-    var imgData = publisherCanvasCtx.getImageData(10, 10, 1, 1).data;
-    log(`[Publisher Video] {"timestamp": ${Date.now()}, "color": {"r": ${imgData[0]}, "g": ${imgData[1]}, "b": ${imgData[2]}}}`);
-    setNextRandomCanvasColor();
-  }, mediaChangeInterval);
-}
-
-function logSubscriberVideoChange(timestamp, color) {
-  const {r, g, b} = color;
-
-  log(`[Subscriber Video] {"type": "${constants.lagType.color}", "timestamp": ${timestamp}, "color": {"r": ${r}, "g": ${g}, "b": ${b}}}`);
-  subscriberCanvasColorVal.innerHTML = `Got: HEX ${rgbToHex(color)} | RGB ${JSON.stringify(color)}`;
 }
 
 function logDecodedTimestamp() {
@@ -200,71 +120,29 @@ function listenToSubscriberVideoChanges() {
     b: imgData[2]
   };
 
-  if (color.r !== previousSubscriberColor.r || color.g !== previousSubscriberColor.g || color.b !== previousSubscriberColor.b) {
-    logSubscriberVideoChange(Date.now(), color);
+  const {r, g, b} = color;
+
+  if (
+    r !== previousSubscriberColor.r ||
+    g !== previousSubscriberColor.g ||
+    b !== previousSubscriberColor.b
+  ) {
+    const timestamp = Date.now();
+
+    log(
+      `[Subscriber Video] {"type": "${constants.lagType.color}", "timestamp": ${timestamp}, "color": {"r": ${r}, "g": ${g}, "b": ${b}}}`
+    );
+
+    subscriberCanvasColorVal.innerHTML = `Got: HEX ${rgbToHex(
+      color
+    )} | RGB ${JSON.stringify(color)}`;
+
     previousSubscriberColor = color;
   }
 }
 
-function setNextRandomCanvasColor() {
-  var nextColor = getRandomCanvasColor();
-  while (nextColor === nextCanvasColor) {
-    nextColor = getRandomCanvasColor();
-  }
-
-  nextCanvasColor = nextColor;
-}
-
-function setNextAudioFrequencyIndex() {
-  nextFrequencyIndex++;
-
-  if (nextFrequencyIndex === audioFrequencies.length) {
-    nextFrequencyIndex = 0;
-  }
-}
-
-function getRandomCanvasColor() {
-  return canvasColorArr[Math.floor(Math.random() * canvasColorArr.length)];
-}
-
-// MARK: - Publisher
-
-function publish() {
-  publishTo(channelAlias, testMediaStream, publisherBackendUri, publisherPcastUri, channelName, publishCallback);
-}
-
-function publishCallback(error, response) {
-  if (error) {
-    log('PublishCallback returned error=' + error.message);
-    showPublisherMessage(`\nPublish callback returned error: ${error.message}\n`);
-    stopPublisher();
-
-    throw error;
-  }
-
-  if (response.status !== 'ok' && response.status !== 'ended' && response.status !== 'stream-ended') {
-    stopPublisher();
-    showPublisherMessage(`\nError in publish callback. Got response status: ${response.status}\n`);
-
-    throw new Error(response.status);
-  }
-
-  if (response.status === 'ok') {
-    publisher = response.publisher;
-    subscribe();
-    showPublisherMessage('\nPublished successfully!\n');
-  }
-}
-
-function stopPublisher() {
-  if (publisher) {
-    publisher.stop();
-    publisher = null;
-  }
-}
-
 // MARK: - Subscriber
-
+// eslint-disable-next-line no-unused-vars
 function subscribe() {
   channelExpress = joinChannel(
     subscriberVideoEl,
@@ -303,18 +181,24 @@ function subscriberCallback(receivedError, response) {
   } else if (response.status !== 'ok') {
     error(receivedError);
 
-    state = channelJoinRetries === 0 ? 'Failed to join channel' : 'Rejoining to channel';
+    state =
+      channelJoinRetries === 0
+        ? 'Failed to join channel'
+        : 'Rejoining to channel';
 
     if (channelJoinRetries > 0) {
       channelJoinRetries--;
 
-      setTimeout(rejoinChannel(
-        channelExpress,
-        subscriberVideoEl,
-        channelAlias,
-        joinChannelCallback,
-        subscriberCallback
-      ), 1000);
+      setTimeout(
+        rejoinChannel(
+          channelExpress,
+          subscriberVideoEl,
+          channelAlias,
+          joinChannelCallback,
+          subscriberCallback
+        ),
+        1000
+      );
     }
   }
 
@@ -330,7 +214,7 @@ function subscriberCallback(receivedError, response) {
       subscriberVideoEl.play();
     });
 
-    response.renderer.on('failedToPlay', (reason) => {
+    response.renderer.on('failedToPlay', reason => {
       error(`Failed to play stream. Reason: ${reason}`);
     });
   }
@@ -340,25 +224,39 @@ function subscriberCallback(receivedError, response) {
 
   if (subscriberStream === undefined) {
     error('subscriberStream is undefined');
-  } else {
-    prepareAudioAnalyzer(subscriberStream.Zo);
-    logDecodedTimestamp();
+
+    return;
   }
 
   drawToCanvas();
+
+  if (rtmpPush) {
+    logDecodedTimestamp();
+  }
+
+  prepareAudioAnalyzer(subscriberStream.Zo);
   drawAudioVisualisations();
 }
 
 function drawToCanvas() {
-  subscriberCanvasCtx.clearRect(0, 0, subscriberCanvas.width, subscriberCanvas.height);
+  subscriberCanvasCtx.clearRect(
+    0,
+    0,
+    subscriberCanvas.width,
+    subscriberCanvas.height
+  );
   subscriberCanvasCtx.drawImage(subscriberVideoEl, 0, 0, 500, 500);
-  listenToSubscriberVideoChanges();
+
+  if (!rtmpPush) {
+    listenToSubscriberVideoChanges();
+  }
 
   requestAnimationFrame(drawToCanvas);
 }
 
 function prepareAudioAnalyzer(mediaStream) {
-  var subscriberAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  var subscriberAudioCtx = new (window.AudioContext ||
+    window.webkitAudioContext)();
   subscriberAudioCtx.sampleRate = audioSampleRate;
 
   var source = subscriberAudioCtx.createMediaStreamSource(mediaStream);
@@ -366,12 +264,21 @@ function prepareAudioAnalyzer(mediaStream) {
   source.connect(subscriberAudioAnalyser);
   subscriberAudioAnalyser.fftSize = audioFFTSize;
 
-  startListeningToSubscriberAudioChanges(subscriberAudioAnalyser, mediaListenInterval, audioSampleRate, ((frequency) => {
-    logSubscriberAudioChanges(Date.now(), frequency);
-  }));
+  startListeningToSubscriberAudioChanges(
+    subscriberAudioAnalyser,
+    mediaListenInterval,
+    audioSampleRate,
+    frequency => {
+      logSubscriberAudioChanges(Date.now(), frequency);
+    }
+  );
 
-  subscriberAudioTimeDataArray = new Uint8Array(subscriberAudioAnalyser.frequencyBinCount);
-  subscriberAudioFrequencyDataArray = new Float32Array(subscriberAudioAnalyser.frequencyBinCount);
+  subscriberAudioTimeDataArray = new Uint8Array(
+    subscriberAudioAnalyser.frequencyBinCount
+  );
+  subscriberAudioFrequencyDataArray = new Float32Array(
+    subscriberAudioAnalyser.frequencyBinCount
+  );
 }
 
 // MARK: - Audio visualisation
@@ -390,7 +297,9 @@ function drawAudioVisualisations() {
   canvasOscCtx.fillRect(0, 0, 500, 300);
   drawLine(subscriberOscilloscopeEl, subscriberAudioTimeDataArray);
 
-  subscriberAudioAnalyser.getFloatFrequencyData(subscriberAudioFrequencyDataArray);
+  subscriberAudioAnalyser.getFloatFrequencyData(
+    subscriberAudioFrequencyDataArray
+  );
 
   var canvasFreqCtx = subscriberFrequencyGraphEl.getContext('2d');
   canvasFreqCtx.fillStyle = 'rgb(200, 200, 200)';
@@ -400,7 +309,8 @@ function drawAudioVisualisations() {
 
 function drawBars(canvasEl, dataArray) {
   var canvasCtx = canvasEl.getContext('2d');
-  var barWidth = (canvasEl.width / subscriberAudioAnalyser.frequencyBinCount) * 2.5;
+  var barWidth =
+    (canvasEl.width / subscriberAudioAnalyser.frequencyBinCount) * 2.5;
   var barHeight;
   var x = 0;
   canvasCtx.beginPath();
@@ -414,6 +324,7 @@ function drawBars(canvasEl, dataArray) {
 }
 
 function drawLine(canvasEl, dataArray) {
+  var publisherCanvas = document.getElementById('publisherCanvas');
   var canvasCtx = canvasEl.getContext('2d');
   canvasCtx.lineWidth = 2;
   canvasCtx.strokeStyle = 'rgb(0, 0, 0)';
@@ -424,7 +335,7 @@ function drawLine(canvasEl, dataArray) {
 
   for (var i = 0; i < subscriberAudioAnalyser.frequencyBinCount; i++) {
     var v = dataArray[i] / 128.0;
-    var y = v * canvasEl.height / 2;
+    var y = (v * canvasEl.height) / 2;
 
     i === 0 ? canvasCtx.moveTo(x, y) : canvasCtx.lineTo(x, y);
     x += sliceWidth;
