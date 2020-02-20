@@ -20,7 +20,7 @@ import moment from 'moment';
 
 import config from '../../config.js';
 
-function saveToFile(fileName, filenamePrefix, content) {
+function saveToFile(fileName, filenamePrefix, content, title = '') {
   const {reportsPath} = config;
 
   if (!fs.existsSync(reportsPath)){
@@ -31,6 +31,10 @@ function saveToFile(fileName, filenamePrefix, content) {
     reportsPath,
     `${filenamePrefix}-${fileName}-${moment().format('YYYY-MM-DD-HH.mm.ss')}.txt`
   );
+
+  if (title !== '') {
+    console.log(`${title} can be found: ${fileName}`);
+  }
 
   fs.writeFileSync(fileName, content);
 }

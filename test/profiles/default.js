@@ -60,7 +60,8 @@ const audioProfile = {
   maxPacketsLossPerMinute: 3,
   totalSamplesDurationPerc: 0.8,
   codecName: 'opus',
-  maxLag: 'PT0.35S'
+  maxLag: 'PT0.35S',
+  maxRTMPLag: 'PT2.5S'
 };
 
 module.exports = {

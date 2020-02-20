@@ -35,6 +35,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
 
   if (isRtmpPush) {
     createdChannel = await common.initRtmpPush('lag_test');
+
     const publisherCount = await common.waitForPublisher(createdChannel.channelId);
 
     await t
@@ -54,7 +55,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
   page.browser = uaParser(ua).browser;
   page.stats = await reporter.CollectMediaChanges();
 
-  await page.asserts.assertVideoLag();
+  await page.asserts.assertVideoLag(isRtmpPush);
   await page.asserts.assertAudioLag(isRtmpPush);
 }).after(async t => {
   await common.finishAndReport(__filename, t.ctx.testFailed, page, t, createdChannel);

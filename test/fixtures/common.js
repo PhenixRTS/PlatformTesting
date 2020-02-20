@@ -25,8 +25,9 @@ import reporter from '../models/reporters/lag-reporter.js';
 const pcastApi = require('../models/pcastApi.js');
 const rtmpPush = require('../models/rtmp-push.js');
 const getUA = ClientFunction(() => navigator.userAgent);
-const subscribeFromClient = ClientFunction(() => subscribe());
+const subscribeFromClient = ClientFunction(() => window.subscribe());
 
+// eslint-disable-next-line padding-line-between-statements
 const waitForPublisher = channelId =>
   new Promise(resolve => {
     const statusInterval = setInterval(() => {
@@ -46,13 +47,22 @@ const waitForPublisher = channelId =>
     }, 1000);
   });
 
+// eslint-disable-next-line padding-line-between-statements
 const initRtmpPush = async(testType) => {
   const {channelAlias, args} = config;
-  const {rtmpPushFile, region, capabilities} = args;
+  const {capabilities, region, rtmpPushFile, rtmpLinkProtocol, rtmpPort} = args;
   const channel = await pcastApi.createChannel(channelAlias);
   ok(channel !== undefined, 'Could not create channel for RTMP Push');
 
-  rtmpPush.startRtmpPush(testType, rtmpPushFile, region, channel, capabilities);
+  rtmpPush.startRtmpPush(
+    testType,
+    rtmpLinkProtocol,
+    rtmpPort,
+    rtmpPushFile,
+    region,
+    channel,
+    capabilities
+  );
 
   return channel;
 };
@@ -74,7 +84,7 @@ const finishAndReport = async(testFile, testFailed, page, tc, createdChannel = {
   const status = testFailed ? 'FAIL' : 'PASS';
   const report = await reporter.CreateTestReport(tc, page, createdChannel);
 
-  persistence.saveToFile(reportFileName, status, report);
+  persistence.saveToFile(reportFileName, status, report, 'Detailed test report');
 
   if (saveConsoleLogs === 'true') {
     const consoleDump = await reporter.CreateConsoleDump(tc);

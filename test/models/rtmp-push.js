@@ -26,6 +26,8 @@ const Logger = require('../../scripts/logger.js');
 const constants = require('../../shared/constants.js');
 const logger = new Logger('RTMP Push');
 let qrGenerationInterval = null;
+let audioBenchmarkInterval = null;
+let audioBenchmarkStats = [];
 
 async function createOnDemandRtmpPush(file, region, channel, duration) {
   logger.log(`Creating on-demand stream (${duration} s)`);
@@ -37,11 +39,15 @@ async function createOnDemandRtmpPush(file, region, channel, duration) {
   }, duration);
 }
 
-async function startRtmpPush(testType, file, region, channel, capabilities) {
+const getAudioBenchmarkStats = () => audioBenchmarkStats;
+
+async function startRtmpPush(testType, protocol, port, file, region, channel, capabilities) {
+  const {audioLag, generateFrequencies} = constants;
   const {assetsPath} = config;
-  const link = `rtmp://${region}.phenixrts.com:80/ingest/${channel.streamKey};capabilities=${capabilities}`;
+  const link = `${protocol}://${region}.phenixrts.com:${port}/ingest/${channel.streamKey};capabilities=${capabilities}`;
   logger.log(`Generated link: ${link}`);
 
+  const audioFile = path.join(assetsPath, 'audio-lag.ogg');
   const timestampFile = path.join(assetsPath, 'qr-timestamp.png');
   const newTimestamp = path.join(assetsPath, 'qr-timestamp2.png');
 
@@ -53,6 +59,28 @@ async function startRtmpPush(testType, file, region, channel, capabilities) {
     });
   }, 100);
 
+  const frequencies = generateFrequencies(audioLag.initFrequency);
+
+  setTimeout(() => {
+    audioBenchmarkStats.push({
+      timestamp: Date.now(),
+      frequency: frequencies[0]
+    });
+
+    let i = 1;
+
+    audioBenchmarkInterval = setInterval(() => {
+      i %= 10;
+
+      audioBenchmarkStats.push({
+        timestamp: Date.now(),
+        frequency: frequencies[i]
+      });
+
+      i++;
+    }, audioLag.timeBetween + audioLag.signalDuration);
+  }, audioLag.timeBetween);
+
   switch (testType) {
     case 'lag_test':
       exec(
@@ -62,7 +90,10 @@ async function startRtmpPush(testType, file, region, channel, capabilities) {
         -f image2 \
         -loop 1 \
         -i ${timestampFile} \
-        -filter_complex "[0:v][1:v] overlay=0:0" \
+        -stream_loop -1 -i ${audioFile} \
+        -filter_complex \
+        "[0:v][1:v] overlay=0:0; \
+         [0:a][2:a]amerge=inputs=2" \
         -tune zerolatency \
         -max_muxing_queue_size 1024 \
         -c:a aac \
@@ -120,6 +151,7 @@ async function generateQRTimestampFile(qrImgPath, content) {
 }
 
 async function stopRtmpPush() {
+  clearInterval(audioBenchmarkInterval);
   clearInterval(qrGenerationInterval);
 
   ps.lookup({command: 'ffmpeg'}, (err, results) => {
@@ -143,6 +175,7 @@ async function stopRtmpPush() {
 
 module.exports = {
   createOnDemandRtmpPush,
+  getAudioBenchmarkStats,
   startRtmpPush,
   stopRtmpPush
 };

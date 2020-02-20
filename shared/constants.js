@@ -15,6 +15,18 @@
  */
 
 (function(exports){
+  exports.audioLag = {
+    signalDuration: 100,
+    timeBetween: 500,
+    frequencyStep: 200,
+    initFrequency: 8000
+  };
+
+  exports.generateFrequencies = startFrequency =>
+    [...Array(10)].map((_, i) => {
+      return startFrequency + i * exports.audioLag.frequencyStep;
+    });
+
   exports.qrCode = {
     width: 70,
     height: 70,

@@ -41,6 +41,6 @@ node_modules/
 
 # Test reports
 reports/
-assets/
+test/assets/qr-timestamp.png
 configured_browser_profiles/firefox-profile/*
 !configured_browser_profiles/firefox-profile/user.js

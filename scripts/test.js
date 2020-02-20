@@ -43,6 +43,8 @@ const argv = require('yargs')
   .describe('screenshotInterval', 'Create screenshot from video element after each duration whole testrun')
   .describe('screenshotName', 'Name of the screenshots that will be taken if screenshotInterval was provided')
   .describe('ignoreJsConsoleErrors', 'If true, ignore JavaScript errors logged by tested website')
+  .describe('rtmpLinkProtocol', 'Link protocol that will be used for RTMP push')
+  .describe('rtmpPort', 'Port that will be used for RTMP push')
   .describe('rtmpPushFile', 'Video file that will be published with RTMP Push')
   .describe('applicationId', 'Application ID used with API for managing RTMP push channel')
   .describe('secret', 'Secret used with API for managing RTMP push channel')
@@ -72,6 +74,8 @@ const argv = require('yargs')
     audio: undefined,
     video: undefined,
     syncPublishedVideoFps: 1,
+    rtmpLinkProtocol: 'rtmp',
+    rtmpPort: '80',
     rtmpPushFile: '',
     applicationId: '',
     secret: '',
@@ -181,6 +185,8 @@ function parseTestArgs() {
     publisherBackendUri: argv.publisherBackendUri,
     publisherPcastUri: argv.publisherPcastUri,
     ignoreJsConsoleErrors: argv.ignoreJsConsoleErrors,
+    rtmpLinkProtocol: argv.rtmpLinkProtocol,
+    rtmpPort: argv.rtmpPort,
     rtmpPushFile: argv.rtmpPushFile,
     applicationId: argv.applicationId,
     secret: argv.secret,

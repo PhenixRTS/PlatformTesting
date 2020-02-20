@@ -56,7 +56,8 @@ const audioProfile = {
   maxPacketsLossPerMinute: null,
   totalSamplesDurationPerc: null,
   codecName: null,
-  maxLag: null
+  maxLag: null,
+  maxRTMPLag: null
 };
 
 module.exports = {

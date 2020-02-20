@@ -35,6 +35,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync of video
 
   if (isRtmpPush) {
     createdChannel = await common.initRtmpPush('sync_test');
+
     const publisherCount = await common.waitForPublisher(createdChannel.channelId);
 
     await t
