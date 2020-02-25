@@ -15,7 +15,6 @@
  */
 
 import {Selector} from 'testcafe';
-import uaParser from 'ua-parser-js';
 
 import config from '../../config.js';
 import ChannelPage from '../models/channel-page.js';
@@ -30,7 +29,6 @@ global.fixture(`Channel sync test${config.args.rtmpPushFile === '' ? '' : ' with
 
 test(`Publish to channel for ${config.args.testRuntime} and assert sync of video and audio`, async t => {
   const {rtmpPushFile, testRuntimeMs} = config.args;
-  const ua = await common.getUA();
   const isRtmpPush = rtmpPushFile !== '';
 
   if (isRtmpPush) {
@@ -52,7 +50,6 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync of video
     .expect(Selector('#publisherError').innerText).notContains('error', 'Got an error in publish callback')
     .wait(testRuntimeMs);
 
-  page.browser = uaParser(ua).browser;
   page.stats = await reporter.CollectMediaChanges();
 
   await page.asserts.assertSync();

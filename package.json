@@ -33,8 +33,7 @@
     "node-fetch": "2.6.0",
     "ps-node": "0.1.6",
     "qrcode": "1.4.4",
-    "testcafe": "1.4.3",
-    "ua-parser-js": "0.7.20",
+    "testcafe": "1.8.2",
     "yargs": "14.0.0"
   },
   "devDependencies": {

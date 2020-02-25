@@ -32,12 +32,13 @@ module.exports = {
 
   async CreateTestReport(testController, page, header, content, additionalInfo = '') {
     const {backendUri, channelAlias, args} = config;
-    const {assertions, failedAssertions, errors, skippedAssertions} = testController.ctx;
+    const {browser, ctx} = testController;
+    const {assertions, failedAssertions, errors, skippedAssertions} = ctx;
     const obj = await testController.getBrowserConsoleMessages();
 
     return new Date() +
       `\n${backendUri}#${channelAlias}` +
-      '\n\nBrowser: ' + JSON.stringify(page.browser, undefined, 2) +
+      '\n\nBrowser: ' + browser.name + ' ('+ browser.version +')' +
       `\nTest runtime: ${args.testRuntime}` +
       header +
       additionalInfo +

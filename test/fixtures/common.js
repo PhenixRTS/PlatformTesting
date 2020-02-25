@@ -24,7 +24,6 @@ import reporter from '../models/reporters/lag-reporter.js';
 
 const pcastApi = require('../models/pcastApi.js');
 const rtmpPush = require('../models/rtmp-push.js');
-const getUA = ClientFunction(() => navigator.userAgent);
 const subscribeFromClient = ClientFunction(() => window.subscribe());
 
 // eslint-disable-next-line padding-line-between-statements
@@ -89,13 +88,12 @@ const finishAndReport = async(testFile, testFailed, page, tc, createdChannel = {
   if (saveConsoleLogs === 'true') {
     const consoleDump = await reporter.CreateConsoleDump(tc);
 
-    persistence.saveToFile(`${page.browser.name}-console-logs`, '', consoleDump);
+    persistence.saveToFile(`${tc.browser.name}-console-logs`, '', consoleDump);
   }
 };
 
 module.exports = {
   finishAndReport,
-  getUA,
   initRtmpPush,
   subscribeFromClient,
   waitForPublisher

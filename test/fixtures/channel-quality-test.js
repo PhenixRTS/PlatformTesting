@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import uaParser from 'ua-parser-js';
-
 import config from '../../config.js';
 import ChannelPage from '../models/channel-page.js';
 import reporter from '../models/reporters/quality-reporter.js';
@@ -27,15 +25,12 @@ global.fixture('Channel quality test')
   .page(`${config.localServerAddress}:${config.args.localServerPort}/${config.testPageUrlAttributes}`);
 
 test(`Measure channel for ${config.args.testRuntime} and assert quality of video and audio`, async t => {
-  const ua = await common.getUA();
-
   await t
     .wait(3000)
     .expect(page.videoEl.exists).ok()
     .expect(page.offlineTitle.exists).notOk()
     .wait(config.args.testRuntimeMs);
 
-  page.browser = uaParser(ua).browser;
   page.stats = await reporter.CollectMediaStreamStats();
   page.meanVideoStats = await reporter.GetMeanVideoStats(page.stats);
   page.meanAudioStats = await reporter.GetMeanAudioStats(page.stats);
