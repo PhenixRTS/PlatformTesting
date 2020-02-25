@@ -19,7 +19,7 @@ const videoProfile = {
   minFrameRateMean: 24,
   frameWidth: 854,
   frameHeight: 480,
-  interframeDelayTresholds: [
+  interframeDelayThresholds: [
     {
       maxAllowed: 60,
       timesPerMinute: 5

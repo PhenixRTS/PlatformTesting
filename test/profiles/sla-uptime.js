@@ -35,7 +35,7 @@ const videoProfile = {
   maxVideoFreezes: null,
   maxPTTFF: 25000,
   maxResolutionChangeCountPerMinute: null,
-  interframeDelayTresholds: [
+  interframeDelayThresholds: [
     {
       maxAllowed: 3000,
       timesPerMinute: 3

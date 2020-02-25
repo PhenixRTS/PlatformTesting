@@ -231,12 +231,12 @@ function parseTestArgs() {
         );
       }
 
-      if (key === 'interframeDelayTresholds') {
-        Object.keys(argv.video.interframeDelayTresholds).forEach((index) => {
-          if (args.videoProfile.interframeDelayTresholds[index]) {
-            _.merge(args.videoProfile.interframeDelayTresholds[index], argv.video.interframeDelayTresholds[index]);
+      if (key === 'interframeDelayThresholds') {
+        Object.keys(argv.video.interframeDelayThresholds).forEach((index) => {
+          if (args.videoProfile.interframeDelayThresholds[index]) {
+            _.merge(args.videoProfile.interframeDelayThresholds[index], argv.video.interframeDelayThresholds[index]);
           } else {
-            args.videoProfile.interframeDelayTresholds.push(argv.video.interframeDelayTresholds[index]);
+            args.videoProfile.interframeDelayThresholds.push(argv.video.interframeDelayThresholds[index]);
           }
         });
       } else {

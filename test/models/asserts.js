@@ -144,14 +144,14 @@ module.exports = class Asserts {
   }
 
   async assertInterframeThresholds() {
-    if (config.videoAssertProfile.interframeDelayTresholds === null) {
+    if (config.videoAssertProfile.interframeDelayThresholds === null) {
       t.ctx.skippedAssertions.push('Video interframe max delays per minute');
 
       return;
     }
 
-    config.videoAssertProfile.interframeDelayTresholds.forEach(threshold => {
-      const msg = `Video interframe delay treshold ${threshold.timesPerMinute} times above ${threshold.maxAllowed} milliseconds`;
+    config.videoAssertProfile.interframeDelayThresholds.forEach(threshold => {
+      const msg = `Video interframe delay threshold ${threshold.timesPerMinute} times above ${threshold.maxAllowed} milliseconds`;
 
       this.page.meanVideoStats.interframeDelaysPerMin.forEach((delaysPerMin, index) => {
         const aboveMax = delaysPerMin.filter(el => el > threshold.maxAllowed);

@@ -34,7 +34,7 @@ const videoProfile = {
   maxVideoFreezes: null,
   maxPTTFF: null,
   maxResolutionChangeCountPerMinute: null,
-  interframeDelayTresholds: null,
+  interframeDelayThresholds: null,
   maxLag: null,
   syncPublishedVideoFps: null,
   maxAverageSync: null,

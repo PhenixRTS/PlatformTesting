@@ -21,7 +21,7 @@ const videoProfile = {
   maxFrameRate: 30,
   frameWidth: 720,
   frameHeight: 1280,
-  interframeDelayTresholds: [
+  interframeDelayThresholds: [
     {
       maxAllowed: 45,
       timesPerMinute: 5
