@@ -16,9 +16,9 @@
 
 import {Selector} from 'testcafe';
 
-import config from '../../config.js';
-import ChannelPage from '../models/channel-page.js';
-import reporter from '../models/reporters/lag-reporter.js';
+import config from '../../config';
+import ChannelPage from '../models/channel-page';
+import reporter from '../models/reporters/lag-reporter';
 
 const common = require('./common');
 const page = new ChannelPage();
@@ -28,7 +28,7 @@ global.fixture(`Channel lag test${config.args.rtmpPushFile === '' ? '' : ' with 
   .page(`${config.localServerAddress}:${config.args.localServerPort}/lag${config.testPageUrlAttributes}`);
 
 test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/audio`, async t => {
-  const {rtmpPushFile, testRuntimeMs} = config.args;
+  const {noSignalColor, rtmpPushFile, testRuntimeMs} = config.args;
   const isRtmpPush = rtmpPushFile !== '';
 
   if (isRtmpPush) {
@@ -47,8 +47,9 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
     .expect(Selector('video').withAttribute('id', 'publisherVideoContainer').exists).ok()
     .expect(Selector('video').withAttribute('id', 'subscriberVideoContainer').exists).ok()
     .wait(35 * 1000)
-    .expect(Selector('#publisherError').innerText).notContains('error', 'Got an error in publish callback')
-    .wait(testRuntimeMs);
+    .expect(Selector('#publisherError').innerText).notContains('error', 'Got an error in publish callback');
+
+  await common.monitorStream(t);
 
   page.stats = await reporter.CollectMediaChanges();
 

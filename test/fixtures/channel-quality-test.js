@@ -28,8 +28,9 @@ test(`Measure channel for ${config.args.testRuntime} and assert quality of video
   await t
     .wait(3000)
     .expect(page.videoEl.exists).ok()
-    .expect(page.offlineTitle.exists).notOk()
-    .wait(config.args.testRuntimeMs);
+    .expect(page.offlineTitle.exists).notOk();
+
+  await common.monitorStream(t, 'videoCanvasImg');
 
   page.stats = await reporter.CollectMediaStreamStats();
   page.meanVideoStats = await reporter.GetMeanVideoStats(page.stats);

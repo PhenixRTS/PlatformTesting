@@ -169,3 +169,16 @@ And publish it with RTMP Push:
 ```
 npm run test -- --tests=./test/fixtures/channel-sync-test.js --applicationId=<yourApplicationId> --secret=<yourSecret> --rtmpPushFile=sync-5m.mp4 --runtime=PT5M
 ```
+
+## Signal validation by screen color
+
+You can also check for no signal (by screen color) during the test. This is disabled by default.
+To enable this, set `noSignalColor` argument to the color (in HEX or RGB value) that is visible if the signal is lost:
+
+```
+npm run test -- --runtime=PT1M --noSignalColor="rgb(0, 0, 0)"
+```
+
+Add these args to override signal waiting time -
+`--noSignalWaitingTime=<seconds>` or color tolerance value - `--noSignalColorTolerance=<newTolerance>`.
+By default signal waiting time is set to 10 seconds and color tolerance value is set to 5.

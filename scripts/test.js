@@ -50,6 +50,9 @@ const argv = require('yargs')
   .describe('secret', 'Secret used with API for managing RTMP push channel')
   .describe('channelJoinRetries', 'Max retry attempt count for joining the channel')
   .describe('publisherWaitTime', 'Time how log to wait for publisher to subscribe to channel in ISO 8601 format')
+  .describe('noSignalColor', 'Screen color that is displayed in case there is no signal')
+  .describe('noSignalColorTolerance', 'Describes how big the difference between the defined noScreenColor and actual screen color can be')
+  .describe('noSignalWaitingTime', 'Time how long to wait for the signal in seconds')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -82,7 +85,10 @@ const argv = require('yargs')
     channelJoinRetries: 0,
     publisherWaitTime: 'PT8S',
     region: 'ingest-stg-europe-west',
-    capabilities: 'multi-bitrate,streaming,on-demand,hd'
+    capabilities: 'multi-bitrate,streaming,on-demand,hd',
+    noSignalColor: '',
+    noSignalColorTolerance: 5,
+    noSignalWaitingTime: 'PT10S'
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome chrome:headless firefox firefox:headless safari ie edge opera')
@@ -193,7 +199,10 @@ function parseTestArgs() {
     channelJoinRetries: argv.channelJoinRetries,
     publisherWaitTime: parseToMilliseconds(argv.publisherWaitTime),
     region: argv.region,
-    capabilities: argv.capabilities
+    capabilities: argv.capabilities,
+    noSignalColor: parseColor(argv.noSignalColor),
+    noSignalColorTolerance: argv.noSignalColorTolerance,
+    noSignalWaitingTime: argv.noSignalWaitingTime
   };
 
   if (args.tests === 'all') {
@@ -262,7 +271,7 @@ function parseTestArgs() {
 }
 
 function exitWithErrorMessage(msg) {
-  console.log(msg);
+  console.log(`${msg}\n`);
   process.exit(1);
 }
 
@@ -270,6 +279,47 @@ function parseToMilliseconds(time) {
   const timeAsDuration = moment.duration(time);
 
   return timeAsDuration.asMilliseconds();
+}
+
+function parseColor(color) {
+  const rgbRegex = /^rgb\((0|255|25[0-4]|2[0-4]\d|1\d\d|0?\d?\d),(0|255|25[0-4]|2[0-4]\d|1\d\d|0?\d?\d),(0|255|25[0-4]|2[0-4]\d|1\d\d|0?\d?\d)\)$/;
+  const hexRegex = /^#[0-9a-f]{6}$/;
+  let rgb = color.replace(/\s/g, '');
+
+  if (color === '') {
+    return color;
+  }
+
+  if (!rgbRegex.test(rgb) && !hexRegex.test(rgb)) {
+    exitWithErrorMessage(
+      'Error: unsupported color value. Color should be in RGB or HEX'
+    );
+
+    return null;
+  }
+
+  if (hexRegex.test(rgb)) {
+    rgb = hexToRgb(rgb);
+  }
+
+  const {0: r, 1: g, 1: b} = rgb.match(/\d+/g);
+
+  return {
+    r,
+    g,
+    b
+  };
+}
+
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+
+  return result ?
+    `rgb(
+      ${parseInt(result[1], 16)},
+      ${parseInt(result[2], 16)},
+      ${parseInt(result[3], 16)}
+    )` : '';
 }
 
 module.exports = test();
