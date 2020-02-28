@@ -411,7 +411,7 @@ module.exports = class Asserts {
   }
 
   async assertVideoLag(rtmpPush) {
-    videoLag(rtmpPush, this.page, this.assert.bind(this));
+    videoLag(this.page, rtmpPush, this.assert.bind(this));
   }
 
   async assertSync() {

@@ -81,7 +81,7 @@ const analyzeRGB = (el, publisherStats) => {
   });
 };
 
-const videoLag = async(rtmpPush, page, doAssertion) => {
+const videoLag = async(page, rtmpPush, doAssertion) => {
   const {publisher, subscriber, streamReceivedAt} = page.stats;
   const publisherStats = getPublisherVideoStats(publisher.video, rtmpPush, streamReceivedAt);
   const subscriberStats = getSubscriberVideoStats(subscriber.video, rtmpPush);
