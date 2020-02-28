@@ -15,6 +15,7 @@
  */
 
 /* eslint-disable no-unused-vars */
+import chalk from 'chalk';
 
 import config from '../../../config.js';
 
@@ -49,5 +50,41 @@ module.exports = {
       '\n\nSkipped:\n' + JSON.stringify(skippedAssertions, undefined, 2) +
       content +
       (args.logAllStatsInReport === 'true' ? `\n\nAll Stats:\n + ${JSON.stringify(page.stats, undefined, 2)}` : '');
+  },
+
+  LogAssertionResults: function(assertions) {
+    const color = {
+      fail: '#ed1113',
+      pass: '#3cb244'
+    };
+
+    console.log(`\n=============== ASSERTIONS ===============`);
+    console.log(
+      `${chalk.bgHex(color.pass).bold('PASS')}: ${
+        assertions.filter(({assertion}) => assertion).length
+      }`
+    );
+    console.log(
+      `${chalk.bgHex(color.fail).bold('FAIL')}: ${
+        assertions.filter(({assertion}) => assertion === false).length
+      }`
+    );
+    console.log(`============================================`);
+
+    assertions.forEach(({assertion, msg}) => {
+      const status = assertion ?
+        `${chalk.bgHex(color.pass).bold('PASS')}` :
+        `${chalk.bgHex(color.fail).bold('FAIL')}`;
+
+      console.log(`${status}: ${msg}`);
+    });
+
+    console.log(`============================================\n`);
+  },
+
+  LogReportPath: function(filePath) {
+    console.log(`\n================== REPORT ==================`);
+    console.log(`${filePath}`);
+    console.log(`============================================\n`);
   }
 };

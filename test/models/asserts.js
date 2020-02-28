@@ -23,6 +23,7 @@ import config from '../../config.js';
 import Logger from '../../scripts/logger.js';
 
 import {audioLag, videoLag} from './assertions/lag.js';
+import reporter from './reporters/common-reporter';
 import format from './format';
 
 const logger = new Logger('Test');
@@ -30,6 +31,7 @@ const logger = new Logger('Test');
 module.exports = class Asserts {
   constructor(page) {
     this.page = page;
+    this.assertions = [];
   }
 
   async assert(name, actualValue, expectedValue, sign, tolerance) {
@@ -132,41 +134,79 @@ module.exports = class Asserts {
       actual = format.formatTime(actual);
     }
 
-    const msg = `${name} expected ${assertionMsg} ${expected} was ${actual}`;
+    let msg = assertion ?
+      `${name} ${assertionMsg} ${expected} (was ${actual})` :
+      `${name} expected ${assertionMsg} ${expected} was ${actual}`;
+
+    this.assertions.push({
+      assertion,
+      msg
+    });
 
     if (!assertion) {
       t.ctx.testFailed = true;
       t.ctx.failedAssertions.push(msg);
+
+      return;
     }
 
-    ok(assertion, msg);
     t.ctx.assertions.push(`${name} ${assertionMsg} ${expected} (was ${actual})`);
   }
 
+  async finishTest() {
+    reporter.LogAssertionResults(this.assertions);
+
+    await Promise.all(this.assertions.map(async ({assertion, msg}) => {
+      await t.expect(assertion).ok(msg);
+
+      return;
+    }));
+  }
+
   async assertInterframeThresholds() {
-    if (config.videoAssertProfile.interframeDelayThresholds === null) {
+    const {interframeDelayThresholds} = config.videoAssertProfile;
+
+    if (interframeDelayThresholds === null) {
       t.ctx.skippedAssertions.push('Video interframe max delays per minute');
 
       return;
     }
 
-    config.videoAssertProfile.interframeDelayThresholds.forEach(threshold => {
-      const msg = `Video interframe delay threshold ${threshold.timesPerMinute} times above ${threshold.maxAllowed} milliseconds`;
+    interframeDelayThresholds.forEach(threshold => {
+      const {maxAllowed, timesPerMinute} = threshold;
+      const msg = `Video interframe delay treshold ${timesPerMinute} times above ${maxAllowed} milliseconds`;
+      let passed = true;
 
       this.page.meanVideoStats.interframeDelaysPerMin.forEach((delaysPerMin, index) => {
-        const aboveMax = delaysPerMin.filter(el => el > threshold.maxAllowed);
-        const assertion = aboveMax.length <= threshold.timesPerMinute;
-        const message = `${msg} were exceeded during test minute ${index + 1}. Observations: [${aboveMax}]`;
+        const aboveMax = delaysPerMin.filter(el => el > maxAllowed);
+        const assertion = aboveMax.length <= timesPerMinute;
 
-        if (!assertion) {
-          t.ctx.testFailed = true;
-          t.ctx.failedAssertions.push(message);
+        if (assertion) {
+          return;
         }
 
-        ok(assertion, message);
+        const message = `${msg} were exceeded during test minute ${index + 1}. Observations: [${aboveMax}]`;
+
+        passed = false;
+        t.ctx.testFailed = true;
+        t.ctx.failedAssertions.push(message);
+
+        this.assertions.push({
+          assertion: false,
+          msg: message
+        });
       });
 
+      if (!passed) {
+        return;
+      }
+
       t.ctx.assertions.push(msg);
+
+      this.assertions.push({
+        assertion: passed,
+        msg
+      });
     });
   }
 
@@ -206,8 +246,8 @@ module.exports = class Asserts {
     );
     this.assert(
       'Video target delay with current delay',
-      this.page.meanVideoStats.targetDelay,
       this.page.meanVideoStats.currentDelay,
+      this.page.meanVideoStats.targetDelay,
       'gte'
     );
     this.assert(
@@ -360,14 +400,18 @@ module.exports = class Asserts {
       config.audioAssertProfile.codecName,
       'eql'
     );
+
+    await this.finishTest();
   }
 
   async assertAudioLag(rtmpPush) {
-    audioLag(this.page, rtmpPush, this.assert);
+    audioLag(this.page, rtmpPush, this.assert.bind(this));
+
+    await this.finishTest();
   }
 
   async assertVideoLag(rtmpPush) {
-    videoLag(rtmpPush, this.page, this.assert);
+    videoLag(rtmpPush, this.page, this.assert.bind(this));
   }
 
   async assertSync() {
@@ -384,5 +428,7 @@ module.exports = class Asserts {
       config.videoAssertProfile.maxSingleSync,
       'lte'
     );
+    
+    await this.finishTest();
   }
 };

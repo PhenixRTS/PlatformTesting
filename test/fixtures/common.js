@@ -20,6 +20,7 @@ import {ClientFunction} from 'testcafe';
 import path from 'path';
 import config from '../../config';
 import persistence from '../models/persistence.js';
+import commonReporter from '../models/reporters/common-reporter';
 import reporter from '../models/reporters/lag-reporter.js';
 
 const pcastApi = require('../models/pcastApi.js');
@@ -83,7 +84,8 @@ const finishAndReport = async(testFile, testFailed, page, tc, createdChannel = {
   const status = testFailed ? 'FAIL' : 'PASS';
   const report = await reporter.CreateTestReport(tc, page, createdChannel);
 
-  persistence.saveToFile(reportFileName, status, report, 'Detailed test report');
+  const filePath = persistence.saveToFile(reportFileName, status, report);
+  commonReporter.LogReportPath(filePath);
 
   if (saveConsoleLogs === 'true') {
     const consoleDump = await reporter.CreateConsoleDump(tc);
