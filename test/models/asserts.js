@@ -220,6 +220,9 @@ module.exports = class Asserts {
   }
 
   async assertVideoQuality() {
+    const {maxTargetDelayOvershoot} = config.videoAssertProfile;
+    const videoTargetDelay = 'Video current delay';
+
     this.assert(
       'Video mean bitrate',
       this.page.meanVideoStats.bitrateMean,
@@ -244,12 +247,18 @@ module.exports = class Asserts {
       config.videoAssertProfile.maxDelay,
       'lte'
     );
-    this.assert(
-      'Video target delay with current delay',
-      this.page.meanVideoStats.currentDelay,
-      this.page.meanVideoStats.targetDelay,
-      'gte'
-    );
+
+    if (maxTargetDelayOvershoot !== null) {
+      this.assert(
+        videoTargetDelay,
+        this.page.meanVideoStats.currentDelay,
+        parseFloat(this.page.meanVideoStats.targetDelay) + parseFloat(maxTargetDelayOvershoot),
+        'lte'
+      );
+    } else {
+      t.ctx.skippedAssertions.push(videoTargetDelay);
+    }
+
     this.assert(
       'Video dropped frames',
       this.page.meanVideoStats.droppedFrames,

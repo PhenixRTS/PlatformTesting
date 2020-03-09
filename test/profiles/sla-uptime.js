@@ -19,6 +19,7 @@ const videoProfile = {
   maxBitrateMeanKps: null,
   maxDelay: null,
   maxMeanDelay: 'PT3S',
+  maxTargetDelayOvershoot: null,
   minFrameRateMean: 1,
   maxFrameRate: null,
   minFrameRate: 1,
