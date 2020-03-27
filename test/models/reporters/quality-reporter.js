@@ -21,6 +21,8 @@ import math from '../math.js';
 
 const logger = new Logger('Quality Test');
 
+let pageLoaded = Date.now();
+
 async function CollectMediaStreamStats() {
   logger.log('Collecting media stream stats...');
 
@@ -28,27 +30,59 @@ async function CollectMediaStreamStats() {
   const urlLoadedTitle = '[Acceptance Testing] [Url loaded] ';
   const streamReceivedTitle = '[Acceptance Testing] [Stream received] ';
   const logs = await t.getBrowserConsoleMessages();
-  const collectedStats = {
+
+  const streamStats = {
     loadedAt: undefined,
     streamReceivedAt: undefined,
     audio: {},
     video: {}
   };
 
+  let testStats = {};
+
   logs.info.forEach(el => {
     el = el.trim();
 
     if (el.startsWith(urlLoadedTitle)) {
       el = el.replace(urlLoadedTitle, '');
-      collectedStats.loadedAt = JSON.parse(el);
+      pageLoaded = JSON.parse(el);
 
       return;
-    } else if (el.startsWith(streamReceivedTitle)) {
+    }
+
+    if (
+      !el.startsWith(streamReceivedTitle) &&
+      !el.startsWith(streamStatsTitle)
+    ) {
+      return;
+    }
+
+    const matches = el.match(/\[memberID:(.*?)\]/);
+    let memberID = '';
+
+    if (matches) {
+      memberID = matches[1];
+
+      el = el.replace(matches[0], '');
+    }
+
+    if (!memberID) {
+      memberID = 'default';
+    }
+
+    if (!testStats[memberID]) {
+      testStats[memberID] = {
+        ...streamStats,
+        loadedAt: pageLoaded
+      };
+    }
+
+    const collectedStats = testStats[memberID];
+
+    if (el.startsWith(streamReceivedTitle)) {
       el = el.replace(streamReceivedTitle, '');
       collectedStats.streamReceivedAt = JSON.parse(el);
 
-      return;
-    } else if (!el.startsWith(streamStatsTitle)) {
       return;
     }
 
@@ -57,13 +91,13 @@ async function CollectMediaStreamStats() {
     const stat = JSON.parse(el);
 
     if (collectedStats[stat.mediaType][stat.ssrc] === undefined) {
-      collectedStats[stat.mediaType][stat.ssrc] = [stat];
-    } else {
-      collectedStats[stat.mediaType][stat.ssrc].push(stat);
+      collectedStats[stat.mediaType][stat.ssrc] = [];
     }
+
+    collectedStats[stat.mediaType][stat.ssrc].push(stat);
   });
 
-  return collectedStats;
+  return testStats;
 }
 
 async function GetMeanVideoStats(stats) {
@@ -224,12 +258,30 @@ async function GetMeanAudioStats(stats) {
 }
 
 async function CreateTestReport(testController, page) {
-  const header = '\nPTTFF (page load to first frame): ' + JSON.stringify(page.stats.streamReceivedAt - page.stats.loadedAt, undefined, 2) + ' ms' +
-  '\nInterframe Max delay: ' + page.meanVideoStats.interframeDelayMax;
-  const content = '\n\nMean Video Stats:\n' + JSON.stringify(page.meanVideoStats, undefined, 2) +
-  '\n\nMean Audio Stats:\n' + JSON.stringify(page.meanAudioStats, undefined, 2);
+  const header = {};
+  const content = {};
 
-  return reporter.CreateTestReport(testController, page, header, content);
+  let members = 0;
+
+  for (const memberID in page.stats) {
+    const {loadedAt, meanAudioStats, meanVideoStats, streamReceivedAt} = page.stats[memberID];
+
+    members++;
+
+    header[memberID] = '\nPTTFF (page load to first frame): ' +
+      JSON.stringify(streamReceivedAt - loadedAt, undefined, 2) +
+      ' ms' +
+      '\nInterframe Max delay: ' + meanVideoStats.interframeDelayMax;
+
+    content[memberID] = '\n\nMean Video Stats:\n' +
+      JSON.stringify(meanVideoStats, undefined, 2) +
+      '\n\nMean Audio Stats:\n' +
+      JSON.stringify(meanAudioStats, undefined, 2);
+  }
+
+  const additionalInfo = members > 1 ? `\nMembers in the room: ${members}` : '';
+
+  return reporter.CreateTestReport(testController, page, header, content, additionalInfo);
 }
 
 export default {

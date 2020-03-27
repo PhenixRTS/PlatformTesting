@@ -17,7 +17,28 @@
 /* eslint-disable no-unused-vars */
 import chalk from 'chalk';
 
+import shared from '../../../shared/shared';
 import config from '../../../config.js';
+
+function getTestConfiguration() {
+  const {args, backendUri, channelAlias, pcastUri} = config;
+
+  let configuration = {
+    backendUri,
+    pcastUri,
+    channelAlias
+  };
+
+  for (const key in args) {
+    if (key.indexOf('videoProfile') > -1 || key.indexOf('audioProfile') > -1) {
+      continue;
+    }
+
+    configuration[key] = args[key];
+  }
+
+  return configuration;
+}
 
 module.exports = {
   async CreateConsoleDump(testController) {
@@ -32,33 +53,73 @@ module.exports = {
   },
 
   async CreateTestReport(testController, page, header, content, additionalInfo = '') {
-    const {backendUri, channelAlias, args} = config;
+    const {args, backendUri, channelAlias} = config;
     const {browser, ctx} = testController;
-    const {assertions, failedAssertions, errors, skippedAssertions} = ctx;
+    const {errors, assertionResults} = ctx;
     const obj = await testController.getBrowserConsoleMessages();
 
-    return new Date() +
+    const reportHeader = new Date() +
       `\n${backendUri}#${channelAlias}` +
-      '\n\nBrowser: ' + browser.name + ' ('+ browser.version +')' +
+      '\n\nBrowser: ' + browser.name + ' (' + browser.version + ')' +
       `\nTest runtime: ${args.testRuntime}` +
-      header +
       additionalInfo +
       (errors && errors.length > 0 ? '\n\nErrors:\n' + JSON.stringify(errors, undefined, 2) : '') +
-      (obj.error.length > 0 ? '\n\nConsole errors:\n' + JSON.stringify(obj.error, undefined, 2) : '') +
-      '\n\nAssertions passed:\n' + JSON.stringify(assertions, undefined, 2) +
-      '\n\nFailures:\n' + JSON.stringify(failedAssertions, undefined, 2) +
-      '\n\nSkipped:\n' + JSON.stringify(skippedAssertions, undefined, 2) +
-      content +
-      (args.logAllStatsInReport === 'true' ? `\n\nAll Stats:\n + ${JSON.stringify(page.stats, undefined, 2)}` : '');
+      (obj.error.length > 0 ? '\n\nConsole errors:\n' + JSON.stringify(obj.error, undefined, 2) : '');
+
+    let reportDetails =
+      '\n\nConfiguration:\n' +
+      JSON.stringify(getTestConfiguration(), undefined, 2);
+
+    for (const memberID in assertionResults) {
+      const {passed, failed, skipped} = assertionResults[memberID];
+
+      const screenName = shared.getMemberScreenNameFromID(memberID);
+      const sessionID = shared.getMemberSessionIDFromID(memberID);
+
+      const title =
+        memberID === 'default'
+          ? ''
+          : `\n\nResults for ${screenName} (session ID: ${sessionID})`;
+
+      const memberHeader = header[memberID] || header;
+      const memberContent = content[memberID] || content;
+
+      reportDetails += '\n\n' + title +
+        '\n' + memberHeader +
+        '\n\nAssertions passed:\n' + JSON.stringify(passed, undefined, 2) +
+        '\n\nFailures:\n' + JSON.stringify(failed, undefined, 2) +
+        '\n\nSkipped:\n' + JSON.stringify(skipped, undefined, 2) +
+        '\n' + memberContent;
+
+      const allStats = page.stats[memberID] || page.stats;
+
+      reportDetails +=
+        args.logAllStatsInReport === 'true'
+          ? `\n\nAll Stats:\n + ${JSON.stringify(allStats, undefined, 2)}`
+          : '';
+    }
+
+    return reportHeader + reportDetails;
   },
 
-  LogAssertionResults: function(assertions) {
+  LogAssertionResults: function(assertions, memberID) {
     const color = {
       fail: '#ed1113',
       pass: '#3cb244'
     };
 
-    console.log(`\n=============== ASSERTIONS ===============`);
+    const screenName = shared.getMemberScreenNameFromID(memberID);
+    const sessionID = shared.getMemberSessionIDFromID(memberID);
+
+    const member = screenName ? ` FOR ${screenName}` : '';
+
+    console.log(`\n=============== ASSERTIONS${member} ===============`);
+
+    if (sessionID) {
+      console.log(`Session ID: ${sessionID}`);
+      console.log(`============================================`);
+    }
+
     console.log(
       `${chalk.bgHex(color.pass).bold('PASS')}: ${
         assertions.filter(({assertion}) => assertion).length

@@ -15,22 +15,37 @@
  */
 
 import {ok} from 'assert';
-import {ClientFunction} from 'testcafe';
+import {ClientFunction, Selector} from 'testcafe';
 
 import moment from 'moment';
 import path from 'path';
+
 import config from '../../config';
+import shared from '../../shared/shared';
+
 import persistence from '../models/persistence.js';
 import commonReporter from '../models/reporters/common-reporter';
-import reporter from '../models/reporters/lag-reporter.js';
+import lagReporter from '../models/reporters/lag-reporter.js';
+import qualityReporter from '../models/reporters/quality-reporter';
+import syncReporter from '../models/reporters/sync-reporter';
 
 const pcastApi = require('../models/pcastApi.js');
 const rtmpPush = require('../models/rtmp-push.js');
 const subscribeFromClient = ClientFunction(() => window.subscribe());
 
-const validateScreenColor = ClientFunction((target, tolerance, canvasID) => {
-  if (canvasID === 'videoCanvasImg') {
-    const videoEl = document.getElementById('videoEl');
+const getRoomMembers = ClientFunction(() => {
+  const members = [];
+
+  document.querySelectorAll('video').forEach(el => {
+    members.push(el.id);
+  });
+
+  return members;
+});
+
+const validateScreenColor = ClientFunction((target, tolerance, canvasID, videoID = '') => {
+  if (videoID !== '') {
+    const videoEl = document.getElementById(videoID);
 
     document
       .getElementById(canvasID)
@@ -69,11 +84,79 @@ const validateScreenColor = ClientFunction((target, tolerance, canvasID) => {
   return match;
 });
 
-const monitorStream = async(testController, canvasID = 'subscriberCanvas') => {
+const monitorRoomStreams = async(testController) => {
+  const {
+    failIfMemberHasNoStream,
+    noSignalColor,
+    noSignalColorTolerance,
+    noSignalWaitingTime,
+    testRuntimeMs
+  } = config.args;
+
+  let members = await getRoomMembers();
+
+  const waitingTimes = Math.ceil(
+    moment.duration(noSignalWaitingTime).asSeconds()
+  );
+
+  let i = Math.floor(testRuntimeMs / 1000);
+  let noBroadcast = {};
+
+  members.forEach(member => {
+    noBroadcast[member] = 0;
+  });
+
+  while (i > 0) {
+    await testController.wait(1000);
+    i--;
+
+    if (failIfMemberHasNoStream) {
+      await testController
+        .expect(Selector('#roomError').innerText)
+        .notContains('Error', 'Member has no media stream');
+    }
+
+    if (noSignalColor === '') {
+      continue;
+    }
+
+    members = await getRoomMembers();
+
+    for (let i = 0; i < members.length; i++) {
+      const memberID = members[i];
+
+      if (noBroadcast[memberID]) {
+        noBroadcast[memberID] = 0;
+      }
+
+      const memberCanvasID = `${memberID}-canvas`;
+      const colorMatch = await validateScreenColor(
+        noSignalColor,
+        noSignalColorTolerance,
+        memberCanvasID,
+        memberID
+      );
+      noBroadcast[memberID] = colorMatch === 100 ? noBroadcast[memberID] + 1 : 0;
+    }
+
+    for (const memberID in noBroadcast) {
+      const screenName = shared.getMemberScreenNameFromID(memberID);
+      const sessionID = shared.getMemberSessionIDFromID(memberID);
+
+      await testController
+        .expect(noBroadcast[memberID])
+        .notEql(
+          waitingTimes,
+          `No broadcast detected for ${screenName} with session ID: ${sessionID}`
+        );
+    }
+  }
+};
+
+const monitorStream = async(testController, canvasID, videoID = '') => {
   const {noSignalColor, noSignalColorTolerance, noSignalWaitingTime, testRuntimeMs} = config.args;
-  
   const waitingTimes = Math.ceil(moment.duration(noSignalWaitingTime).asSeconds());
-  
+
   let i = Math.floor(testRuntimeMs / 1000);
   let noBroadcast = 0;
 
@@ -85,7 +168,12 @@ const monitorStream = async(testController, canvasID = 'subscriberCanvas') => {
       continue;
     }
 
-    const colorMatch = await validateScreenColor(noSignalColor, noSignalColorTolerance, canvasID);
+    const colorMatch = await validateScreenColor(
+      noSignalColor,
+      noSignalColorTolerance,
+      canvasID,
+      videoID
+    );
     noBroadcast = colorMatch === 100 ? noBroadcast + 1 : 0;
 
     await testController.expect(noBroadcast).notEql(waitingTimes, 'No broadcast');
@@ -146,6 +234,16 @@ const finishAndReport = async(testFile, testFailed, page, tc, createdChannel = {
     console.log(`Stopped RTMP Push and deleted created channel with id ${channelId}`);
   }
 
+  let reporter = qualityReporter;
+
+  if (testFile.indexOf('lag-test') > -1) {
+    reporter = lagReporter;
+  }
+
+  if (testFile.indexOf('sync-test') > -1) {
+    reporter = syncReporter;
+  }
+
   const status = testFailed ? 'FAIL' : 'PASS';
   const report = await reporter.CreateTestReport(tc, page, createdChannel);
 
@@ -163,6 +261,7 @@ module.exports = {
   finishAndReport,
   initRtmpPush,
   monitorStream,
+  monitorRoomStreams,
   subscribeFromClient,
   waitForPublisher
 };

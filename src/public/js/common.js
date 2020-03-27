@@ -17,7 +17,7 @@
 /* eslint-disable no-unused-vars */
 /* global MRecordRTC */
 
-var sdk = window['phenix-web-sdk'];
+const sdk = window['phenix-web-sdk'];
 
 function log(msg) {
   console.info(`\n[Acceptance Testing] ${msg}`);
@@ -43,22 +43,30 @@ function getUrlParams(key) {
   return params[key];
 }
 
+function getChannelUri(backendUri, isBackendPcastUri, alias) {
+  let channelUriBase = backendUri;
+
+  if (isBackendPcastUri) {
+    channelUriBase = channelUriBase.substring(
+      0,
+      channelUriBase.lastIndexOf('/')
+    );
+  }
+
+  const channelUri = `${channelUriBase}/channel#${alias}`;
+
+  return channelUri;
+}
+
 function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriberCallback) {
   const backendUri = getUrlParams('backendUri');
   const pcastUri = getUrlParams('pcastUri');
   const featuresParam = getUrlParams('features');
   const features = featuresParam === undefined ? [] : featuresParam.split(',');
-  const isBEPcastUri = backendUri.substring(backendUri.lastIndexOf('/') + 1) === 'pcast';
-  const backendUriWithPcast = isBEPcastUri ? backendUri : `${backendUri}/pcast`;
-  let channelUriBase = backendUri;
+  const isBackendPcastUri = backendUri.substring(backendUri.lastIndexOf('/') + 1) === 'pcast';
+  const backendUriWithPcast = isBackendPcastUri ? backendUri : `${backendUri}/pcast`;
 
-  if (isBEPcastUri) {
-    channelUriBase = channelUriBase.substring(0, channelUriBase.lastIndexOf('/'));
-  }
-
-  const channelUri = `${channelUriBase}/channel#${channelAlias}`;
   const adminApiProxyClient = new sdk.net.AdminApiProxyClient();
-
   adminApiProxyClient.setBackendUri(backendUriWithPcast);
 
   const channelExpress = new sdk.express.ChannelExpress({
@@ -74,7 +82,8 @@ function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriber
 
   log(`Subscriber backend uri: ${backendUriWithPcast}`);
   log(`Subscriber PCast uri: ${pcastUri}`);
-  log(`Joining channel ${channelUri}`);
+
+  log(`Joining channel ${getChannelUri(backendUri, isBackendPcastUri, channelAlias)}`);
 
   channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
 

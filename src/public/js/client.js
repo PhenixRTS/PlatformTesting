@@ -65,7 +65,7 @@ function subscriberCallback(err, response) {
       document.getElementById('videoEl').play();
     });
 
-    response.renderer.on('failedToPlay', (reason) => {
+    response.renderer.on('failedToPlay', reason => {
       error(`Failed to play stream. Reason: ${reason}`);
     });
   }
@@ -109,7 +109,7 @@ function startStatsLogging() {
 }
 
 function getStatsCallback(stats) {
-  stats.forEach((stat) => {
+  stats.forEach(stat => {
     log(`[Media Stream Stats] ${JSON.stringify(stat)}`);
   });
 }

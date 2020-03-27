@@ -28,7 +28,7 @@ global.fixture(`Channel sync test${config.args.rtmpPushFile === '' ? '' : ' with
   .page(`${config.localServerAddress}:${config.args.localServerPort}/sync${config.testPageUrlAttributes}`);
 
 test(`Publish to channel for ${config.args.testRuntime} and assert sync of video and audio`, async t => {
-  const {noSignalColor, rtmpPushFile, testRuntimeMs} = config.args;
+  const {rtmpPushFile} = config.args;
   const isRtmpPush = rtmpPushFile !== '';
 
   if (isRtmpPush) {
@@ -49,11 +49,13 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync of video
     .wait(35 * 1000)
     .expect(Selector('#publisherError').innerText).notContains('error', 'Got an error in publish callback');
 
-  await common.monitorStream(t);
+  await common.monitorStream(t, 'subscriberCanvas');
 
   page.stats = await reporter.CollectMediaChanges();
 
   await page.asserts.assertSync();
+
+  await page.asserts.runAssertions();
 }).after(async t => {
   await common.finishAndReport(__filename, t.ctx.testFailed, page, t, createdChannel);
 });

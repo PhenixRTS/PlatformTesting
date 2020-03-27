@@ -15,7 +15,6 @@
  */
 
 const createTestCafe = require('testcafe');
-const fs = require('fs');
 const p = require('path');
 const config = require('../config.js');
 const App = require('../src/app.js');
@@ -30,12 +29,15 @@ const argv = require('yargs')
   .strict()
   .describe('localServerPort', 'Port that will be used for the server')
   .describe('channelAlias', '')
+  .describe('roomAlias', 'Alias of the room to view')
   .describe('backendUri', '')
   .describe('pcastUri', '')
   .describe('browsers', 'Browsers in which to run test. Can run same test in multiple instances, example "chrome, chrome"')
   .describe('tests', 'Path to test file')
   .describe('runtime', 'Runtime of the test in ISO 8601 duration format')
   .describe('profileFile', 'Full path to file containing video and audio profiles that will be used to assert quality')
+  .describe('screenName', 'Specify member to subscribe to')
+  .describe('failIfMemberHasNoStream', 'Fail test if member has no stream')
   .describe('concurrency', 'Runs all tests concurrently')
   .describe('record', 'Record media duration in ISO 8601 format')
   .describe('recordPublisher', 'Record published media for duration in ISO 8601 format')
@@ -56,6 +58,7 @@ const argv = require('yargs')
   .default({
     localServerPort: 3333,
     channelAlias: '',
+    roomAlias: '',
     features: undefined,
     backendUri: 'https://demo.phenixrts.com',
     pcastUri: 'https://pcast.phenixrts.com',
@@ -65,6 +68,7 @@ const argv = require('yargs')
     tests: 'test/fixtures/channel-quality-test.js',
     runtime: 'PT1M',
     profileFile: 'test/profiles/default.js',
+    screenName: '',
     concurrency: 1,
     logAllStatsInReport: false,
     saveConsoleLogs: false,
@@ -99,6 +103,9 @@ async function test() {
   config.testPageUrlAttributes =
     `?features=${config.args.features}` +
     `&channelAlias=${config.channelAlias}` +
+    `&roomAlias=${config.args.roomAlias}` +
+    `&screenName=${config.args.screenName}` +
+    `&failIfMemberHasNoStream=${config.args.failIfMemberHasNoStream}` +
     `&backendUri=${config.backendUri}` +
     `&publisherBackendUri=${config.args.publisherBackendUri}` +
     `&publisherPcastUri=${config.args.publisherPcastUri}` +
@@ -180,6 +187,8 @@ function parseTestArgs() {
     testRuntimeMs: parseToMilliseconds(argv.runtime),
     videoProfile: defaultProfiles.videoProfile,
     audioProfile: defaultProfiles.audioProfile,
+    screenName: argv.screenName,
+    failIfMemberHasNoStream: argv.failIfMemberHasNoStream === true,
     concurrency: argv.concurrency,
     logAllStatsInReport: argv.logAllStatsInReport,
     saveConsoleLogs: argv.saveConsoleLogs,
@@ -205,12 +214,20 @@ function parseTestArgs() {
     noSignalWaitingTime: argv.noSignalWaitingTime
   };
 
-  if (args.tests === 'all') {
-    const testsPath = './test/fixtures/';
-    args.tests = [];
-    fs.readdirSync(testsPath).forEach(file => {
-      args.tests.push(p.join(testsPath, file));
-    });
+  if (argv.channelAlias !== '') {
+    config.channelAlias = argv.channelAlias;
+  } else {
+    config.channelAlias = argv.rtmpPushFile !== '' ? 'PlatformTestingRtmp' : `PlatformTesting-${moment().format('YYYY-MM-DD.HH.mm')}`;
+  }
+
+  if (args.tests.indexOf('room-quality-test') > -1) {
+    if (argv.roomAlias === '') {
+      exitWithErrorMessage(
+        `Error: roomAlias is requred`
+      );
+    }
+
+    args.roomAlias = argv.roomAlias;
   }
 
   if (args.browsers.includes('ie')) {

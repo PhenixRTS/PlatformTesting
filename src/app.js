@@ -33,6 +33,9 @@ class App {
     app.use('/shared', express.static(path.join(__dirname, '../', 'shared')));
 
     app.get('/', (req, res) => res.render('index'));
+    app.get('/room', (req, res) => {
+      res.sendFile(path.join(__dirname, 'public', 'room.html')); // eslint-disable-line no-undef
+    });
     app.get('/lag', (req, res) => {
       res.sendFile(path.join(__dirname, 'public', 'lag.html')); // eslint-disable-line no-undef
     });

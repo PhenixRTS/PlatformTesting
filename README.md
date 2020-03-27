@@ -182,3 +182,16 @@ npm run test -- --runtime=PT1M --noSignalColor="rgb(0, 0, 0)"
 Add these args to override signal waiting time -
 `--noSignalWaitingTime=<seconds>` or color tolerance value - `--noSignalColorTolerance=<newTolerance>`.
 By default signal waiting time is set to 10 seconds and color tolerance value is set to 5.
+
+## Room quality test for all members in the room using ExpressRoom API
+
+There is `./test/fixtures/room-quality-test.js` test for running quality test against all members in the room.
+
+Example:
+```
+npm run test -- --tests=test/fixtures/room-quality-test.js --roomAlias=MyAwesomeRoomAlias
+```
+
+In case there is need to check only one member's stream in the room, you can specify the member by setting `--screenName=AwesomeScreenName`.
+
+If `--failIfMemberHasNoStream` argument is set, the test will fail if there will be member with no stream in the room.

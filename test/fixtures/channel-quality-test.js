@@ -30,15 +30,20 @@ test(`Measure channel for ${config.args.testRuntime} and assert quality of video
     .expect(page.videoEl.exists).ok()
     .expect(page.offlineTitle.exists).notOk();
 
-  await common.monitorStream(t, 'videoCanvasImg');
+  await common.monitorStream(t, 'videoCanvasImg', 'videoEl');
 
   page.stats = await reporter.CollectMediaStreamStats();
-  page.meanVideoStats = await reporter.GetMeanVideoStats(page.stats);
-  page.meanAudioStats = await reporter.GetMeanAudioStats(page.stats);
 
-  await page.asserts.assertKPIs();
-  await page.asserts.assertVideoQuality();
-  await page.asserts.assertAudioQuality();
+  page.stats.default.meanVideoStats = await reporter.GetMeanVideoStats(page.stats.default);
+  page.stats.default.meanAudioStats = await reporter.GetMeanAudioStats(page.stats.default);
+
+  const {meanAudioStats, meanVideoStats} = page.stats.default;
+
+  await page.asserts.assertKPIs(page.stats.default);
+  await page.asserts.assertVideoQuality(meanVideoStats);
+  await page.asserts.assertAudioQuality(meanAudioStats);
+
+  await page.asserts.runAssertions();
 }).after(async t => {
   await common.finishAndReport(__filename, t.ctx.testFailed, page, t);
 });

@@ -15,7 +15,6 @@
  */
 
 import {t} from 'testcafe';
-import {ok} from 'assert';
 import {isNull} from 'util';
 import _ from 'lodash';
 
@@ -32,6 +31,7 @@ module.exports = class Asserts {
   constructor(page) {
     this.page = page;
     this.assertions = [];
+    this.allAssertions = [];
   }
 
   async assert(name, actualValue, expectedValue, sign, tolerance) {
@@ -153,17 +153,38 @@ module.exports = class Asserts {
     t.ctx.assertions.push(`${name} ${assertionMsg} ${expected} (was ${actual})`);
   }
 
-  async finishTest() {
-    reporter.LogAssertionResults(this.assertions);
+  async finishTest(memberID = '') {
+    reporter.LogAssertionResults(this.assertions, memberID);
 
-    await Promise.all(this.assertions.map(async ({assertion, msg}) => {
+    const member = memberID === '' ? 'default' : memberID;
+
+    if (!t.ctx.assertionResults) {
+      t.ctx.assertionResults = {};
+    }
+
+    t.ctx.assertionResults[member] = {
+      passed: [...t.ctx.assertions],
+      failed: [...t.ctx.failedAssertions],
+      skipped: [...t.ctx.skippedAssertions]
+    };
+
+    t.ctx.assertions = [];
+    t.ctx.failedAssertions = [];
+    t.ctx.skippedAssertions = [];
+
+    this.allAssertions = [...this.allAssertions, ...this.assertions];
+    this.assertions = [];
+  }
+
+  async runAssertions() {
+    await Promise.all(this.allAssertions.map(async({assertion, msg}) => {
       await t.expect(assertion).ok(msg);
 
       return;
     }));
   }
 
-  async assertInterframeThresholds() {
+  async assertInterframeThresholds(streamStats) {
     const {interframeDelayThresholds} = config.videoAssertProfile;
 
     if (interframeDelayThresholds === null) {
@@ -177,7 +198,7 @@ module.exports = class Asserts {
       const msg = `Video interframe delay treshold ${timesPerMinute} times above ${maxAllowed} milliseconds`;
       let passed = true;
 
-      this.page.meanVideoStats.interframeDelaysPerMin.forEach((delaysPerMin, index) => {
+      streamStats.interframeDelaysPerMin.forEach((delaysPerMin, index) => {
         const aboveMax = delaysPerMin.filter(el => el > maxAllowed);
         const assertion = aboveMax.length <= timesPerMinute;
 
@@ -210,40 +231,40 @@ module.exports = class Asserts {
     });
   }
 
-  async assertKPIs() {
+  async assertKPIs(streamStats) {
     this.assert(
       'PTTFF',
-      this.page.stats.streamReceivedAt - this.page.stats.loadedAt,
+      streamStats.streamReceivedAt - streamStats.loadedAt,
       config.videoAssertProfile.maxPTTFF,
       'lte'
     );
   }
 
-  async assertVideoQuality() {
+  async assertVideoQuality(streamStats) {
     const {maxTargetDelayOvershoot} = config.videoAssertProfile;
     const videoTargetDelay = 'Video current delay';
 
     this.assert(
       'Video mean bitrate',
-      this.page.meanVideoStats.bitrateMean,
+      streamStats.bitrateMean,
       config.videoAssertProfile.minBitrateMeanKbps,
       'gte'
     );
     this.assert(
       'Video max mean bitrate',
-      this.page.meanVideoStats.bitrateMean,
+      streamStats.bitrateMean,
       config.videoAssertProfile.maxBitrateMeanKps,
       'lte'
     );
     this.assert(
       'Video mean delay',
-      this.page.meanVideoStats.currentDelay,
+      streamStats.currentDelay,
       config.videoAssertProfile.maxMeanDelay,
       'lte'
     );
     this.assert(
       'Video max delay',
-      this.page.meanVideoStats.maxDelay,
+      streamStats.maxDelay,
       config.videoAssertProfile.maxDelay,
       'lte'
     );
@@ -251,8 +272,8 @@ module.exports = class Asserts {
     if (maxTargetDelayOvershoot !== null) {
       this.assert(
         videoTargetDelay,
-        this.page.meanVideoStats.currentDelay,
-        parseFloat(this.page.meanVideoStats.targetDelay) + parseFloat(maxTargetDelayOvershoot),
+        streamStats.currentDelay,
+        parseFloat(streamStats.targetDelay) + parseFloat(maxTargetDelayOvershoot),
         'lte'
       );
     } else {
@@ -261,156 +282,156 @@ module.exports = class Asserts {
 
     this.assert(
       'Video dropped frames',
-      this.page.meanVideoStats.droppedFrames,
+      streamStats.droppedFrames,
       config.videoAssertProfile.maxDroppedFrames * config.videoAssertProfile.minFrameRateMean,
       'lte'
     );
     this.assert(
       'Video mean framerate',
-      this.page.meanVideoStats.framerateMean,
+      streamStats.framerateMean,
       config.videoAssertProfile.minFrameRateMean,
       'gte',
       0.05
     );
     this.assert(
       'Video max framerate',
-      this.page.meanVideoStats.framerateMax,
+      streamStats.framerateMax,
       config.videoAssertProfile.maxFrameRate,
       'lte'
     );
     this.assert(
       'Video min framerate',
-      this.page.meanVideoStats.framerateMin,
+      streamStats.framerateMin,
       config.videoAssertProfile.minFrameRate,
       'gte'
     );
     this.assert(
       'Video packet loss',
-      this.page.meanVideoStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000),
+      streamStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000),
       config.videoAssertProfile.maxPacketLossPerMinute,
       'lte'
     );
     this.assert(
       'Video average frame width',
-      this.page.meanVideoStats.avgFrameWidth,
+      streamStats.avgFrameWidth,
       config.videoAssertProfile.frameWidth,
       'eql'
     );
     this.assert(
       'Video average frame height',
-      this.page.meanVideoStats.avgFrameHeight,
+      streamStats.avgFrameHeight,
       config.videoAssertProfile.frameHeight,
       'eql'
     );
     this.assert(
       'Video first frame received to decode',
-      this.page.meanVideoStats.nativeReport.googFirstFrameReceivedToDecodedMs,
+      streamStats.nativeReport.googFirstFrameReceivedToDecodedMs,
       config.videoAssertProfile.timeToFirstFrameDecoded,
       'lte'
     );
     this.assert(
       'Video nacks sent',
-      this.page.meanVideoStats.nativeReport.googNacksSent / (config.args.testRuntimeMs / 60000),
+      streamStats.nativeReport.googNacksSent / (config.args.testRuntimeMs / 60000),
       config.videoAssertProfile.maxNacksSentPerMinute,
       'lte'
     );
     this.assert(
       'Video firs sent',
-      this.page.meanVideoStats.nativeReport.googFirsSent,
+      streamStats.nativeReport.googFirsSent,
       config.videoAssertProfile.firsSent,
       'eql'
     );
     this.assert(
       'Video plis sent',
-      this.page.meanVideoStats.nativeReport.googPlisSent / (config.args.testRuntimeMs / 60000),
+      streamStats.nativeReport.googPlisSent / (config.args.testRuntimeMs / 60000),
       config.videoAssertProfile.maxPlisSentPerMinute,
       'lte'
     );
     this.assert(
       'Video codec name',
-      this.page.meanVideoStats.codecName,
+      streamStats.codecName,
       config.videoAssertProfile.codecName,
       'eql'
     );
     this.assert(
       'Video frame rate decoded',
-      this.page.meanVideoStats.avgFrameRateDecoded,
-      this.page.meanVideoStats.avgFrameRateOutput,
+      streamStats.avgFrameRateDecoded,
+      streamStats.avgFrameRateOutput,
       'gte',
       config.videoAssertProfile.decodedFrameRateTolerance
     );
     this.assert(
       'Video freeze',
-      this.page.meanVideoStats.freezesDetected,
+      streamStats.freezesDetected,
       config.videoAssertProfile.maxVideoFreezes,
       'eql'
     );
     this.assert(
       'Video resolution change count',
-      this.page.meanVideoStats.videoResolutionChangeCount / (config.args.testRuntimeMs / 60000),
+      streamStats.videoResolutionChangeCount / (config.args.testRuntimeMs / 60000),
       config.videoAssertProfile.maxResolutionChangeCountPerMinute,
       'lte'
     );
-    await this.assertInterframeThresholds();
+    await this.assertInterframeThresholds(streamStats);
   }
 
-  async assertAudioQuality() {
+  async assertAudioQuality(audioStats, memberID) {
     this.assert(
       'Audio mean bitrate',
-      this.page.meanAudioStats.bitrateMean,
+      audioStats.bitrateMean,
       config.audioAssertProfile.minBitrateMeanKbps,
       'gte'
     );
     this.assert(
       'Audio mean jitter',
-      this.page.meanAudioStats.jitter,
+      audioStats.jitter,
       config.audioAssertProfile.maxJitter,
       'lt'
     );
     this.assert(
       'Audio mean jitter buffer',
-      this.page.meanAudioStats.jitterBuffer,
-      this.page.meanAudioStats.jitter,
+      audioStats.jitterBuffer,
+      audioStats.jitter,
       'gt'
     );
     this.assert(
       'Audio mean output level',
-      this.page.meanAudioStats.audioOutputLevel,
+      audioStats.audioOutputLevel,
       config.audioAssertProfile.minAudioOutputLevel,
       'gte'
     );
     this.assert(
       'Audio mean delay',
-      this.page.meanAudioStats.currentDelay,
+      audioStats.currentDelay,
       config.audioAssertProfile.maxMeanDelay,
       'lte'
     );
     this.assert(
       'Audio max delay',
-      this.page.meanAudioStats.maxDelay,
+      audioStats.maxDelay,
       config.audioAssertProfile.maxDelay,
       'lte'
     );
     this.assert(
       'Audio packets loss',
-      this.page.meanAudioStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000),
+      audioStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000),
       config.audioAssertProfile.maxPacketsLossPerMinute,
       'lt'
     );
     this.assert(
       'Audio total samples duration',
-      this.page.meanAudioStats.totalSamplesDuration,
-      config.audioAssertProfile.totalSamplesDurationPerc ? this.page.meanAudioStats.statsCaptureDuration * config.audioAssertProfile.totalSamplesDurationPerc / 100 : null,
+      audioStats.totalSamplesDuration,
+      config.audioAssertProfile.totalSamplesDurationPerc ? audioStats.statsCaptureDuration * config.audioAssertProfile.totalSamplesDurationPerc / 100 : null,
       'gte'
     );
     this.assert(
       'Audio codec name',
-      this.page.meanAudioStats.codecName,
+      audioStats.codecName,
       config.audioAssertProfile.codecName,
       'eql'
     );
 
-    await this.finishTest();
+    await this.finishTest(memberID);
   }
 
   async assertAudioLag(rtmpPush) {
@@ -437,7 +458,7 @@ module.exports = class Asserts {
       config.videoAssertProfile.maxSingleSync,
       'lte'
     );
-    
+
     await this.finishTest();
   }
 };

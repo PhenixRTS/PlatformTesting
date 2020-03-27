@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://dl.phenixrts.com/WebSDK/2019.2.latest/phenix-web-sdk.min.js"></script>
+    <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
+
+    <title>Phenix Video Test</title>
+
+    <style>
+      video {
+        width: 100%;
+      }
+
+      canvas {
+        width: 500px;
+        height: 500px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="room">
+      <h2>Room quality test</h2>
+      <p id="clientMessage"></p>
+      <p id="roomError"></p>
+
+      <div id="videoList"></div>
+
+      <div id="canvasList"></div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script src="js/client_room.js"></script>
+  </body>
+</html>
