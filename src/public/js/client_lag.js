@@ -29,6 +29,7 @@ var subscriberVideoEl;
 var subscriberCanvas;
 var subscriberCanvasCtx;
 var subscriberCanvasColorVal;
+var subscriberDrawInterval = null;
 
 var subscriberOscilloscopeEl;
 var subscriberFrequencyGraphEl;
@@ -48,6 +49,7 @@ var previousSubscriberColor = {
 var audioSampleRate = 44100;
 var audioFFTSize = 512;
 
+var colorListenInterval = 10;
 var mediaListenInterval = 60;
 const timestampDecodeInterval = 1000;
 
@@ -179,7 +181,7 @@ function subscriberCallback(receivedError, response) {
   if (response.status === 'no-stream-playing') {
     console.warn('No stream playing');
   } else if (response.status !== 'ok') {
-    error(receivedError);
+    error(`Got status: ${response.status}`);
 
     state =
       channelJoinRetries === 0
@@ -228,7 +230,11 @@ function subscriberCallback(receivedError, response) {
     return;
   }
 
-  drawToCanvas();
+  if (subscriberDrawInterval === null) {
+    subscriberDrawInterval = setInterval(() => {
+      drawToCanvas();
+    }, colorListenInterval);
+  }
 
   if (rtmpPush) {
     logDecodedTimestamp();
@@ -250,8 +256,6 @@ function drawToCanvas() {
   if (!rtmpPush) {
     listenToSubscriberVideoChanges();
   }
-
-  requestAnimationFrame(drawToCanvas);
 }
 
 function prepareAudioAnalyzer(mediaStream) {
