@@ -50,6 +50,9 @@ const argv = require('yargs')
   .describe('rtmpPushFile', 'Video file that will be published with RTMP Push')
   .describe('applicationId', 'Application ID used with API for managing RTMP push channel')
   .describe('secret', 'Secret used with API for managing RTMP push channel')
+  .describe('edgeToken', 'Used as auth and stream token in case they are not provided individually')
+  .describe('authToken', 'An authentication token used to connect to the platform')
+  .describe('streamToken', 'A stream token used to connect to the stream')
   .describe('channelJoinRetries', 'Max retry attempt count for joining the channel')
   .describe('publisherWaitTime', 'Time how log to wait for publisher to subscribe to channel in ISO 8601 format')
   .describe('noSignalColor', 'Screen color that is displayed in case there is no signal')
@@ -86,6 +89,9 @@ const argv = require('yargs')
     rtmpPushFile: '',
     applicationId: '',
     secret: '',
+    edgeToken: '',
+    authToken: '',
+    streamToken: '',
     channelJoinRetries: 0,
     publisherWaitTime: 'PT8S',
     region: 'ingest-stg-europe-west',
@@ -110,6 +116,9 @@ async function test() {
     `&publisherBackendUri=${config.args.publisherBackendUri}` +
     `&publisherPcastUri=${config.args.publisherPcastUri}` +
     `&pcastUri=${config.pcastUri}` +
+    `&edgeToken=${config.args.edgeToken}` +
+    `&authToken=${config.args.authToken}` +
+    `&streamToken=${config.args.streamToken}` +
     `&recordingMs=${config.args.recordingMs}` +
     `&recordingMedia=${config.args.recordingMedia}` +
     `&publisherRecordingMs=${config.args.publisherRecordingMs}` +
@@ -205,6 +214,9 @@ function parseTestArgs() {
     rtmpPushFile: argv.rtmpPushFile,
     applicationId: argv.applicationId,
     secret: argv.secret,
+    edgeToken: argv.edgeToken,
+    authToken: argv.authToken,
+    streamToken: argv.streamToken,
     channelJoinRetries: argv.channelJoinRetries,
     publisherWaitTime: parseToMilliseconds(argv.publisherWaitTime),
     region: argv.region,

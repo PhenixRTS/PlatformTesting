@@ -32,19 +32,25 @@ function rgbToHex(color) {
 }
 
 function getUrlParams(key) {
-  var arr = window.location.search.slice(1).split('&');
-  var params = {};
+  const url = window.location.search;
 
-  for (const param of arr) {
-    const [key, val] = param.split('=');
-    params[key] = val;
+  const regex = new RegExp('[?&]' + key + '(=([^&#]*)|&|#|$)');
+  const results = url.match(regex);
+
+  if (!results) {
+    return null;
   }
 
-  return params[key];
+  if (!results[2]) {
+    return '';
+  }
+  
+  return results[2];
 }
 
-function getChannelUri(backendUri, isBackendPcastUri, alias) {
+function getChannelUri(backendUri, isBackendPcastUri, alias, edgeToken = '') {
   let channelUriBase = backendUri;
+  let edgeTokenQuery = '';
 
   if (isBackendPcastUri) {
     channelUriBase = channelUriBase.substring(
@@ -53,14 +59,21 @@ function getChannelUri(backendUri, isBackendPcastUri, alias) {
     );
   }
 
-  const channelUri = `${channelUriBase}/channel#${alias}`;
+  if (edgeToken) {
+    edgeTokenQuery = `?edgeToken=${edgeToken}`;
+  }
 
-  return channelUri;
+  return `${channelUriBase}/channel/${edgeTokenQuery}#${alias}`;
 }
 
 function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriberCallback) {
   const backendUri = getUrlParams('backendUri');
   const pcastUri = getUrlParams('pcastUri');
+
+  const edgeToken = getUrlParams('edgeToken');
+  const authToken = getUrlParams('authToken');
+  const streamToken = getUrlParams('streamToken');
+
   const featuresParam = getUrlParams('features');
   const features = featuresParam === undefined ? [] : featuresParam.split(',');
   const isBackendPcastUri = backendUri.substring(backendUri.lastIndexOf('/') + 1) === 'pcast';
@@ -69,23 +82,30 @@ function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriber
   const adminApiProxyClient = new sdk.net.AdminApiProxyClient();
   adminApiProxyClient.setBackendUri(backendUriWithPcast);
 
-  const channelExpress = new sdk.express.ChannelExpress({
+  let channelOptions = {
     adminApiProxyClient,
     features,
     disableConsoleLogging: true,
     uri: pcastUri
-  });
-  const options = {
+  };
+
+  let joinOptions = {
     videoElement,
     alias: channelAlias
   };
 
+  if (authToken && streamToken || edgeToken) {
+    channelOptions.authToken = edgeToken || authToken;
+    joinOptions.streamToken = edgeToken || streamToken;
+  }
+
   log(`Subscriber backend uri: ${backendUriWithPcast}`);
   log(`Subscriber PCast uri: ${pcastUri}`);
 
-  log(`Joining channel ${getChannelUri(backendUri, isBackendPcastUri, channelAlias)}`);
+  log(`Joining channel ${getChannelUri(backendUri, isBackendPcastUri, channelAlias, edgeToken)}`);
 
-  channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
+  const channelExpress = new sdk.express.ChannelExpress(channelOptions);
+  channelExpress.joinChannel(joinOptions, joinChannelCallback, subscriberCallback);
 
   return channelExpress;
 }
