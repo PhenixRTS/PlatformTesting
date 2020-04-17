@@ -72,7 +72,7 @@
       { "blankLine": "always", "prev": "*", "next": "throw" },
       { "blankLine": "always", "prev": "function", "next": ["function", "block-like", "multiline-block-like"] },
       { "blankLine": "always", "prev": "class", "next": "*" },
-      { "blankLine": "never", "prev": ["const", "let"], "next": ["const", "let"] },
+      { "blankLine": "any", "prev": ["const", "let"], "next": ["const", "let"] },
       { "blankLine": "always", "prev": "block-like", "next": "*" },
       { "blankLine": "always", "prev": "block", "next": "*" },
       { "blankLine": "always", "prev": "multiline-block-like", "next": "*" },
