@@ -242,7 +242,7 @@ module.exports = class Asserts {
 
   async assertVideoQuality(streamStats) {
     const {maxTargetDelayOvershoot} = config.videoAssertProfile;
-    const videoTargetDelay = 'Video current delay';
+    const videoCurrentDelay = 'Video current delay';
 
     this.assert(
       'Video mean bitrate',
@@ -271,13 +271,13 @@ module.exports = class Asserts {
 
     if (maxTargetDelayOvershoot !== null) {
       this.assert(
-        videoTargetDelay,
+        videoCurrentDelay,
         streamStats.currentDelay,
         parseFloat(streamStats.targetDelay) + parseFloat(maxTargetDelayOvershoot),
         'lte'
       );
     } else {
-      t.ctx.skippedAssertions.push(videoTargetDelay);
+      t.ctx.skippedAssertions.push(videoCurrentDelay);
     }
 
     this.assert(

@@ -296,7 +296,22 @@ function parseTestArgs() {
     });
   }
 
+  validateRtmpSupport();
+
   return args;
+}
+
+function validateRtmpSupport() {
+  const rtmpSupportedTests = [
+    'test/fixtures/channel-lag-test.js',
+    'test/fixtures/channel-sync-test.js'
+  ];
+
+  if (argv.rtmpPushFile !== '' && !rtmpSupportedTests.includes(argv.tests)) {
+    exitWithErrorMessage(
+      `Error: RTMP Push is not supported in ${argv.tests}. Please remove --rtmpPushFile argument.`
+    );
+  }
 }
 
 function exitWithErrorMessage(msg) {
