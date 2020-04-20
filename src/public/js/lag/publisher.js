@@ -112,15 +112,13 @@ function publish(
   );
 }
 
-function publishCallback(error, response) {
-  if (error) {
-    log('PublishCallback returned error:' + error.message);
-    showPublisherMessage(
-      `\nPublish callback returned error: ${error.message}\n`
-    );
-    stopPublisher();
+function publishCallback(err, response) {
+  if (err) {
+    const message = `Error in publish callback - ${err.message}`;
 
-    throw error;
+    showPublisherMessage(`\n${message}\n`);
+    error(message);
+    stopPublisher();
   }
 
   if (
@@ -128,18 +126,18 @@ function publishCallback(error, response) {
     response.status !== 'ended' &&
     response.status !== 'stream-ended'
   ) {
+    const message = `Error in publish callback - got response status: ${response.status}`;
+    
+    showPublisherMessage(`\n${message}\n`);
+    error(message);
     stopPublisher();
-    showPublisherMessage(
-      `\nError in publish callback. Got response status: ${response.status}\n`
-    );
-
-    throw new Error(response.status);
   }
 
   if (response.status === 'ok') {
     publisher = response.publisher;
-    subscribe();
+
     showPublisherMessage('\nPublished successfully!\n');
+    subscribe();
   }
 }
 
