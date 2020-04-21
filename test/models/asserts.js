@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+import _ from 'lodash';
+import moment from 'moment';
 import {t} from 'testcafe';
 import {isNull} from 'util';
-import _ from 'lodash';
 
 import config from '../../config.js';
 import Logger from '../../scripts/logger.js';
@@ -184,6 +185,74 @@ module.exports = class Asserts {
     }));
   }
 
+  formatObservations(observations) {
+    return observations.map(obs => ({
+      ...obs,
+      timestamp: moment.utc(obs.timestamp).format('YYYY-MM-DD HH:mm:ss.SSS z')
+    }));
+  }
+
+  assertFramerate(streamStats, expected, type) {
+    const {framerateMeansPerMinute} = streamStats;
+    const name = `Video ${type} framerate`;
+
+    if (expected === null) {
+      t.ctx.skippedAssertions.push(name);
+
+      return;
+    }
+
+    expected.forEach(allowedValue => {
+      const {allowed, timesPerMinute} = allowedValue;
+      const msg = `${name} ${timesPerMinute} times ${
+        type === 'min' ? 'below' : 'above'
+      } ${allowed}`;
+      let passed = true;
+
+      framerateMeansPerMinute.forEach((frameratesPerMin, index) => {
+        let unexpected = [];
+
+        if (type === 'min') {
+          unexpected = frameratesPerMin.filter(fr => fr.framerate <= allowed);
+        } else {
+          unexpected = frameratesPerMin.filter(fr => fr.framerate >= allowed);
+        }
+
+        if (unexpected.length <= timesPerMinute) {
+          return;
+        }
+
+        const observations = this.formatObservations(unexpected);
+        const message = `${msg} were exceeded (${
+          unexpected.length
+        } times) during test minute ${index + 1}. Observations: ${JSON.stringify(
+          observations,
+          undefined,
+          2
+        )}`;
+
+        passed = false;
+        t.ctx.testFailed = true;
+        t.ctx.failedAssertions.push(message);
+
+        this.assertions.push({
+          assertion: false,
+          msg: message
+        });
+      });
+
+      if (!passed) {
+        return;
+      }
+
+      t.ctx.assertions.push(msg);
+      this.assertions.push({
+        assertion: passed,
+        msg
+      });
+    });
+  }
+
   async assertInterframeThresholds(streamStats) {
     const {interframeDelayThresholds} = config.videoAssertProfile;
 
@@ -198,15 +267,17 @@ module.exports = class Asserts {
       const msg = `Video interframe delay treshold ${timesPerMinute} times above ${maxAllowed} milliseconds`;
       let passed = true;
 
-      streamStats.interframeDelaysPerMin.forEach((delaysPerMin, index) => {
-        const aboveMax = delaysPerMin.filter(el => el > maxAllowed);
+      streamStats.interframeDelaysPerMinute.forEach((delaysPerMin, index) => {
+        const aboveMax = delaysPerMin.filter(el => el.delay > maxAllowed);
         const assertion = aboveMax.length <= timesPerMinute;
 
         if (assertion) {
           return;
         }
 
-        const message = `${msg} were exceeded during test minute ${index + 1}. Observations: [${aboveMax}]`;
+        const observations = this.formatObservations(aboveMax);
+        const message = `${msg} were exceeded during test minute ${index +
+          1}. Observations: ${JSON.stringify(observations, undefined, 2)}`;
 
         passed = false;
         t.ctx.testFailed = true;
@@ -293,18 +364,12 @@ module.exports = class Asserts {
       'gte',
       0.05
     );
-    this.assert(
-      'Video max framerate',
-      streamStats.framerateMax,
-      config.videoAssertProfile.maxFrameRate,
-      'lte'
-    );
-    this.assert(
-      'Video min framerate',
-      streamStats.framerateMin,
-      config.videoAssertProfile.minFrameRate,
-      'gte'
-    );
+
+    const {minFrameRate, maxFrameRate} = config.videoAssertProfile;
+
+    this.assertFramerate(streamStats, minFrameRate, 'min');
+    this.assertFramerate(streamStats, maxFrameRate, 'max');
+
     this.assert(
       'Video packet loss',
       streamStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000),

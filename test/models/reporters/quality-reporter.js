@@ -88,13 +88,14 @@ async function CollectMediaStreamStats() {
 
     el = el.replace(streamStatsTitle, '');
 
-    const stat = JSON.parse(el);
+    const stats = JSON.parse(el);
+    const {mediaType, ssrc} = stats.stat;
 
-    if (collectedStats[stat.mediaType][stat.ssrc] === undefined) {
-      collectedStats[stat.mediaType][stat.ssrc] = [];
+    if (collectedStats[mediaType][ssrc] === undefined) {
+      collectedStats[mediaType][ssrc] = [];
     }
 
-    collectedStats[stat.mediaType][stat.ssrc].push(stat);
+    collectedStats[mediaType][ssrc].push(stats);
   });
 
   return testStats;
@@ -115,7 +116,6 @@ async function GetMeanVideoStats(stats) {
     maxDelay: null,
     droppedFrames: null,
     framerateMean: null,
-    framerateMax: null,
     avgFrameWidth: 0,
     avgFrameHeight: 0,
     avgFrameRateDecoded: 0,
@@ -125,8 +125,9 @@ async function GetMeanVideoStats(stats) {
     freezesDetected: 0,
     interframeDelayMax: 0,
     videoResolutionChangeCount: 0,
-    interframeDelaysPerMin: null
+    interframeDelaysPerMinute: null
   };
+
   const targetDelays = [];
   const currentDelays = [];
   const meanBitrates = [];
@@ -136,13 +137,15 @@ async function GetMeanVideoStats(stats) {
   const frameRateOutputs = [];
   const bytesReceived = [];
   const allInterframeDelayMaxs = [];
+  const framerateMeans = [];
 
   Object.keys(stats.video).forEach((key) => {
     const videoStats = stats.video[key];
     meanVideoStats.totalStatsReceived += videoStats.length;
-    meanVideoStats.framerateMin = videoStats[1].framerateMean.toFixed(2);
 
-    videoStats.forEach((stat) => {
+    videoStats.forEach((statData, index) => {
+      const {stat, timestamp} = statData;
+
       targetDelays.push(stat.targetDelay);
       currentDelays.push(stat.currentDelay);
       meanBitrates.push(stat.bitrateMean);
@@ -161,18 +164,27 @@ async function GetMeanVideoStats(stats) {
       meanVideoStats.maxDelay = stat.currentDelay > meanVideoStats.maxDelay ? stat.currentDelay : meanVideoStats.maxDelay;
       meanVideoStats.interframeDelayMax = stat.nativeReport.googInterframeDelayMax > meanVideoStats.interframeDelayMax ? stat.nativeReport.googInterframeDelayMax : meanVideoStats.interframeDelayMax;
       meanVideoStats.downloadRate = stat.downloadRate;
-      meanVideoStats.framerateMean = stat.framerateMean.toFixed(2);
-      meanVideoStats.framerateMax = stat.framerateMean > meanVideoStats.framerateMax ? stat.framerateMean.toFixed(2) : meanVideoStats.framerateMax;
-      meanVideoStats.framerateMin = (stat.framerateMean < meanVideoStats.framerateMin && stat.framerateMean !== 0) ? stat.framerateMean.toFixed(2) : meanVideoStats.framerateMin;
       meanVideoStats.droppedFrames += stat.droppedFrames;
       meanVideoStats.nativeReport = stat.nativeReport;
       meanVideoStats.freezesDetected += bytesReceived.includes(stat.nativeReport.bytesReceived) ? 1 : 0;
       bytesReceived.push(stat.nativeReport.bytesReceived);
-      allInterframeDelayMaxs.push(stat.nativeReport.googInterframeDelayMax);
+      allInterframeDelayMaxs.push({
+        delay: stat.nativeReport.googInterframeDelayMax,
+        timestamp
+      });
+
+      if (stat.framerateMean === 0 && index === 0) {
+        return;
+      }
+
+      framerateMeans.push({
+        framerate: Number(stat.framerateMean.toFixed(0)),
+        timestamp
+      });
     });
 
     meanVideoStats.statsCaptureDuration =
-      videoStats[videoStats.length - 1].nativeReport.timestamp - videoStats[0].nativeReport.timestamp;
+      videoStats[videoStats.length - 1].stat.nativeReport.timestamp - videoStats[0].stat.nativeReport.timestamp;
   });
 
   meanVideoStats.targetDelay = math.average(targetDelays).toFixed(2);
@@ -182,7 +194,11 @@ async function GetMeanVideoStats(stats) {
   meanVideoStats.avgFrameHeight = math.average(frameHeights.slice(3));
   meanVideoStats.avgFrameRateDecoded = math.average(frameRateDecodes).toFixed(1);
   meanVideoStats.avgFrameRateOutput = math.average(frameRateOutputs).toFixed(1);
-  meanVideoStats.interframeDelaysPerMin = math.chunk(allInterframeDelayMaxs, 60);
+  meanVideoStats.interframeDelaysPerMinute = math.chunk(allInterframeDelayMaxs, 60);
+  meanVideoStats.framerateMeansPerMinute = math.chunk(framerateMeans, 60);
+  meanVideoStats.framerateMean =
+    framerateMeans.reduce((p, c) => p + (c.value || 0), 0) /
+    framerateMeans.length;
   frameHeights.forEach((h, i) => {
     if (i > 0) {
       meanVideoStats.videoResolutionChangeCount += frameHeights[i - 1] == h ? 0 : 1; // eslint-disable-line eqeqeq
@@ -222,7 +238,9 @@ async function GetMeanAudioStats(stats) {
     const audioStats = stats.audio[key];
     meanAudioStats.totalStatsReceived += audioStats.length;
 
-    audioStats.forEach((stat) => {
+    audioStats.forEach(statData => {
+      const {stat} = statData;
+
       currentDelays.push(stat.currentDelay);
       audioOutputLevels.push(stat.audioOutputLevel);
       jitters.push(stat.jitter);
@@ -244,7 +262,7 @@ async function GetMeanAudioStats(stats) {
     });
 
     meanAudioStats.statsCaptureDuration =
-      audioStats[audioStats.length - 1].nativeReport.timestamp - audioStats[0].nativeReport.timestamp;
+      audioStats[audioStats.length - 1].stat.nativeReport.timestamp - audioStats[0].stat.nativeReport.timestamp;
   });
 
   meanAudioStats.currentDelay = math.average(currentDelays);

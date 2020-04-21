@@ -21,8 +21,18 @@ const videoProfile = {
   maxMeanDelay: 'PT0.5S',
   maxTargetDelayOvershoot: 50,
   minFrameRateMean: 30,
-  maxFrameRate: 31,
-  minFrameRate: 24,
+  minFrameRate: [
+    {
+      allowed: 24,
+      timesPerMinute: 1
+    }
+  ],
+  maxFrameRate: [
+    {
+      allowed: 31,
+      timesPerMinute: 1
+    }
+  ],
   maxDroppedFrames: 0.01,
   maxPacketLossPerMinute: 3,
   frameWidth: 1280,

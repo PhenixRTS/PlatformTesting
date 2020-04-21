@@ -261,20 +261,54 @@ function parseTestArgs() {
   }
 
   if (argv.video) {
-    Object.keys(argv.video).forEach((key) => {
+    Object.keys(argv.video).forEach(key => {
       if (args.videoProfile[key] === undefined) {
         exitWithErrorMessage(
           `Error: unsupported argument override - key '${key}' does not exist on video profile!` +
-          `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.videoProfile), undefined, 2)}`
+            `\n\nAvailable keys:\n ${JSON.stringify(
+              Object.keys(defaultProfiles.videoProfile),
+              undefined,
+              2
+            )}`
         );
       }
 
-      if (key === 'interframeDelayThresholds') {
-        Object.keys(argv.video.interframeDelayThresholds).forEach((index) => {
-          if (args.videoProfile.interframeDelayThresholds[index]) {
-            _.merge(args.videoProfile.interframeDelayThresholds[index], argv.video.interframeDelayThresholds[index]);
+      if (
+        key === 'interframeDelayThresholds' ||
+        key === 'minFrameRate' ||
+        key === 'maxFrameRate'
+      ) {
+        const {timesPerMinute} = argv.video[key];
+        const allowedKey = key === 'interframeDelayThresholds' ? 'maxAllowed' : 'allowed';
+        const allowed = argv.video[key][allowedKey];
+
+        if (!Array.isArray(argv.video[key][allowedKey])) {
+          argv.video[key][allowedKey] = [allowed];
+          argv.video[key].timesPerMinute = [timesPerMinute];
+        }
+
+        if (args.videoProfile[key] === null) {
+          args.videoProfile[key] = [{
+            [allowedKey]: allowed,
+            timesPerMinute
+          }];
+
+          return;
+        }
+
+        argv.video[key][allowedKey].forEach((allowedValue, index) => {
+          const {timesPerMinute} = argv.video[key];
+          const existingIndex = args.videoProfile[key].findIndex(
+            frameRate => frameRate[allowedKey] === allowedValue
+          );
+
+          if (existingIndex === -1) {
+            args.videoProfile[key].push({
+              [allowedKey]: allowedValue,
+              timesPerMinute: timesPerMinute[index]
+            });
           } else {
-            args.videoProfile.interframeDelayThresholds.push(argv.video.interframeDelayThresholds[index]);
+            args.videoProfile[key][existingIndex].timesPerMinute = timesPerMinute[index];
           }
         });
       } else {

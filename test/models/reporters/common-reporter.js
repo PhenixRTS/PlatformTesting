@@ -40,6 +40,20 @@ function getTestConfiguration() {
   return configuration;
 }
 
+function parseAssertions(title, assertions) {
+  let report = `\n\n${title}:\n\n`;
+
+  if (assertions.length === 0) {
+    return report + '-';
+  }
+
+  assertions.forEach(assertion => {
+    report += `${assertion}\n`;
+  });
+
+  return report;
+};
+
 module.exports = {
   async CreateConsoleDump(testController) {
     const obj = await testController.getBrowserConsoleMessages();
@@ -84,12 +98,13 @@ module.exports = {
       const memberHeader = header[memberID] || header;
       const memberContent = content[memberID] || content;
 
-      reportDetails += '\n\n' + title +
-        '\n' + memberHeader +
-        '\n\nAssertions passed:\n' + JSON.stringify(passed, undefined, 2) +
-        '\n\nFailures:\n' + JSON.stringify(failed, undefined, 2) +
-        '\n\nSkipped:\n' + JSON.stringify(skipped, undefined, 2) +
-        '\n' + memberContent;
+      reportDetails += '\n\n' + title + '\n' + memberHeader;
+        
+      reportDetails += parseAssertions('ASSERTIONS PASSED', passed);
+      reportDetails += parseAssertions('FAILURES', failed);
+      reportDetails += parseAssertions('SKIPPED', skipped);
+      
+      reportDetails += '\n' + memberContent;
 
       const allStats = page.stats[memberID] || page.stats;
 

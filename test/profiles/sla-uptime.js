@@ -21,8 +21,13 @@ const videoProfile = {
   maxMeanDelay: 'PT3S',
   maxTargetDelayOvershoot: null,
   minFrameRateMean: 1,
+  minFrameRate: [
+    {
+      allowed: 1,
+      timesPerMinute: 1
+    }
+  ],
   maxFrameRate: null,
-  minFrameRate: 1,
   maxDroppedFrames: null,
   maxPacketLossPerMinute: null,
   frameWidth: null,

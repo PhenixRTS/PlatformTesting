@@ -110,7 +110,10 @@ function startStatsLogging() {
 
 function getStatsCallback(stats) {
   stats.forEach(stat => {
-    log(`[Media Stream Stats] ${JSON.stringify(stat)}`);
+    log(`[Media Stream Stats] ${JSON.stringify({
+      timestamp: Date.now(),
+      stat
+    })}`);
   });
 }
 
