@@ -27,12 +27,14 @@ npm run test -- --help
 ```
 
 Currently available browsers:
+
 * `chrome`
 * `chrome:headless`
 * `firefox`
 * `firefox:headless`
 * `safari`
 * `ie`
+* `edge` (Chromium-based versions)
 * `opera`
 
 Note: browser must be installed before you can run tests in desired browser, otherwise you will get an error.
@@ -49,7 +51,7 @@ npm run test -- --browsers=chrome --tests=test/fixtures/channel-video-audio-qual
 
 or in multiple browsers:
 ```
-npm run test -- --browsers=chrome safari --tests=test/fixtures/channel-video-audio-quality-short.js
+npm run test -- --browsers="chrome, safari" --tests=test/fixtures/channel-video-audio-quality-short.js
 ```
 
 ## Video and audio profiles
