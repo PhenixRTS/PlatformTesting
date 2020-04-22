@@ -278,37 +278,11 @@ function parseTestArgs() {
         key === 'minFrameRate' ||
         key === 'maxFrameRate'
       ) {
-        const {timesPerMinute} = argv.video[key];
-        const allowedKey = key === 'interframeDelayThresholds' ? 'maxAllowed' : 'allowed';
-        const allowed = argv.video[key][allowedKey];
-
-        if (!Array.isArray(argv.video[key][allowedKey])) {
-          argv.video[key][allowedKey] = [allowed];
-          argv.video[key].timesPerMinute = [timesPerMinute];
-        }
-
-        if (args.videoProfile[key] === null) {
-          args.videoProfile[key] = [{
-            [allowedKey]: allowed,
-            timesPerMinute
-          }];
-
-          return;
-        }
-
-        argv.video[key][allowedKey].forEach((allowedValue, index) => {
-          const {timesPerMinute} = argv.video[key];
-          const existingIndex = args.videoProfile[key].findIndex(
-            frameRate => frameRate[allowedKey] === allowedValue
-          );
-
-          if (existingIndex === -1) {
-            args.videoProfile[key].push({
-              [allowedKey]: allowedValue,
-              timesPerMinute: timesPerMinute[index]
-            });
+        Object.keys(argv.video[key]).forEach((index) => {
+          if (args.videoProfile[key][index]) {
+            _.merge(args.videoProfile[key][index], argv.video[key][index]);
           } else {
-            args.videoProfile[key][existingIndex].timesPerMinute = timesPerMinute[index];
+            args.videoProfile[key].push(argv.video[key][index]);
           }
         });
       } else {

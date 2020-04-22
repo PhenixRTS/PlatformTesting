@@ -70,6 +70,11 @@ And also override values with flags like this:
 npm run test -- --video.frameWidth=1280 --video.frameHeight=720 --audio.minAudioOutputLevel=20
 ```
 
+To override `minFrameRate`, `maxFrameRate` or `interframeDelayThresholds` use:
+```sh
+npm run test -- --video.minFrameRate.0.allowed=20 --video.maxFrameRate.0.allowed=61 --video.maxFrameRate.0.timesPerMinute=1 --video.interframeDelayThresholds.0.maxAllowed=50
+```
+
 ## Record subscriber media
 
 Recorded media will be saved in browsers default downloads folder.
