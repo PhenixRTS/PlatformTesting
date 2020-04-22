@@ -511,6 +511,20 @@ module.exports = class Asserts {
 
   async assertSync() {
     this.assert(
+      'Collected video stats count',
+      this.page.stats.video.length,
+      0,
+      'gt'
+    );
+
+    this.assert(
+      'Collected audio stats count',
+      this.page.stats.audio.length,
+      0,
+      'gt'
+    );
+
+    this.assert(
       'Average video sync with audio',
       this.page.stats.averageSync,
       config.videoAssertProfile.maxAverageSync,
