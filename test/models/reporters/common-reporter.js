@@ -37,6 +37,8 @@ function getTestConfiguration() {
     configuration[key] = args[key];
   }
 
+  configuration.secret = args.secret !== '' ? '<secret>' : '';
+
   return configuration;
 }
 

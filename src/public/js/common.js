@@ -44,7 +44,7 @@ function getUrlParams(key) {
   if (!results[2]) {
     return '';
   }
-  
+
   return results[2];
 }
 
