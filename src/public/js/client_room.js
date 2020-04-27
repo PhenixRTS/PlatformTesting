@@ -129,9 +129,7 @@ function membersChangedCallback(members) {
     }
 
     const memberStream = member.getObservableStreams().getValue()[0];
-    const options = {
-      videoElement: document.getElementById(memberID)
-    };
+    const options = {videoElement: document.getElementById(memberID)};
 
     roomExpress.subscribeToMemberStream(
       memberStream,

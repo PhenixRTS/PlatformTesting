@@ -53,12 +53,12 @@ var colorListenInterval = 10;
 var mediaListenInterval = 60;
 const timestampDecodeInterval = 1000;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async() => {
   log(`[Url loaded] ${Date.now()}`);
-  prepare();
+  await prepare();
 });
 
-function prepare() {
+async function prepare() {
   subscriberVideoEl = document.getElementById('subscriberVideoContainer');
   subscriberOscilloscopeEl = document.getElementById('subscriberOscilloscope');
   subscriberFrequencyGraphEl = document.getElementById('subscriberFreqGraph');
@@ -76,7 +76,7 @@ function prepare() {
       'Using RTMP Push for publishing';
     document.getElementById('publisher').style.display = 'none';
   } else {
-    publish(channelAlias, publisherBackendUri, publisherPcastUri, channelName);
+    await publish(channelAlias, publisherBackendUri, publisherPcastUri, channelName);
   }
 }
 

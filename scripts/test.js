@@ -111,21 +111,23 @@ async function test() {
     `&channelAlias=${config.channelAlias}` +
     `&roomAlias=${config.args.roomAlias}` +
     `&screenName=${config.args.screenName}` +
-    `&failIfMemberHasNoStream=${config.args.failIfMemberHasNoStream}` +
     `&backendUri=${config.backendUri}` +
     `&publisherBackendUri=${config.args.publisherBackendUri}` +
     `&publisherPcastUri=${config.args.publisherPcastUri}` +
     `&pcastUri=${config.pcastUri}` +
     `&edgeToken=${config.args.edgeToken}` +
-    `&authToken=${config.args.authToken}` +
     `&streamToken=${config.args.streamToken}` +
-    `&recordingMs=${config.args.recordingMs}` +
+    `&authToken=${config.args.authToken}` +
+    `&applicationId=${config.args.applicationId}` +
+    `&secret=${config.args.secret}` +
+    `&rtmpPush=${config.args.rtmpPushFile !== ''}` +
     `&recordingMedia=${config.args.recordingMedia}` +
+    `&recordingMs=${config.args.recordingMs}` +
     `&publisherRecordingMs=${config.args.publisherRecordingMs}` +
     `&screenshotAfterMs=${config.args.screenshotAfterMs}` +
     `&downloadImgName=${config.args.downloadImgName}` +
     `&syncFps=${config.args.videoProfile.syncPublishedVideoFps}` +
-    `&rtmpPush=${config.args.rtmpPushFile !== ''}` +
+    `&failIfMemberHasNoStream=${config.args.failIfMemberHasNoStream}` +
     `&channelJoinRetries=${config.args.channelJoinRetries}`;
   config.videoAssertProfile = config.args.videoProfile;
   config.audioAssertProfile = config.args.audioProfile;

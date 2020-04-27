@@ -54,7 +54,7 @@ function parseAssertions(title, assertions) {
   });
 
   return report;
-};
+}
 
 module.exports = {
   async CreateConsoleDump(testController) {
@@ -101,11 +101,11 @@ module.exports = {
       const memberContent = content[memberID] || content;
 
       reportDetails += '\n\n' + title + '\n' + memberHeader;
-        
+
       reportDetails += parseAssertions('ASSERTIONS PASSED', passed);
       reportDetails += parseAssertions('FAILURES', failed);
       reportDetails += parseAssertions('SKIPPED', skipped);
-      
+
       reportDetails += '\n' + memberContent;
 
       const allStats = page.stats[memberID] || page.stats;

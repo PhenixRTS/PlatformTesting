@@ -94,7 +94,7 @@ const initPublisher = () => {
 };
 
 // eslint-disable-next-line no-unused-vars
-function publish(
+async function publish(
   channelAlias,
   publisherBackendUri,
   publisherPcastUri,
@@ -102,7 +102,7 @@ function publish(
 ) {
   testMediaStream = initPublisher();
 
-  publishTo(
+  await publishTo(
     channelAlias,
     testMediaStream,
     publisherBackendUri,
@@ -127,7 +127,7 @@ function publishCallback(err, response) {
     response.status !== 'stream-ended'
   ) {
     const message = `Error in publish callback - got response status: ${response.status}`;
-    
+
     showPublisherMessage(`\n${message}\n`);
     error(message);
     stopPublisher();

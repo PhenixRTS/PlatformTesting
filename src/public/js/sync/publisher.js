@@ -96,7 +96,7 @@ const initPublisher = () => {
 };
 
 // eslint-disable-next-line no-unused-vars
-function publish(
+async function publish(
   channelAlias,
   publisherBackendUri,
   publisherPcastUri,
@@ -104,7 +104,7 @@ function publish(
 ) {
   testMediaStream = initPublisher();
 
-  publishTo(
+  await publishTo(
     channelAlias,
     testMediaStream,
     publisherBackendUri,

@@ -33,12 +33,12 @@ var subscriberStream;
 var subscriberStats;
 var lastTimeCentered = new Date();
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async() => {
   log(`[Url loaded] ${Date.now()}`);
-  prepare();
+  await prepare();
 });
 
-function prepare() {
+async function prepare() {
   subscriberVideoEl = document.getElementById('subscriberVideoContainer');
   subscriberVideoEl.width = canvasWidth;
   subscriberVideoEl.height = canvasHeight;
@@ -53,7 +53,7 @@ function prepare() {
       'Using RTMP Push for publishing';
     document.getElementById('publisher').style.display = 'none';
   } else {
-    publish(channelAlias, publisherBackendUri, publisherPcastUri, channelName);
+    await publish(channelAlias, publisherBackendUri, publisherPcastUri, channelName);
   }
 }
 

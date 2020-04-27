@@ -120,18 +120,34 @@ function rejoinChannel(channelExpress, videoElement, alias, joinChannelCallback,
   channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
 }
 
-function publishTo(channelAlias, stream, backendUri, pcastUri, channelName, publishCallback) {
+async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName, publishCallback) {
   log(`Publisher backend uri: ${backendUri}`);
   log(`Publisher PCast uri: ${pcastUri}`);
 
+  const authToken = getUrlParams('authToken');
+  const applicationId = getUrlParams('applicationId');
+  const secret = getUrlParams('secret');
   const publisherAdminApiProxyClient = new sdk.net.AdminApiProxyClient();
   publisherAdminApiProxyClient.setBackendUri(backendUri);
 
-  var publishChannelExpress = new sdk.express.ChannelExpress({
+  var channelExpressOptions = {
     adminApiProxyClient: publisherAdminApiProxyClient,
     disableConsoleLogging: true,
     uri: pcastUri
-  });
+  };
+
+  if (authToken !== '') {
+    channelExpressOptions.authToken = authToken;
+  } else if (applicationId !== '' && secret !== '') {
+    channelExpressOptions.authToken = await getAuthToken(applicationId, secret);
+
+    if (channelExpressOptions.authToken === undefined) {
+      return;
+    }
+  }
+
+  var publishChannelExpress = new sdk.express.ChannelExpress(channelExpressOptions);
+  log(`Created channel express with options: ${JSON.stringify(channelExpressOptions)}`);
 
   var publishOptions = {
     capabilities: [
@@ -205,4 +221,29 @@ async function startMultimediaRecordingFor(timeMs, stream) {
       });
     });
   }, timeMs);
+}
+
+async function getAuthToken(applicationId, secret) {
+  const authUrl = getUrlParams('publisherBackendUri') + '/auth';
+  const response = await fetch(authUrl, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'Content-Length': '68'
+    },
+    body: JSON.stringify({
+      applicationId,
+      secret
+    })
+  });
+
+  if (response.status !== 'ok') {
+    document.getElementById('publisherAuthError').innerHTML = `
+      Error: Could not get auth token with provided applicationId (${applicationId}) and secret (${secret}).
+      Response status: ${response.status}
+    `;
+  }
+
+  return response.authenticationToken;
 }

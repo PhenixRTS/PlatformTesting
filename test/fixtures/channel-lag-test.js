@@ -45,6 +45,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
   await t
     .expect(Selector('video').withAttribute('id', 'publisherVideoContainer').exists).ok()
     .expect(Selector('video').withAttribute('id', 'subscriberVideoContainer').exists).ok()
+    .expect(Selector('#publisherAuthError').innerText).notContains('Error', 'Got an error on publisher authentication')
     .wait(35 * 1000)
     .expect(Selector('#publisherError').innerText).notContains('Error', 'Got an error in publish callback');
 
