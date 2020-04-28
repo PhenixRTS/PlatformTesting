@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherMessage, subscribe */
+/* global log, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherMessage, subscribe, stopPublisher */
 
 var canvasColorArr = ['#ffff00', '#009900', '#ff0000', '#0000ff', '#000000'];
 var nextCanvasColor = canvasColorArr[0];
@@ -38,6 +38,7 @@ var publisherCanvasCtx;
 
 var publisher;
 var publisherVideoEl;
+var publisherChannelExpress;
 
 var testMediaStream;
 
@@ -102,7 +103,7 @@ async function publish(
 ) {
   testMediaStream = initPublisher();
 
-  await publishTo(
+  publisherChannelExpress = await publishTo(
     channelAlias,
     testMediaStream,
     publisherBackendUri,
@@ -118,7 +119,7 @@ function publishCallback(err, response) {
 
     showPublisherMessage(`\n${message}\n`);
     error(message);
-    stopPublisher();
+    stopPublisher(publisherChannelExpress);
   }
 
   if (
@@ -130,7 +131,7 @@ function publishCallback(err, response) {
 
     showPublisherMessage(`\n${message}\n`);
     error(message);
-    stopPublisher();
+    stopPublisher(publisherChannelExpress);
   }
 
   if (response.status === 'ok') {
@@ -139,15 +140,6 @@ function publishCallback(err, response) {
     showPublisherMessage('\nPublished successfully!\n');
     subscribe();
   }
-}
-
-function stopPublisher() {
-  if (!publisher) {
-    return;
-  }
-
-  publisher.stop();
-  publisher = null;
 }
 
 function updateCanvasColor() {

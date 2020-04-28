@@ -162,6 +162,17 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
   };
 
   publishChannelExpress.publishToChannel(publishOptions, publishCallback);
+
+  return publishChannelExpress;
+}
+
+function stopPublisher(publisherChannelExpress) {
+  publisherChannelExpress.dispose();
+
+  if (publisher) {
+    publisher.stop();
+    publisher = null;
+  }
 }
 
 function showPublisherMessage(message) {

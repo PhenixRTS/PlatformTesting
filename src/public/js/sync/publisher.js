@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, getUrlParams, publishTo, startMultimediaRecordingFor, showPublisherMessage, subscribe */
+/* global log, getUrlParams, publishTo, startMultimediaRecordingFor, showPublisherMessage, subscribe, stopPublisher */
 
 const audioSampleRate = 44100;
 const fps = getUrlParams('syncFps');
@@ -31,6 +31,7 @@ var publisherCanvasCtx;
 var publisherStats;
 var publisher;
 var publisherVideoEl;
+var publisherChannelExpress;
 var testMediaStream;
 
 var audioCtx;
@@ -104,7 +105,7 @@ async function publish(
 ) {
   testMediaStream = initPublisher();
 
-  await publishTo(
+  publisherChannelExpress = await publishTo(
     channelAlias,
     testMediaStream,
     publisherBackendUri,
@@ -120,7 +121,7 @@ function publishCallback(error, response) {
     showPublisherMessage(
       `\nPublish callback returned error: ${error.message}\n`
     );
-    stopPublisher();
+    stopPublisher(publisherChannelExpress);
 
     throw error;
   }
@@ -130,7 +131,7 @@ function publishCallback(error, response) {
     response.status !== 'ended' &&
     response.status !== 'stream-ended'
   ) {
-    stopPublisher();
+    stopPublisher(publisherChannelExpress);
     showPublisherMessage(
       `\nError in publish callback. Got response status: ${response.status}\n`
     );
@@ -142,13 +143,6 @@ function publishCallback(error, response) {
     publisher = response.publisher;
     subscribe();
     showPublisherMessage('\nPublished successfully!\n');
-  }
-}
-
-function stopPublisher() {
-  if (publisher) {
-    publisher.stop();
-    publisher = null;
   }
 }
 
