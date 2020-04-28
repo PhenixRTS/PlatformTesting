@@ -58,6 +58,7 @@ const argv = require('yargs')
   .describe('noSignalColor', 'Screen color that is displayed in case there is no signal')
   .describe('noSignalColorTolerance', 'Describes how big the difference between the defined noScreenColor and actual screen color can be')
   .describe('noSignalWaitingTime', 'Time how long to wait for the signal in seconds')
+  .describe('dateFormat', 'Date format in which timestamps in test report will be formatted')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -98,7 +99,8 @@ const argv = require('yargs')
     capabilities: 'multi-bitrate,streaming,on-demand,hd',
     noSignalColor: '',
     noSignalColorTolerance: 5,
-    noSignalWaitingTime: 'PT10S'
+    noSignalWaitingTime: 'PT10S',
+    dateFormat: 'YYYY-MM-DD HH:mm:ss.SSS z'
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome chrome:headless firefox firefox:headless safari ie edge opera')
@@ -225,7 +227,8 @@ function parseTestArgs() {
     capabilities: argv.capabilities,
     noSignalColor: parseColor(argv.noSignalColor),
     noSignalColorTolerance: argv.noSignalColorTolerance,
-    noSignalWaitingTime: argv.noSignalWaitingTime
+    noSignalWaitingTime: argv.noSignalWaitingTime,
+    dateFormat: argv.dateFormat
   };
 
   if (argv.channelAlias !== '') {

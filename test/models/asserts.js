@@ -185,11 +185,10 @@ module.exports = class Asserts {
     }));
   }
 
-  formatObservations(observations) {
-    return observations.map(obs => ({
-      ...obs,
-      timestamp: moment.utc(obs.timestamp).format('YYYY-MM-DD HH:mm:ss.SSS z')
-    }));
+  formatObservations(observations, valueKey, unit) {
+    return observations.map(obs => (
+      moment.utc(obs.timestamp).format(config.args.dateFormat) + `: ${obs[valueKey]} ${unit}`
+    ));
   }
 
   assertFramerate(streamStats, expected, type) {
@@ -222,10 +221,10 @@ module.exports = class Asserts {
           return;
         }
 
-        const observations = this.formatObservations(unexpected);
-        const message = `${msg} were exceeded (${
-          unexpected.length
-        } times) during test minute ${index + 1}. Observations: ${JSON.stringify(
+        const observations = this.formatObservations(unexpected, 'framerate', 'fps');
+        const message = `During minute ${index + 1}, video ${
+          type === 'min' ? 'min framerate was below' : 'max framerate was above'
+        } [${allowed}] fps [${unexpected.length}] times. Max allowed is [${timesPerMinute}] times. Observations: ${JSON.stringify(
           observations,
           undefined,
           2
@@ -275,7 +274,7 @@ module.exports = class Asserts {
           return;
         }
 
-        const observations = this.formatObservations(aboveMax);
+        const observations = this.formatObservations(aboveMax, 'delay', 'ms');
         const message = `${msg} were exceeded during test minute ${index +
           1}. Observations: ${JSON.stringify(observations, undefined, 2)}`;
 
