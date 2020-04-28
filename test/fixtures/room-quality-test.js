@@ -60,5 +60,5 @@ test(`Monitor room for ${config.args.testRuntime} with multiple members and asse
 
   await page.asserts.runAssertions();
 }).after(async t => {
-  await common.finishAndReport(__filename, t.ctx.testFailed, page, t);
+  await common.finishAndReport(__filename, page, t);
 });

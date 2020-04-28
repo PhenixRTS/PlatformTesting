@@ -197,7 +197,7 @@ async function GetMeanVideoStats(stats) {
   meanVideoStats.interframeDelaysPerMinute = math.chunk(allInterframeDelayMaxs, 60);
   meanVideoStats.framerateMeansPerMinute = math.chunk(framerateMeans, 60);
   meanVideoStats.framerateMean =
-    framerateMeans.reduce((p, c) => p + (c.value || 0), 0) /
+    framerateMeans.reduce((p, c) => p + (c.framerate || 0), 0) /
     framerateMeans.length;
   frameHeights.forEach((h, i) => {
     if (i > 0) {

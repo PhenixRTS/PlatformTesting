@@ -220,7 +220,7 @@ const initRtmpPush = async(testType) => {
   return channel;
 };
 
-const finishAndReport = async(testFile, testFailed, page, tc, createdChannel = {}) => {
+const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   const {saveConsoleLogs} = config.args;
   let reportFileName = `${path.basename(testFile).split('.')[0]}`;
 
@@ -244,16 +244,16 @@ const finishAndReport = async(testFile, testFailed, page, tc, createdChannel = {
     reporter = syncReporter;
   }
 
-  const status = testFailed ? 'FAIL' : 'PASS';
-  const report = await reporter.CreateTestReport(tc, page, createdChannel);
+  const status = t.ctx.testFailed || page.stats === {} ? 'FAIL' : 'PASS';
+  const report = await reporter.CreateTestReport(t, page, createdChannel);
 
   const filePath = persistence.saveToFile(reportFileName, status, report);
   commonReporter.LogReportPath(filePath);
 
   if (saveConsoleLogs === 'true') {
-    const consoleDump = await reporter.CreateConsoleDump(tc);
+    const consoleDump = await reporter.CreateConsoleDump(t);
 
-    persistence.saveToFile(`${tc.browser.name}-console-logs`, '', consoleDump);
+    persistence.saveToFile(`${t.browser.name}-console-logs`, '', consoleDump);
   }
 };
 

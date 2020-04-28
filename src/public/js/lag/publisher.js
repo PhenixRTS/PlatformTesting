@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherMessage, subscribe, stopPublisher */
+/* global log, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherMessage, subscribe, stopPublisher, error */
 
 var canvasColorArr = ['#ffff00', '#009900', '#ff0000', '#0000ff', '#000000'];
 var nextCanvasColor = canvasColorArr[0];
