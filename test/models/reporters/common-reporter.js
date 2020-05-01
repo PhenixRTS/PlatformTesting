@@ -62,10 +62,10 @@ module.exports = {
     const {error, info, log, warn} = obj;
 
     return new Date() +
-      '\n\nERRORS:\n' + JSON.stringify(error, undefined, 2) +
-      '\n\nWARNINGS:\n' + JSON.stringify(warn, undefined, 2) +
-      '\n\nINFO:\n' + JSON.stringify(info, undefined, 2) +
-      '\n\nLOGS:\n' + JSON.stringify(log, undefined, 2);
+      '\n\nERRORS:\n' + error +
+      '\n\nWARNINGS:\n' + warn +
+      '\n\nINFO:\n' + info +
+      '\n\nLOGS:\n' + log;
   },
 
   async CreateTestReport(testController, page, header, content, additionalInfo = '') {
