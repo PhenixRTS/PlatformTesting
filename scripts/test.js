@@ -16,6 +16,7 @@
 
 const createTestCafe = require('testcafe');
 const p = require('path');
+const chalk = require('chalk');
 const config = require('../config.js');
 const App = require('../src/app.js');
 const Logger = require('../scripts/logger.js');
@@ -109,7 +110,13 @@ const customReporter = () => {
   return {
     async reportTaskStart() {},
     async reportFixtureStart() {},
-    async reportTestDone() {},
+    async reportTestDone(name, testRunInfo) {
+      if (testRunInfo.errs.length) {
+        testRunInfo.errs.map(err => {
+          err.errStack ? console.log(chalk.red(err.errStack)) : '';
+        });
+      }
+    },
     async reportTaskDone() {}
   };
 };
