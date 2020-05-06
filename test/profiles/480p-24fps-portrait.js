@@ -17,8 +17,18 @@
 const videoProfile = {
   minBitrateMeanKbps: 830,
   minFrameRateMean: 24,
-  minFrameRate: 19,
-  maxFrameRate: 29,
+  minFrameRate: [
+    {
+      allowed: 19,
+      timesPerMinute: 0
+    }
+  ],
+  maxFrameRate: [
+    {
+      allowed: 29,
+      timesPerMinute: 0
+    }
+  ],
   frameWidth: 480,
   frameHeight: 854,
   interframeDelayThresholds: [
