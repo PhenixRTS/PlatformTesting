@@ -20,13 +20,13 @@ const videoProfile = {
   minFrameRate: [
     {
       allowed: 19,
-      timesPerMinute: 1
+      timesPerMinute: 0
     }
   ],
   maxFrameRate: [
     {
       allowed: 29,
-      timesPerMinute: 1
+      timesPerMinute: 0
     }
   ],
   frameWidth: 720,
