@@ -44,6 +44,6 @@
     "eslint-plugin-lodash": "6.0.0",
     "eslint-plugin-notice": "0.7.7",
     "eslint-plugin-requirejs": "4.0.0",
-    "phenix-web-sdk": "^2019.2.18"
+    "phenix-web-sdk": "2020.1.1"
   }
 }
