@@ -49,7 +49,7 @@ const analyzeQR = (logItem) => {
 };
 
 const analyzeRGB = (el, publisherStats) => {
-  const colorDiffTolerance = 5;
+  const colorDiffTolerance = 30;
   let closestPubStat;
 
   publisherStats.forEach(pubEl => {
@@ -86,7 +86,6 @@ const videoLag = async(page, rtmpPush, doAssertion) => {
   const publisherStats = getPublisherVideoStats(publisher.video, rtmpPush, streamReceivedAt);
   const subscriberStats = getSubscriberVideoStats(subscriber.video, rtmpPush);
   let analyzedData = [];
-  let statsAnalyzed = 0;
 
   subscriberStats.forEach(el => {
     let data = rtmpPush ?
@@ -98,7 +97,6 @@ const videoLag = async(page, rtmpPush, doAssertion) => {
     }
 
     analyzedData.push(data);
-    statsAnalyzed++;
   });
 
   const {maxLag, maxRTMPLag} = config.videoAssertProfile;
@@ -123,7 +121,7 @@ const videoLag = async(page, rtmpPush, doAssertion) => {
 
   doAssertion(
     `Video stats analyzed count`,
-    statsAnalyzed,
+    analyzedData.length,
     0,
     'gt'
   );
@@ -138,7 +136,7 @@ const videoLag = async(page, rtmpPush, doAssertion) => {
   page.stats.subscriber.video = {
     analyzedData,
     meanLagMs,
-    statsAnalyzed
+    statsAnalyzed: analyzedData.length
   };
 };
 
@@ -162,7 +160,6 @@ const audioLag = async(page, rtmpPush, doAssertion) => {
   const {publisher, subscriber, streamReceivedAt} = page.stats;
   let subscriberStats = getSubscriberAudioStats(subscriber.audio, rtmpPush);
   let publisherStats = getPublisherAudioStats(publisher.audio, rtmpPush, streamReceivedAt);
-  let statsAnalyzed = 0;
   let analyzedData = [];
   const {maxLag, maxRTMPLag} = config.audioAssertProfile;
   const maxAudioLag = rtmpPush ? maxRTMPLag : maxLag;
@@ -199,8 +196,6 @@ const audioLag = async(page, rtmpPush, doAssertion) => {
       frequencySubscribed: frequency,
       lag: timestamp - closestPubStat.timestamp
     });
-
-    statsAnalyzed++;
   });
 
   const meanLagMs = math.average(analyzedData.map(e => e.lag));
@@ -223,7 +218,7 @@ const audioLag = async(page, rtmpPush, doAssertion) => {
 
   doAssertion(
     'Audio stats analyzed count',
-    statsAnalyzed,
+    analyzedData.length,
     0,
     'gt'
   );

@@ -111,9 +111,20 @@ const customReporter = () => {
     async reportTaskStart() {},
     async reportFixtureStart() {},
     async reportTestDone(name, testRunInfo) {
-      if (testRunInfo.errs.length) {
-        testRunInfo.errs.map(err => {
-          err.errStack ? console.log(chalk.red(err.errStack)) : '';
+      if (testRunInfo.errs.length > 0) {
+        testRunInfo.errs.map(error => {
+          let errorToShow = undefined;
+          if (error.errStack) {
+            errorToShow = error.errStack;
+          }
+
+          if (error.originError) {
+            errorToShow += "\n" + error.originError;
+          }
+
+          if (errorToShow) {
+            console.log(chalk.red(`Error:\nn ${errorToShow} \n`) + chalk.red(err.errStack ? err.errStack : err.originError) + '\n');
+          }
         });
       }
     },
@@ -343,7 +354,7 @@ function validateRtmpSupport() {
 }
 
 function exitWithErrorMessage(msg) {
-  console.log(`${msg}\n`);
+  console.log(chalk.red(`${msg}\n`));
   process.exit(1);
 }
 

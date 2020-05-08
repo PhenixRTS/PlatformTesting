@@ -57,8 +57,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
 
   await page.asserts.assertVideoLag(isRtmpPush);
   await page.asserts.assertAudioLag(isRtmpPush);
+  await page.asserts.runAssertions();
 
   await common.finishAndReport(__filename, page, t, createdChannel);
-
-  await page.asserts.runAssertions();
 });
