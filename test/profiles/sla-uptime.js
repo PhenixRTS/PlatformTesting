@@ -21,12 +21,7 @@ const videoProfile = {
   maxMeanDelay: null,
   maxTargetDelayOvershoot: null,
   minFrameRateMean: 1,
-  minFrameRate: [
-    {
-      allowed: 0,
-      timesPerMinute: 0
-    }
-  ],
+  minFrameRate: null,
   maxFrameRate: null,
   maxDroppedFrames: null,
   maxPacketLossPerMinute: null,
