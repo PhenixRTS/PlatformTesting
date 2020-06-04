@@ -15,16 +15,16 @@
  */
 
 const videoProfile = {
-  minBitrateMeanKbps: 100,
+  minBitrateMeanKbps: 1,
   maxBitrateMeanKps: null,
   maxDelay: null,
-  maxMeanDelay: 'PT3S',
+  maxMeanDelay: null,
   maxTargetDelayOvershoot: null,
   minFrameRateMean: 1,
   minFrameRate: [
     {
-      allowed: 1,
-      timesPerMinute: 1
+      allowed: 0,
+      timesPerMinute: 0
     }
   ],
   maxFrameRate: null,
@@ -41,12 +41,7 @@ const videoProfile = {
   maxVideoFreezes: null,
   maxPTTFF: 25000,
   maxResolutionChangeCountPerMinute: null,
-  interframeDelayThresholds: [
-    {
-      maxAllowed: 3000,
-      timesPerMinute: 3
-    }
-  ],
+  interframeDelayThresholds: null,
   maxLag: null,
   maxRTMPLag: null,
   syncPublishedVideoFps: 1,
@@ -56,7 +51,7 @@ const videoProfile = {
 const audioProfile = {
   minBitrateMeanKbps: 1,
   maxJitter: null,
-  minAudioOutputLevel: 10,
+  minAudioOutputLevel: null,
   maxDelay: null,
   maxMeanDelay: null,
   maxPacketsLossPerMinute: null,
