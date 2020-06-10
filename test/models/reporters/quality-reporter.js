@@ -29,10 +29,12 @@ async function CollectMediaStreamStats() {
   const streamStatsTitle = '[Acceptance Testing] [Media Stream Stats] ';
   const urlLoadedTitle = '[Acceptance Testing] [Url loaded] ';
   const streamReceivedTitle = '[Acceptance Testing] [Stream received] ';
+  const streamIdTitle = '[Acceptance Testing] [Stream ID]';
   const logs = await t.getBrowserConsoleMessages();
 
   const streamStats = {
     loadedAt: undefined,
+    streamId: undefined,
     streamReceivedAt: undefined,
     audio: {},
     video: {}
@@ -40,30 +42,38 @@ async function CollectMediaStreamStats() {
 
   let testStats = {};
 
-  logs.info.forEach(el => {
-    el = el.trim();
+  logs.info.forEach(infoLogElement => {
+    infoLogElement = infoLogElement.trim();
 
-    if (el.startsWith(urlLoadedTitle)) {
-      el = el.replace(urlLoadedTitle, '');
-      pageLoaded = JSON.parse(el);
+    if (infoLogElement.startsWith(urlLoadedTitle)) {
+      infoLogElement = infoLogElement.replace(urlLoadedTitle, '');
+      pageLoaded = JSON.parse(infoLogElement);
+
+      return;
+    }
+
+    if (infoLogElement.startsWith(streamIdTitle)) {
+      const streamId = infoLogElement.replace(streamIdTitle, '');
+      logger.log(`For stream [${streamId}]`);
+      streamStats.streamId = streamId;
 
       return;
     }
 
     if (
-      !el.startsWith(streamReceivedTitle) &&
-      !el.startsWith(streamStatsTitle)
+      !infoLogElement.startsWith(streamReceivedTitle) &&
+      !infoLogElement.startsWith(streamStatsTitle)
     ) {
       return;
     }
 
-    const matches = el.match(/\[memberID:(.*?)\]/);
+    const matches = infoLogElement.match(/\[memberID:(.*?)\]/);
     let memberID = '';
 
     if (matches) {
       memberID = matches[1];
 
-      el = el.replace(matches[0], '');
+      infoLogElement = infoLogElement.replace(matches[0], '');
     }
 
     if (!memberID) {
@@ -79,16 +89,24 @@ async function CollectMediaStreamStats() {
 
     const collectedStats = testStats[memberID];
 
-    if (el.startsWith(streamReceivedTitle)) {
-      el = el.replace(streamReceivedTitle, '');
-      collectedStats.streamReceivedAt = JSON.parse(el);
+    if (infoLogElement.startsWith(streamReceivedTitle)) {
+      infoLogElement = infoLogElement.replace(streamReceivedTitle, '');
+      collectedStats.streamReceivedAt = JSON.parse(infoLogElement);
 
       return;
     }
 
-    el = el.replace(streamStatsTitle, '');
+    if (infoLogElement.startsWith(streamIdTitle)) {
+      infoLogElement = infoLogElement.replace(streamIdTitle, '');
+      logger.log(`For stream [${infoLogElement} ]`);
+      collectedStats.streamId = infoLogElement;
 
-    const stats = JSON.parse(el);
+      return;
+    }
+
+    infoLogElement = infoLogElement.replace(streamStatsTitle, '');
+
+    const stats = JSON.parse(infoLogElement);
     const {mediaType, ssrc} = stats.stat;
 
     if (collectedStats[mediaType][ssrc] === undefined) {

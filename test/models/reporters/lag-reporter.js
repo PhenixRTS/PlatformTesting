@@ -29,9 +29,11 @@ async function CollectMediaChanges() {
   const publisherAudioTitle = '[Acceptance Testing] [Publisher Audio] ';
   const subscriberVideoTitle = '[Acceptance Testing] [Subscriber Video] ';
   const subscriberAudioTitle = '[Acceptance Testing] [Subscriber Audio] ';
+  const streamIdTitle = '[Acceptance Testing] [Stream ID]';
   const logs = await t.getBrowserConsoleMessages();
   const collectedStats = {
     streamReceivedAt: undefined,
+    streamId: undefined,
     publisher: {
       video: [],
       audio: []
@@ -47,6 +49,14 @@ async function CollectMediaChanges() {
 
     if (el.startsWith(streamReceivedAtTitle)) {
       collectedStats.streamReceivedAt = parseInt(el.replace(streamReceivedAtTitle, ''));
+
+      return;
+    }
+
+    if (el.startsWith(streamIdTitle)) {
+      const streamId = el.replace(streamIdTitle, '');
+      logger.log(`For stream [${streamId} ]`);
+      collectedStats.streamId = streamId;
 
       return;
     }
