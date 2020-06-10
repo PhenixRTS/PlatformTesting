@@ -29,7 +29,7 @@ const beepDuration = 1000 / fps;
 var publisherCanvas;
 var publisherCanvasCtx;
 var publisherStats;
-var publisher;
+var publisher; // eslint-disable-line no-unused-vars
 var publisherVideoEl;
 var publisherChannelExpress;
 var testMediaStream;

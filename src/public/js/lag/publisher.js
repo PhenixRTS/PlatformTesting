@@ -36,7 +36,7 @@ var nextFrequencyIndex = 0;
 var publisherCanvas;
 var publisherCanvasCtx;
 
-var publisher;
+var publisher; // eslint-disable-line no-unused-vars
 var publisherVideoEl;
 var publisherChannelExpress;
 

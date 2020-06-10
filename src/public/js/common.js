@@ -169,10 +169,12 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
 function stopPublisher(publisherChannelExpress) {
   publisherChannelExpress.dispose();
 
+  /* eslint-disable no-undef */
   if (publisher) {
     publisher.stop();
     publisher = null;
   }
+  /* eslint-enable no-undef */
 }
 
 function showPublisherMessage(message) {
