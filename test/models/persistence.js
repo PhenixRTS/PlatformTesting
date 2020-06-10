@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import fs from 'fs';
-import path from 'path';
-import moment from 'moment';
-
-import config from '../../config.js';
+const fs = require('fs');
+const path = require('path');
+const moment = require('moment');
+const config = require('../../config.js');
 
 function saveToFile(fileName, filenamePrefix, content) {
   const {reportsPath} = config;
@@ -37,4 +36,4 @@ function saveToFile(fileName, filenamePrefix, content) {
   return filePath;
 }
 
-export default {saveToFile};
+module.exports = {saveToFile};

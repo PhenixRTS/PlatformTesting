@@ -25,6 +25,7 @@ const app = new App();
 const logger = new Logger('Test script');
 const _ = require('lodash');
 const moment = require('moment');
+const {parseColor} = require('../test/models/format.js');
 const argv = require('yargs')
   .help()
   .strict()
@@ -191,6 +192,16 @@ function parseTestArgs() {
     config.channelAlias = argv.rtmpPushFile !== '' ? 'PlatformTestingRtmp' : `PlatformTesting-${moment().format('YYYY-MM-DD.HH.mm')}`;
   }
 
+  let parsedColor = argv.noSignalColor;
+
+  if (parsedColor !== '') {
+    const {parsedColor, error} = parseColor(argv.noSignalColor);
+
+    if (error) {
+      exitWithErrorMessage(error);
+    }
+  }
+
   const args = {
     localServerPort: argv.localServerPort,
     browsers: argv.browsers.replace(/,\s/g, ',').split(','),
@@ -225,7 +236,7 @@ function parseTestArgs() {
     publisherWaitTime: parseToMilliseconds(argv.publisherWaitTime),
     region: argv.region,
     capabilities: argv.capabilities,
-    noSignalColor: parseColor(argv.noSignalColor),
+    noSignalColor: parsedColor || argv.noSignalColor,
     noSignalColorTolerance: argv.noSignalColorTolerance,
     noSignalWaitingTime: argv.noSignalWaitingTime,
     dateFormat: argv.dateFormat
@@ -336,47 +347,6 @@ function parseToMilliseconds(time) {
   const timeAsDuration = moment.duration(time);
 
   return timeAsDuration.asMilliseconds();
-}
-
-function parseColor(color) {
-  const rgbRegex = /^rgb\((0|255|25[0-4]|2[0-4]\d|1\d\d|0?\d?\d),(0|255|25[0-4]|2[0-4]\d|1\d\d|0?\d?\d),(0|255|25[0-4]|2[0-4]\d|1\d\d|0?\d?\d)\)$/;
-  const hexRegex = /^#[0-9a-f]{6}$/;
-  let rgb = color.replace(/\s/g, '');
-
-  if (color === '') {
-    return color;
-  }
-
-  if (!rgbRegex.test(rgb) && !hexRegex.test(rgb)) {
-    exitWithErrorMessage(
-      'Error: unsupported color value. Color should be in RGB or HEX'
-    );
-
-    return null;
-  }
-
-  if (hexRegex.test(rgb)) {
-    rgb = hexToRgb(rgb);
-  }
-
-  const {0: r, 1: g, 1: b} = rgb.match(/\d+/g);
-
-  return {
-    r,
-    g,
-    b
-  };
-}
-
-function hexToRgb(hex) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-
-  return result ?
-    `rgb(
-      ${parseInt(result[1], 16)},
-      ${parseInt(result[2], 16)},
-      ${parseInt(result[3], 16)}
-    )` : '';
 }
 
 module.exports = test();

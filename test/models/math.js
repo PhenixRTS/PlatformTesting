@@ -27,6 +27,11 @@ module.exports = {
 
   chunk(arr, size) {
     const chunked = [];
+
+    if (size === 0) {
+      throw new Error('Chunk size cannot be 0!');
+    }
+
     for (let i = 0, len = arr.length; i < len; i += size) {
       chunked.push(arr.slice(i, i + size));
     }
@@ -35,10 +40,16 @@ module.exports = {
   },
 
   getColorDistance(target, actual) {
-    return Math.sqrt(
+    const result = Math.sqrt(
       (target.r - actual.r) * (target.r - actual.r) +
       (target.g - actual.g) * (target.g - actual.g) +
       (target.b - actual.b) * (target.b - actual.b)
     );
+
+    if (isNaN(result)) {
+      throw new Error('Wrong parameters passed!');
+    }
+
+    return result;
   }
 };

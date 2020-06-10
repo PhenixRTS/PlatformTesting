@@ -11,6 +11,7 @@
     "postci-test": "npm run lint",
     "preinstall": "npm prune",
     "test": "node scripts/run test",
+    "unit-test": "mocha ./test/unit_tests/*.js",
     "bundle": "node scripts/run build",
     "prebundle": "npm install",
     "prepack": "npm run bundle",
@@ -44,6 +45,7 @@
     "eslint-plugin-lodash": "6.0.0",
     "eslint-plugin-notice": "0.7.7",
     "eslint-plugin-requirejs": "4.0.0",
-    "phenix-web-sdk": "2020.1.1"
+    "phenix-web-sdk": "2020.1.1",
+    "mocha": "7.1.2"
   }
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import moment from 'moment';
+const moment = require('moment');
 
 const formatTime = (time, format = '') => {
   if (format === 'ms') {
@@ -34,8 +34,53 @@ const round = (value, precision) => {
   return Math.round(value * multiplier) / multiplier;
 };
 
+const parseColor = color => {
+  const rgbRegex = /^rgb\((0|255|25[0-4]|2[0-4]\d|1\d\d|0?\d?\d),(0|255|25[0-4]|2[0-4]\d|1\d\d|0?\d?\d),(0|255|25[0-4]|2[0-4]\d|1\d\d|0?\d?\d)\)$/;
+  const hexRegex = /^#[0-9a-f]{6}$/;
+  let rgb = color.replace(/\s/g, '');
+
+  if (color === '') {
+    return color;
+  }
+
+  if (!rgbRegex.test(rgb) && !hexRegex.test(rgb)) {
+    return {
+      parsedColor: null,
+      error: 'Error: unsupported color value. Color should be in RGB or HEX'
+    };
+  }
+
+  if (hexRegex.test(rgb)) {
+    rgb = hexToRgb(rgb);
+  }
+
+  const {0: r, 1: g, 2: b} = rgb.match(/\d+/g);
+
+  return {
+    parsedColor: {
+      r,
+      g,
+      b
+    },
+    error: null
+  };
+};
+
+const hexToRgb = hex => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+
+  return result ?
+    `rgb(
+      ${parseInt(result[1], 16)},
+      ${parseInt(result[2], 16)},
+      ${parseInt(result[3], 16)}
+    )` : '';
+};
+
 module.exports = {
   formatTime,
   isISO8601,
-  round
+  round,
+  parseColor,
+  hexToRgb
 };

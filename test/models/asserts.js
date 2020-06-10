@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import _ from 'lodash';
-import moment from 'moment';
-import {t} from 'testcafe';
-import {isNull} from 'util';
+const _ = require('lodash');
+const moment = require('moment');
+const {t} = require('testcafe');
+const {isNull} = require('util');
 
-import config from '../../config.js';
-import Logger from '../../scripts/logger.js';
+const config = require('../../config.js');
+const Logger = require('../../scripts/logger.js');
 
-import {audioLag, videoLag} from './assertions/lag.js';
-import reporter from './reporters/common-reporter';
-import format from './format';
+const {audioLag, videoLag} = require('./assertions/lag.js');
+const reporter = require('./reporters/common-reporter');
+const format = require('./format');
 
 const logger = new Logger('Test');
 

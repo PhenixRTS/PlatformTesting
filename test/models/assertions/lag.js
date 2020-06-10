@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {t} from 'testcafe';
+const {t} = require('testcafe');
 
-import config from '../../../config';
-import constants from '../../../shared/constants';
+const config = require('../../../config');
+const constants = require('../../../shared/constants');
 
-import math from '../math';
-import rtmp from '../rtmp-push';
+const math = require('../math');
+const rtmp = require('../rtmp-push');
 
 const getPublisherVideoStats = (logs, isRtmp, streamReceivedAt) => {
   if (isRtmp) {
@@ -231,7 +231,7 @@ const audioLag = async(page, rtmpPush, doAssertion) => {
   );
 };
 
-export {
+module.exports = {
   videoLag,
   audioLag
 };

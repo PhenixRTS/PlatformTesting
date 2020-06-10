@@ -15,10 +15,10 @@
  */
 
 /* eslint-disable no-unused-vars */
-import chalk from 'chalk';
+const chalk = require('chalk');
 
-import shared from '../../../shared/shared';
-import config from '../../../config.js';
+const shared = require('../../../shared/shared');
+const config = require('../../../config.js');
 
 function getTestConfiguration() {
   const {args, backendUri, channelAlias, pcastUri} = config;

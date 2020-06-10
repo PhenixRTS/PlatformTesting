@@ -16,7 +16,7 @@
 
 /* eslint-disable no-unused-vars */
 
-import fs from 'fs';
+const fs = require('fs');
 const {exec} = require('child_process');
 const QRCode = require('qrcode');
 const path = require('path');
