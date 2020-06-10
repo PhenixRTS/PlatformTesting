@@ -42,7 +42,7 @@ const videoProfile = {
   maxNacksSentPerMinute: 3,
   firsSent: 0,
   maxPlisSentPerMinute: 2,
-  codecName: 'H264',
+  codecName: 'VP8',
   maxVideoFreezes: 0,
   maxPTTFF: 3000,
   maxResolutionChangeCountPerMinute: 2,
