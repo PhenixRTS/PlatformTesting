@@ -106,31 +106,6 @@ const argv = require('yargs')
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome chrome:headless firefox firefox:headless safari ie edge opera')
   .argv;
-const customReporter = () => {
-  return {
-    async reportTaskStart() {},
-    async reportFixtureStart() {},
-    async reportTestDone(name, testRunInfo) {
-      if (testRunInfo.errs.length > 0) {
-        testRunInfo.errs.map(error => {
-          let errorToShow = undefined;
-          if (error.errStack) {
-            errorToShow = error.errStack;
-          }
-
-          if (error.originError) {
-            errorToShow += "\n" + error.originError;
-          }
-
-          if (errorToShow) {
-            console.log(chalk.red(`Error:\nn ${errorToShow} \n`) + chalk.red(err.errStack ? err.errStack : err.originError) + '\n');
-          }
-        });
-      }
-    },
-    async reportTaskDone() {}
-  };
-};
 
 async function test() {
   config.args = parseTestArgs();
@@ -173,7 +148,6 @@ async function test() {
       .src(config.args.tests)
       .browsers(parseBrowsers(config.args.browsers))
       .concurrency(config.args.concurrency)
-      .reporter(customReporter)
       .run({skipJsErrors: config.args.ignoreJsConsoleErrors === 'true'});
   }).then(failedCount => {
     logger.log(`Failed tests: ${failedCount}`);
