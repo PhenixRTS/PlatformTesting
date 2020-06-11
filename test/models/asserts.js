@@ -453,12 +453,6 @@ module.exports = class Asserts {
       'lt'
     );
     this.assert(
-      'Audio mean jitter buffer',
-      audioStats.jitterBuffer,
-      audioStats.jitter,
-      'gt'
-    );
-    this.assert(
       'Audio mean output level',
       audioStats.audioOutputLevel,
       config.audioAssertProfile.minAudioOutputLevel,
