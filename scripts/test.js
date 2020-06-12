@@ -195,7 +195,7 @@ function parseTestArgs() {
   let parsedColor = argv.noSignalColor;
 
   if (parsedColor !== '') {
-    const {parsedColor, error} = parseColor(argv.noSignalColor);
+    const {parsedColor, error} = parseColor(argv.noSignalColor); // eslint-disable-line no-unused-vars
 
     if (error) {
       exitWithErrorMessage(error);
