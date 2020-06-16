@@ -177,7 +177,7 @@ module.exports = class Asserts {
     this.assertions = [];
   }
 
-  async runAssertions() {
+  async reportAssertionResults() {
     await Promise.all(this.allAssertions.map(async({assertion, msg}) => {
       await t.expect(assertion).ok(msg);
 

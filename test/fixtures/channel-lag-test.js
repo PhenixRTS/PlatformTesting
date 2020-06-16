@@ -50,14 +50,13 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
     .expect(Selector('#publisherError').innerText).notContains('Error', 'Got an error in publish callback');
 
   await common.monitorStream(t, 'subscriberCanvas');
-}).after(async t => {
-  const isRtmpPush = config.args.rtmpPushFile !== '';
 
   page.stats = await reporter.CollectMediaChanges();
 
   await page.asserts.assertVideoLag(isRtmpPush);
   await page.asserts.assertAudioLag(isRtmpPush);
-  await page.asserts.runAssertions();
 
+  await page.asserts.reportAssertionResults();
+}).after(async t => {
   await common.finishAndReport(__filename, page, t, createdChannel);
 });

@@ -56,7 +56,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync of video
 
   await page.asserts.assertSync();
 
-  await page.asserts.runAssertions();
+  await page.asserts.reportAssertionResults();
 }).after(async t => {
   await common.finishAndReport(__filename, page, t, createdChannel);
 });

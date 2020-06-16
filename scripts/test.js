@@ -204,7 +204,7 @@ function parseTestArgs() {
 
   const args = {
     localServerPort: argv.localServerPort,
-    browsers: argv.browsers.replace(/,\s/g, ',').split(','),
+    browsers: argv.browsers.toString().replace(/,\s/g, ',').split(','),
     tests: argv.tests,
     features: argv.features,
     testRuntime: argv.runtime,

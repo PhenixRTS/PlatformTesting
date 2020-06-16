@@ -43,7 +43,7 @@ test(`Measure channel for ${config.args.testRuntime} and assert quality of video
   await page.asserts.assertVideoQuality(meanVideoStats);
   await page.asserts.assertAudioQuality(meanAudioStats);
 
-  await page.asserts.runAssertions();
+  await page.asserts.reportAssertionResults();
 }).after(async t => {
   await common.finishAndReport(__filename, page, t);
 });
