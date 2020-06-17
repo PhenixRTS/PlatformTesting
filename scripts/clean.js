@@ -17,7 +17,9 @@
 const fs = require('fs');
 const p = require('path');
 
-module.exports = function(path) {
+async function test() {
+  const path = p.join('test', 'reports');
+
   if (!fs.existsSync(path)) {
     return;
   }
@@ -32,4 +34,6 @@ module.exports = function(path) {
     }
   });
   fs.rmdirSync(path);
-};
+}
+
+module.exports = test();

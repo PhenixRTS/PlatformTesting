@@ -16,7 +16,7 @@
     "prebundle": "npm install",
     "prepack": "npm run bundle",
     "coverage": "jest --config=test/jest.config.js --coverage --verbose",
-    "clean": "rm -rf test/reports",
+    "clean": "node scripts/run clean",
     "lint": "eslint --cache --ext .jsx,.js ./",
     "lint-fix": "eslint --ext .jsx,.js --fix ./"
   },
