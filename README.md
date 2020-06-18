@@ -202,3 +202,16 @@ npm run test -- --tests=test/fixtures/room-quality-test.js --roomAlias=MyAwesome
 In case there is need to check only one member's stream in the room, you can specify the member by setting `--screenName=AwesomeScreenName`.
 
 If `--failIfMemberHasNoStream` argument is set, the test will fail if there will be member with no stream in the room.
+
+## Date formats
+
+You can specify date format with `--dateFormat` argument. Timestamps in test reports will be formatted using this format.
+
+Example:
+```
+npm run test -- --dateFormat=YYYY-MM-DDTHH:mm
+```
+
+Default format is `YYYY-MM-DD HH:mm:ss.SSS z`
+
+You can find tokens that can be used in [moment.js documentation](https://momentjs.com/docs/#/parsing/string-format)
