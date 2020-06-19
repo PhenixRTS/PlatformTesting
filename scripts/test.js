@@ -262,10 +262,12 @@ function parseTestArgs() {
     const customProfile = require(p.join('..', argv.profileFile));
 
     if (customProfile.videoProfile) {
+      validateProfile('video', args.videoProfile, customProfile.videoProfile);
       _.merge(args.videoProfile, customProfile.videoProfile);
     }
 
     if (customProfile.audioProfile) {
+      validateProfile('audio', args.audioProfile, customProfile.audioProfile);
       _.merge(args.audioProfile, customProfile.audioProfile);
     }
   }
@@ -364,6 +366,16 @@ function validateRtmpSupport() {
     exitWithErrorMessage(
       `Error: RTMP Push is not supported in ${argv.tests}. Please remove --rtmpPushFile argument.`
     );
+  }
+}
+
+function validateProfile(type, defaultProfile, customProfile) {
+  const validKeys = Object.keys(defaultProfile).sort();
+  const customProfileKeys = Object.keys(customProfile).sort();
+  const invalidKeys = customProfileKeys.filter(x => !validKeys.includes(x));
+
+  if (invalidKeys.length > 0) {
+    exitWithErrorMessage(`Provided custom ${type} profile '${argv.profileFile}' contains invalid keys ${JSON.stringify(invalidKeys)}.\nSee 'test/profiles/default.js' for all valid keys.`);
   }
 }
 
