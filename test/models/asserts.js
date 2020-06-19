@@ -261,44 +261,7 @@ module.exports = class Asserts {
       return;
     }
 
-    interframeDelayThresholds.forEach(threshold => {
-      const {maxAllowed, timesPerMinute} = threshold;
-      const msg = `Video interframe delay treshold ${timesPerMinute} times above ${maxAllowed} milliseconds`;
-      let passed = true;
-
-      streamStats.interframeDelaysPerMinute.forEach((delaysPerMin, index) => {
-        const aboveMax = delaysPerMin.filter(el => el.delay > maxAllowed);
-        const assertion = aboveMax.length <= timesPerMinute;
-
-        if (assertion) {
-          return;
-        }
-
-        const observations = this.formatObservations(aboveMax, 'delay', 'ms');
-        const message = `${msg} were exceeded during test minute ${index +
-          1}. Observations: ${JSON.stringify(observations, undefined, 2)}`;
-
-        passed = false;
-        t.ctx.testFailed = true;
-        t.ctx.failedAssertions.push(message);
-
-        this.assertions.push({
-          assertion: false,
-          msg: message
-        });
-      });
-
-      if (!passed) {
-        return;
-      }
-
-      t.ctx.assertions.push(msg);
-
-      this.assertions.push({
-        assertion: passed,
-        msg
-      });
-    });
+    await this.assertThreshold(interframeDelayThresholds, streamStats.interframeDelaysPerMinute, 'video interframe delay');
   }
 
   async assertKPIs(streamStats) {
@@ -468,12 +431,6 @@ module.exports = class Asserts {
       'lte'
     );
     this.assert(
-      'Audio max delay',
-      audioStats.maxDelay,
-      config.audioAssertProfile.maxDelay,
-      'lte'
-    );
-    this.assert(
       'Audio packets loss',
       audioStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000),
       config.audioAssertProfile.maxPacketsLossPerMinute,
@@ -492,7 +449,70 @@ module.exports = class Asserts {
       'eql'
     );
 
+    await this.assertAudioDelaysPerMinute(audioStats);
     await this.finishTest(memberID);
+  }
+
+  async assertAudioDelaysPerMinute(audioStats) {
+    const {audioDelayThresholds} = config.audioAssertProfile;
+
+    if (audioDelayThresholds === null) {
+      t.ctx.skippedAssertions.push('Audio delays per minute');
+
+      return;
+    }
+
+    await this.assertThreshold(audioDelayThresholds, audioStats.delaysPerMinute, 'audio max delay', 'audio delay');
+  }
+
+  async assertThreshold(allowedThresholds, collectedResults, assertMessageUnit, failedAssertMessageUnit) {
+    allowedThresholds.forEach(threshold => {
+      const {maxAllowed, timesPerMinute} = threshold;
+      const msg = `${assertMessageUnit.charAt(0).toUpperCase() + assertMessageUnit.slice(1)} threshold ${
+        timesPerMinute
+      } times above ${
+        maxAllowed
+      } milliseconds`;
+      let passed = true;
+
+      collectedResults.forEach((delaysPerMin, index) => {
+        const aboveMax = delaysPerMin.filter(el => el.delay > maxAllowed);
+        const assertion = aboveMax.length <= timesPerMinute;
+
+        if (assertion) {
+          return;
+        }
+
+        const observations = this.formatObservations(aboveMax, 'delay', 'ms');
+        const message = `During minute ${index + 1}, ${failedAssertMessageUnit || assertMessageUnit} threshold was above [${
+          maxAllowed
+        }] milliseconds [${
+          aboveMax.length
+        }] times. Max allowed is [${
+          timesPerMinute
+        }] times. Observations: ${JSON.stringify(observations, undefined, 2)}`;
+
+        passed = false;
+        t.ctx.testFailed = true;
+        t.ctx.failedAssertions.push(message);
+
+        this.assertions.push({
+          assertion: false,
+          msg: message
+        });
+      });
+
+      if (!passed) {
+        return;
+      }
+
+      t.ctx.assertions.push(msg);
+
+      this.assertions.push({
+        assertion: passed,
+        msg
+      });
+    });
   }
 
   async assertAudioLag(rtmpPush) {

@@ -310,7 +310,17 @@ function parseTestArgs() {
         );
       }
 
-      args.audioProfile[key] = argv.audio[key];
+      if (key === 'audioDelayThresholds') {
+        Object.keys(argv.audio[key]).forEach((index) => {
+          if (args.audioProfile[key][index]) {
+            _.merge(args.audioProfile[key][index], argv.audio[key][index]);
+          } else {
+            args.audioProfile[key].push(argv.audio[key][index]);
+          }
+        });
+      } else {
+        args.audioProfile[key] = argv.audio[key];
+      }
     });
   }
 

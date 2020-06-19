@@ -66,13 +66,22 @@ const audioProfile = {
   minBitrateMeanKbps: 60,
   maxJitter: 30,
   minAudioOutputLevel: 100,
-  maxDelay: 'PT0.5S',
   maxMeanDelay: 'PT0.5S',
   maxPacketsLossPerMinute: 3,
   totalSamplesDurationPerc: 0.8,
   codecName: 'opus',
   maxLag: 'PT0.35S',
-  maxRTMPLag: 'PT2.5S'
+  maxRTMPLag: 'PT2.5S',
+  audioDelayThresholds: [
+    {
+      maxAllowed: 300,
+      timesPerMinute: 2
+    },
+    {
+      maxAllowed: 500,
+      timesPerMinute: 0
+    }
+  ]
 };
 
 module.exports = {

@@ -236,7 +236,7 @@ async function GetMeanAudioStats(stats) {
     nativeReport: {},
     bitrateMean: null,
     currentDelay: null,
-    maxDelay: null,
+    delaysPerMin: [],
     audioOutputLevel: null,
     jitter: null,
     jitterBuffer: null,
@@ -249,15 +249,16 @@ async function GetMeanAudioStats(stats) {
   const audioOutputLevels = [];
   const jitters = [];
   const jitterBuffers = [];
-  let totalSamplesDurationsSum = 0;
   const totalAudioEnergies = [];
+  const allDelays = [];
+  let totalSamplesDurationsSum = 0;
 
   Object.keys(stats.audio).forEach((key) => {
     const audioStats = stats.audio[key];
     meanAudioStats.totalStatsReceived += audioStats.length;
 
     audioStats.forEach(statData => {
-      const {stat} = statData;
+      const {stat, timestamp} = statData;
 
       currentDelays.push(stat.currentDelay);
       audioOutputLevels.push(stat.audioOutputLevel);
@@ -273,10 +274,13 @@ async function GetMeanAudioStats(stats) {
         meanAudioStats.codecName = stat.nativeReport.googCodecName;
       }
 
-      meanAudioStats.maxDelay = stat.currentDelay > meanAudioStats.maxDelay ? stat.currentDelay : meanAudioStats.maxDelay;
       meanAudioStats.downloadRate = stat.downloadRate;
       meanAudioStats.bitrateMean = stat.bitrateMean;
       meanAudioStats.nativeReport = stat.nativeReport;
+      allDelays.push({
+        delay: stat.currentDelay,
+        timestamp
+      });
     });
 
     meanAudioStats.statsCaptureDuration =
@@ -289,6 +293,7 @@ async function GetMeanAudioStats(stats) {
   meanAudioStats.jitterBuffer = math.average(jitterBuffers);
   meanAudioStats.totalSamplesDuration = totalSamplesDurationsSum;
   meanAudioStats.totalAudioEnergy = math.average(totalAudioEnergies);
+  meanAudioStats.delaysPerMinute = math.chunk(allDelays, 60);
 
   return meanAudioStats;
 }
