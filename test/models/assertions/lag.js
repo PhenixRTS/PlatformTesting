@@ -113,6 +113,20 @@ const videoLag = async(page, rtmpPush, doAssertion) => {
   }
 
   doAssertion(
+    'Video stats (less than analyzed stats) count. Should be',
+    rtmpPush ? subscriberStats.length : publisherStats.length,
+    analyzedData.length,
+    'gte'
+  );
+
+  doAssertion(
+    'Enough analyzed video stats collected to draw conclusions. Should be',
+    analyzedData.length,
+    (rtmpPush ? subscriberStats.length : publisherStats.length) - 5,
+    'gt'
+  );
+
+  doAssertion(
     'Subscriber video changes count',
     subscriberStats.length,
     0,
@@ -208,6 +222,20 @@ const audioLag = async(page, rtmpPush, doAssertion) => {
       'gt'
     );
   }
+
+  doAssertion(
+    'Audio stats (less than analyzed stats) count. Should be',
+    rtmpPush ? subscriberStats.length : publisherStats.length,
+    analyzedData.length,
+    'gte'
+  );
+
+  doAssertion(
+    'Enough analyzed audio stats collected to draw conclusions. Should be',
+    analyzedData.length,
+    (rtmpPush ? subscriberStats.length : publisherStats.length) - 5,
+    'gt'
+  );
 
   doAssertion(
     'Subscriber audio changes count',

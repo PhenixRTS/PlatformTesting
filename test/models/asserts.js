@@ -542,14 +542,14 @@ module.exports = class Asserts {
 
     this.assert(
       'Average video sync with audio',
-      this.page.stats.averageSync,
+      this.page.stats.video.length > 0 ? this.page.stats.averageSync : 'null',
       config.videoAssertProfile.maxAverageSync,
       'lte'
     );
 
     this.assert(
       'Max video sync with audio',
-      this.page.stats.maxSync,
+      this.page.stats.video.length > 0 ? this.page.stats.maxSync : 'null',
       config.videoAssertProfile.maxSingleSync,
       'lte'
     );
