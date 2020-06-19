@@ -21,8 +21,7 @@ const shared = require('../../../shared/shared');
 const config = require('../../../config.js');
 
 function getTestConfiguration() {
-  const {args, backendUri, channelAlias, pcastUri} = config;
-
+  const {args, publisherArgs, rtmpPushArgs, backendUri, channelAlias, pcastUri} = config;
   let configuration = {
     backendUri,
     pcastUri,
@@ -37,7 +36,21 @@ function getTestConfiguration() {
     configuration[key] = args[key];
   }
 
-  configuration.secret = args.secret !== '' ? '<secret>' : '';
+  if (!args.tests.includes('test/fixtures/channel-quality-test.js')) {
+    for (const key in publisherArgs) {
+      if (key === 'secret') {
+        configuration.secret = publisherArgs.secret === '' ? '' : '<secret>';
+      } else {
+        configuration[key] = publisherArgs[key];
+      }
+    }
+
+    if (rtmpPushArgs.rtmpPushFile !== '') {
+      for (const key in rtmpPushArgs) {
+        configuration[key] = rtmpPushArgs[key];
+      }
+    }
+  }
 
   return configuration;
 }

@@ -110,24 +110,26 @@ const argv = require('yargs')
 
 async function test() {
   config.args = parseTestArgs();
+  config.publisherArgs = parsePublisherArgs();
+  config.rtmpPushArgs = parseRtmpPushArgs();
   config.testPageUrlAttributes =
     `?features=${config.args.features}` +
     `&channelAlias=${config.channelAlias}` +
     `&roomAlias=${config.args.roomAlias}` +
     `&screenName=${config.args.screenName}` +
     `&backendUri=${config.backendUri}` +
-    `&publisherBackendUri=${config.args.publisherBackendUri}` +
-    `&publisherPcastUri=${config.args.publisherPcastUri}` +
+    `&publisherBackendUri=${config.publisherArgs.publisherBackendUri}` +
+    `&publisherPcastUri=${config.publisherArgs.publisherPcastUri}` +
     `&pcastUri=${config.pcastUri}` +
     `&edgeToken=${config.args.edgeToken}` +
-    `&streamToken=${config.args.streamToken}` +
+    `&streamToken=${config.publisherArgs.streamToken}` +
     `&authToken=${config.args.authToken}` +
     `&applicationId=${config.args.applicationId}` +
-    `&secret=${config.args.secret}` +
-    `&rtmpPush=${config.args.rtmpPushFile !== ''}` +
+    `&secret=${config.publisherArgs.secret}` +
+    `&rtmpPush=${config.rtmpPushArgs.rtmpPushFile !== ''}` +
     `&recordingMedia=${config.args.recordingMedia}` +
     `&recordingMs=${config.args.recordingMs}` +
-    `&publisherRecordingMs=${config.args.publisherRecordingMs}` +
+    `&publisherRecordingMs=${config.publisherArgs.publisherRecordingMs}` +
     `&screenshotAfterMs=${config.args.screenshotAfterMs}` +
     `&downloadImgName=${config.args.downloadImgName}` +
     `&syncFps=${config.args.videoProfile.syncPublishedVideoFps}` +
@@ -218,20 +220,12 @@ function parseTestArgs() {
     saveConsoleLogs: argv.saveConsoleLogs,
     recordingMs: parseToMilliseconds(argv.record),
     recordingMedia: argv.media,
-    publisherRecordingMs: parseToMilliseconds(argv.recordPublisher),
     screenshotAfterMs: parseToMilliseconds(argv.screenshotInterval),
     downloadImgName: argv.screenshotName,
-    publisherBackendUri: argv.publisherBackendUri,
-    publisherPcastUri: argv.publisherPcastUri,
     ignoreJsConsoleErrors: argv.ignoreJsConsoleErrors,
-    rtmpLinkProtocol: argv.rtmpLinkProtocol,
-    rtmpPort: argv.rtmpPort,
-    rtmpPushFile: argv.rtmpPushFile,
     applicationId: argv.applicationId,
-    secret: argv.secret,
     edgeToken: argv.edgeToken,
     authToken: argv.authToken,
-    streamToken: argv.streamToken,
     channelJoinRetries: argv.channelJoinRetries,
     publisherWaitTime: parseToMilliseconds(argv.publisherWaitTime),
     region: argv.region,
@@ -320,9 +314,34 @@ function parseTestArgs() {
     });
   }
 
+  return args;
+}
+
+function parsePublisherArgs() {
+  const publisherArgs = {
+    publisherBackendUri: argv.publisherBackendUri,
+    publisherPcastUri: argv.publisherPcastUri,
+    publisherWaitTime: parseToMilliseconds(argv.publisherWaitTime),
+    publisherRecordingMs: parseToMilliseconds(argv.recordPublisher),
+    region: argv.region,
+    capabilities: argv.capabilities,
+    streamToken: argv.streamToken,
+    secret: argv.secret
+  };
+
+  return publisherArgs;
+}
+
+function parseRtmpPushArgs() {
+  const rtmpPushArgs = {
+    rtmpLinkProtocol: argv.rtmpLinkProtocol,
+    rtmpPort: argv.rtmpPort,
+    rtmpPushFile: argv.rtmpPushFile
+  };
+
   validateRtmpSupport();
 
-  return args;
+  return rtmpPushArgs;
 }
 
 function validateRtmpSupport() {

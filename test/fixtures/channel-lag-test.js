@@ -24,11 +24,11 @@ const common = require('./common');
 const page = new ChannelPage();
 let createdChannel;
 
-global.fixture(`Channel lag test${config.args.rtmpPushFile === '' ? '' : ' with RTMP push'}`)
+global.fixture(`Channel lag test${config.rtmpPushArgs.rtmpPushFile === '' ? '' : ' with RTMP push'}`)
   .page(`${config.localServerAddress}:${config.args.localServerPort}/lag${config.testPageUrlAttributes}`);
 
 test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/audio`, async t => {
-  const isRtmpPush = config.args.rtmpPushFile !== '';
+  const isRtmpPush = config.rtmpPushArgs.rtmpPushFile !== '';
 
   if (isRtmpPush) {
     createdChannel = await common.initRtmpPush('lag_test');

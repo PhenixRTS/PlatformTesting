@@ -195,15 +195,16 @@ const waitForPublisher = channelId =>
           pcastApi.getChannelState(channelId).then(pCount => {
             resolve(pCount);
           });
-        }, config.args.publisherWaitTime);
+        }, config.publisherArgs.publisherWaitTime);
       });
     }, 1000);
   });
 
 // eslint-disable-next-line padding-line-between-statements
 const initRtmpPush = async(testType) => {
-  const {channelAlias, args} = config;
-  const {capabilities, region, rtmpPushFile, rtmpLinkProtocol, rtmpPort} = args;
+  const {channelAlias} = config;
+  const {capabilities, region} = config.publisherArgs;
+  const {rtmpPushFile, rtmpLinkProtocol, rtmpPort} = config.rtmpPushArgs;
   const channel = await pcastApi.createChannel(channelAlias);
   ok(channel !== undefined, 'Could not create channel for RTMP Push');
 

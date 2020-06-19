@@ -16,9 +16,9 @@
 
 const fetch = require('node-fetch');
 const config = require('../../config.js');
-const baseUrl = config.args.publisherBackendUri;
+const baseUrl = config.publisherArgs.publisherBackendUri;
 const applicationId = config.args.applicationId;
-const secret = config.args.secret;
+const secret = config.publisherArgs.secret;
 const base64authData = Buffer.from(`${applicationId}:${secret}`).toString('base64');
 
 async function request(method, endpoint, body = null) {
