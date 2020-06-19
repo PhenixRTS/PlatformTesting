@@ -301,6 +301,12 @@ module.exports = class Asserts {
       config.videoAssertProfile.maxDelay,
       'lte'
     );
+    this.assert(
+      'Video max average target delay',
+      streamStats.targetDelay,
+      config.videoAssertProfile.maxAverageTargetDelay,
+      'lte'
+    );
 
     if (maxTargetDelayOvershoot !== null) {
       this.assert(
