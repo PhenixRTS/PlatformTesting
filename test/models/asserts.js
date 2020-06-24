@@ -223,7 +223,7 @@ module.exports = class Asserts {
 
         const observations = this.formatObservations(unexpected, 'framerate', 'fps');
         const message = `During minute ${index + 1}, video ${
-          type === 'min' ? 'min framerate was below' : 'max framerate was above'
+          type === 'min' ? 'min framerate was less than or equal to' : 'max framerate was more than or equal to'
         } [${allowed}] fps [${unexpected.length}] times. Max allowed is [${timesPerMinute}] times. Observations: ${JSON.stringify(
           observations,
           undefined,
