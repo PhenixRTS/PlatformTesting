@@ -31,7 +31,7 @@ Currently available browsers:
 * `chrome`
 * `chrome:headless`
 * `firefox`
-* `firefox:headless`
+* `firefox --headless`
 * `safari`
 * `ie`
 * `edge` (Chromium-based versions)
