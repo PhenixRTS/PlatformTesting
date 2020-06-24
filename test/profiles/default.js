@@ -38,7 +38,6 @@ const videoProfile = {
   maxPacketLossPerMinute: 3,
   frameWidth: 1280,
   frameHeight: 720,
-  timeToFirstFrameDecoded: 'PT1S',
   decodedFrameRateTolerance: 0.1,
   maxNacksSentPerMinute: 3,
   firsSent: 0,

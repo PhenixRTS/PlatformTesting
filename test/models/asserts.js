@@ -360,12 +360,6 @@ module.exports = class Asserts {
       'eql'
     );
     this.assert(
-      'Video first frame received to decode',
-      streamStats.nativeReport.googFirstFrameReceivedToDecodedMs,
-      config.videoAssertProfile.timeToFirstFrameDecoded,
-      'lte'
-    );
-    this.assert(
       'Video nacks sent',
       streamStats.nativeReport.googNacksSent / (config.args.testRuntimeMs / 60000),
       config.videoAssertProfile.maxNacksSentPerMinute,

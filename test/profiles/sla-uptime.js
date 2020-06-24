@@ -27,7 +27,6 @@ const videoProfile = {
   maxPacketLossPerMinute: null,
   frameWidth: null,
   frameHeight: null,
-  timeToFirstFrameDecoded: null,
   decodedFrameRateTolerance: null,
   maxNacksSentPerMinute: null,
   firsSent: null,
