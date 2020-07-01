@@ -51,7 +51,6 @@ const audioProfile = {
   minBitrateMeanKbps: 1,
   maxJitter: null,
   minAudioOutputLevel: null,
-  maxDelay: null,
   maxMeanDelay: null,
   maxPacketsLossPerMinute: null,
   totalSamplesDurationPerc: 0.1,
