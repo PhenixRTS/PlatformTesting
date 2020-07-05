@@ -40,6 +40,9 @@ package-lock.json
 # macOS
 .DS_Store
 
+# IntelliJ’s project specific settings file
+.idea/
+
 # Test reports
 reports/
 test/assets/qr-timestamp.png
