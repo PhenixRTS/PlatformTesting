@@ -103,7 +103,10 @@ function startRecordings() {
 function startStatsLogging() {
   setInterval(() => {
     if (stream === undefined) {
-      throw Error('There is no media stream! Is the channel online?');
+      const errorMessage = 'There is no media stream! Is the channel online?';
+      error(errorMessage);
+
+      throw Error(errorMessage);
     }
 
     stream.getStats(getStatsCallback);

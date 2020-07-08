@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {Selector} from 'testcafe';
+
 import config from '../../config.js';
 import ChannelPage from '../models/channel-page.js';
 import reporter from '../models/reporters/quality-reporter.js';
@@ -26,9 +28,10 @@ global.fixture('Channel quality test')
 
 test(`Measure channel for ${config.args.testRuntime} and assert quality of video and audio`, async t => {
   await t
-    .wait(3000)
+    .wait(3 * 1000)
     .expect(page.videoEl.exists).ok()
-    .expect(page.offlineTitle.exists).notOk();
+    .expect(page.offlineTitle.exists).notOk()
+    .expect(Selector('#subscriberError').innerText).notContains('Error', 'Got an error in subscriber callback', {timeout: 35 * 1000});
 
   await common.monitorStream(t, 'videoCanvasImg', 'videoEl');
 

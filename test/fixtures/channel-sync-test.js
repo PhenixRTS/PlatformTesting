@@ -47,8 +47,8 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync of video
     .expect(Selector('video').withAttribute('id', 'publisherVideoContainer').exists).ok()
     .expect(Selector('video').withAttribute('id', 'subscriberVideoContainer').exists).ok()
     .expect(Selector('#publisherAuthError').innerText).notContains('Error', 'Got an error on publisher authentication')
-    .wait(35 * 1000)
-    .expect(Selector('#publisherError').innerText).notContains('error', 'Got an error in publish callback');
+    .expect(Selector('#publisherError').innerText).notContains('error', 'Got an error in publish callback', {timeout: 35 * 1000})
+    .expect(Selector('#subscriberError').innerText).notContains('Error', 'Got an error in subscriber callback', {timeout: 35 * 1000});
 
   await common.monitorStream(t, 'subscriberCanvas');
 

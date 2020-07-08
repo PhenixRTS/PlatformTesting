@@ -37,7 +37,7 @@ test(`Monitor room for ${config.args.testRuntime} with multiple members and asse
   }
 
   await t
-    .wait(10000)
+    .wait(10 * 1000)
     .expect(page.videoEl.exists)
     .ok(memberError)
     .expect(page.offlineTitle.exists)

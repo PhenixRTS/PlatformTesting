@@ -25,6 +25,7 @@ function log(msg) {
 
 function error(msg) {
   console.error(`[Acceptance Testing Error] ${msg}`);
+  showSubscriberError(msg);
 }
 
 function rgbToHex(color) {
@@ -179,6 +180,10 @@ function stopPublisher(publisherChannelExpress) {
 
 function showPublisherMessage(message) {
   document.getElementById('publisherError').innerHTML += message;
+}
+
+function showSubscriberError(message) {
+  document.getElementById('subscriberError').innerHTML += `<br />${message}`;
 }
 
 function showChannelStatus(message) {
