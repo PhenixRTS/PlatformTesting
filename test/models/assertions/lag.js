@@ -120,7 +120,7 @@ const videoLag = async(page, rtmpPush, doAssertion) => {
   );
 
   doAssertion(
-    'Enough analyzed video stats collected to draw conclusions. Should be',
+    'Collected and analyzed video stats',
     analyzedData.length,
     (rtmpPush ? subscriberStats.length : publisherStats.length) - 5,
     'gt'

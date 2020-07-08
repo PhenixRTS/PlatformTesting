@@ -136,8 +136,8 @@ module.exports = class Asserts {
     }
 
     let msg = assertion ?
-      `${name} ${assertionMsg} ${expected} (was ${actual})` :
-      `${name} expected ${assertionMsg} ${expected} was ${actual}`;
+      `${name} ${assertionMsg} [${expected}], was [${actual}]` :
+      `${name} expected ${assertionMsg} [${expected}], was [${actual}]`;
 
     this.assertions.push({
       assertion,
@@ -151,7 +151,7 @@ module.exports = class Asserts {
       return;
     }
 
-    t.ctx.assertions.push(`${name} ${assertionMsg} ${expected} (was ${actual})`);
+    t.ctx.assertions.push(`${name} ${assertionMsg} [${expected}], was [${actual}]`);
   }
 
   async finishTest(memberID = '') {
