@@ -61,6 +61,7 @@ const argv = require('yargs')
   .describe('noSignalColorTolerance', 'Describes how big the difference between the defined noScreenColor and actual screen color can be')
   .describe('noSignalWaitingTime', 'Time how long to wait for the signal in seconds')
   .describe('dateFormat', 'Date format in which timestamps in test report will be formatted')
+  .describe('silent', 'Argument which silences the normal std output from the tool')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -108,6 +109,16 @@ const argv = require('yargs')
   .epilog('Available browsers: chrome chrome:headless firefox firefox:headless safari ie edge opera')
   .argv;
 
+function silentTestCafeReporter() {
+  return {
+    async reportTaskStart() {},
+    async reportFixtureStart() {},
+    async reportTestStart() {},
+    async reportTestDone() {},
+    async reportTaskDone() {}
+  };
+}
+
 async function test() {
   config.args = parseTestArgs();
   config.publisherArgs = parsePublisherArgs();
@@ -150,6 +161,7 @@ async function test() {
     return runner
       .src(config.args.tests)
       .browsers(parseBrowsers(config.args.browsers))
+      .reporter(config.args.silent ? silentTestCafeReporter : 'spec')
       .concurrency(config.args.concurrency)
       .run({skipJsErrors: config.args.ignoreJsConsoleErrors === 'true'});
   }).then(failedCount => {
@@ -233,7 +245,8 @@ function parseTestArgs() {
     noSignalColor: parsedColor || argv.noSignalColor,
     noSignalColorTolerance: argv.noSignalColorTolerance,
     noSignalWaitingTime: argv.noSignalWaitingTime,
-    dateFormat: argv.dateFormat
+    dateFormat: argv.dateFormat,
+    silent: argv.silent
   };
 
   if (argv.channelAlias !== '') {
@@ -380,7 +393,10 @@ function validateProfile(type, defaultProfile, customProfile) {
 }
 
 function exitWithErrorMessage(msg) {
-  console.log(chalk.red(`${msg}\n`));
+  if (config.args.silent !== true){
+    console.log(chalk.red(`${msg}\n`));
+  }
+
   process.exit(1);
 }
 

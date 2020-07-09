@@ -215,3 +215,19 @@ npm run test -- --dateFormat=YYYY-MM-DDTHH:mm
 Default format is `YYYY-MM-DD HH:mm:ss.SSS z`
 
 You can find tokens that can be used in [moment.js documentation](https://momentjs.com/docs/#/parsing/string-format)
+
+## Console outputs
+
+You can silence the normal std output from the tool with `--silent` argument. This will make sure there will be no test progress and results reported in the console. 
+
+Example:
+```
+npm run test -- --tests="test/fixtures/channel-sync-test.js" --silent
+```
+
+But to suppress the output of npm script and node overall, you need to pass `--silent` argument to npm.
+
+Example:
+```
+npm run --silent test -- --tests="test/fixtures/channel-sync-test.js"
+```

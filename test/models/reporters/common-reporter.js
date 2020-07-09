@@ -138,6 +138,10 @@ module.exports = {
       pass: '#3cb244'
     };
 
+    if (config.args.silent === true) {
+      return;
+    }
+
     const screenName = shared.getMemberScreenNameFromID(memberID);
     const sessionID = shared.getMemberSessionIDFromID(memberID);
 
@@ -174,8 +178,10 @@ module.exports = {
   },
 
   LogReportPath: function(filePath) {
-    console.log(`\n================== REPORT ==================`);
-    console.log(`${filePath}`);
-    console.log(`============================================\n`);
+    if (config.args.silent !== true){
+      console.log(`\n================== REPORT ==================`);
+      console.log(`${filePath}`);
+      console.log(`============================================\n`);
+    }
   }
 };

@@ -232,7 +232,10 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
     await pcastApi.deleteChannel(channelId);
 
     reportFileName = `${reportFileName}-rtmp`;
-    console.log(`Stopped RTMP Push and deleted created channel with id ${channelId}`);
+
+    if (config.args.silent !== true){
+      console.log(`Stopped RTMP Push and deleted created channel with id ${channelId}`);
+    }
   }
 
   let reporter = qualityReporter;

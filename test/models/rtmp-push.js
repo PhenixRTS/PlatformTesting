@@ -116,6 +116,10 @@ async function startRtmpPush(testType, protocol, port, file, region, channel, ca
 }
 
 function logFfmpegError(error) {
+  if (config.args.silent === true){
+    return;
+  }
+
   const moreInformationMessage = `See ${path.join(config.reportsPath, 'ff.txt')} for more information`;
 
   if (error) {

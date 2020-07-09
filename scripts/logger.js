@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
+const config = require('../config.js');
+
 class Logger {
   constructor(prefix) {
     this.prefix = prefix;
   }
 
   log(msg) {
-    console.log(`[${this.format(new Date())}] [${this.prefix}] ${msg}`);
+    if (config.args.silent !== true) {
+      console.log(`[${this.format(new Date())}] [${this.prefix}] ${msg}`);
+    }
   }
 
   error(msg) {
-    console.error(`[${this.format(new Date())}] [${this.prefix} ERROR] ${msg}\n`);
+    if (config.args.silent !== true) {
+      console.error(`[${this.format(new Date())}] [${this.prefix} ERROR] ${msg}\n`);
+    }
   }
 
   format(datetime) {
