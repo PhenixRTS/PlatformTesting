@@ -195,7 +195,7 @@ const waitForPublisher = channelId =>
           pcastApi.getChannelState(channelId).then(pCount => {
             resolve(pCount);
           });
-        }, config.publisherArgs.publisherWaitTime);
+        }, config.publisherArgs.publisherWaitTimeMs);
       });
     }, 1000);
   });
@@ -250,8 +250,8 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
 
   const status = t.ctx.testFailed || page.stats === {} ? 'FAIL' : 'PASS';
   const report = await reporter.CreateTestReport(t, page, createdChannel);
-
-  const filePath = persistence.saveToFile(reportFileName, status, report);
+  const reportFormat = config.args.reportFormat === 'json' ? 'json' : 'txt';
+  const filePath = persistence.saveToFile(reportFileName, status, report, reportFormat);
   commonReporter.LogReportPath(filePath);
 
   if (saveConsoleLogs === 'true') {

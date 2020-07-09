@@ -46,6 +46,13 @@ describe('When using the persistence utility', function() {
       validateFileExistsAndRemoveIt(fullPath);
     });
 
+    it('it sets custom file extension', function() {
+      const dateNow = moment().format('YYYY-MM-DD-HH.mm.ss');
+      const fullPath = testToolPersistence.saveToFile('name', 'prefix', 'abc', 'json');
+      assert.equal(path.basename(fullPath), `prefix-name-${dateNow}.json`);
+      validateFileExistsAndRemoveIt(fullPath);
+    });
+
     it('it uses report path from config file for the location where to save the file', function() {
       config.reportsPath = 'customUnitTestConfigPath';
 

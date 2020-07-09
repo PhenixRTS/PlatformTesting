@@ -19,6 +19,7 @@ import Logger from '../../../scripts/logger.js';
 import reporter from './common-reporter.js';
 import moment from 'moment';
 import math from '../math.js';
+import config from '../../../config.js';
 
 const logger = new Logger('Lag Test');
 
@@ -69,7 +70,7 @@ async function CollectMediaChanges() {
     el = el.replace(title, '');
 
     var stat = JSON.parse(el);
-    stat.formatted_timestamp = moment(stat.timestamp).format('HH:mm:ss.SSS');
+    stat.formattedTimestamp = moment(stat.timestamp).format('HH:mm:ss.SSS');
 
     switch (title) {
       case subscriberVideoTitle:
@@ -121,18 +122,58 @@ function ClosestElement(number, arr){
 }
 
 async function CreateTestReport(testController, page, channel = {}) {
-  const header = '\nSubscriber stream received at ' +
-  `${moment(page.stats.streamReceivedAt).format('HH:mm:ss.SSS')} (${page.stats.streamReceivedAt})` +
-  `\n\nAverage Sync: ${page.stats.averageSync} ms` +
-  `\nMax Sync: ${page.stats.maxSync}`;
-  const content = `\n\nVideo Stats:\n` + JSON.stringify(page.stats.video, undefined, 2) +
-  `\n\nAudio Stats:\n` + JSON.stringify(page.stats.audio, undefined, 2);
+  let header = {};
+  let content = {};
   let additionalInfo = '';
 
-  if (channel.channelId) {
-    const {applicationId, channelId, streamKey, created} = channel;
+  if (config.args.reportFormat === 'json') {
+    header = [
+      {
+        name: 'subscriber_stream_received_at',
+        valueFormatted: moment(page.stats.streamReceivedAt).format('HH:mm:ss.SSS'),
+        value: page.stats.streamReceivedAt
+      },
+      {
+        name: 'average_sync',
+        value: page.stats.averageSync,
+        units: 'milliseconds'
+      },
+      {
+        name: 'max_sync',
+        value: page.stats.maxSync,
+        units: 'milliseconds'
+      }
+    ];
 
-    additionalInfo = `\n\nApplication ID: ${applicationId}\nChannel ID: ${channelId}\nStream Key: ${streamKey}\nCreated: ${created}\n`;
+    content = {
+      videoStats: page.stats.video,
+      audioStats: page.stats.audio
+    };
+
+    if (channel.channelId) {
+      const {applicationId, channelId, streamKey, created} = channel;
+
+      additionalInfo = {
+        applicationId: applicationId,
+        channelId: channelId,
+        streamKey: streamKey,
+        created: created
+      };
+    }
+  } else {
+    header = '\nSubscriber stream received at ' +
+    `${moment(page.stats.streamReceivedAt).format('HH:mm:ss.SSS')} (${page.stats.streamReceivedAt})` +
+    `\n\nAverage Sync: ${page.stats.averageSync} ms` +
+    `\nMax Sync: ${page.stats.maxSync}`;
+
+    content = `\n\nVideo Stats:\n` + JSON.stringify(page.stats.video, undefined, 2) +
+    `\n\nAudio Stats:\n` + JSON.stringify(page.stats.audio, undefined, 2);
+
+    if (channel.channelId) {
+      const {applicationId, channelId, streamKey, created} = channel;
+
+      additionalInfo = `\n\nApplication ID: ${applicationId}\nChannel ID: ${channelId}\nStream Key: ${streamKey}\nCreated: ${created}\n`;
+    }
   }
 
   return reporter.CreateTestReport(testController, page, header, content, additionalInfo);

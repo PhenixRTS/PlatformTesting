@@ -16,6 +16,7 @@
 
 /* eslint-disable no-unused-vars */
 const chalk = require('chalk');
+const moment = require('moment');
 
 const shared = require('../../../shared/shared');
 const config = require('../../../config.js');
@@ -33,21 +34,25 @@ function getTestConfiguration() {
       continue;
     }
 
-    configuration[key] = args[key];
+    if (!key.match(/\b.*Ms\b/g)){
+      configuration[key] = args[key];
+    }
   }
 
   if (!args.tests.includes('test/fixtures/channel-quality-test.js')) {
     for (const key in publisherArgs) {
       if (key === 'secret') {
         configuration.secret = publisherArgs.secret === '' ? '' : '<secret>';
-      } else {
+      } else if (!key.match(/\b.*Ms\b/g)){
         configuration[key] = publisherArgs[key];
       }
     }
 
     if (rtmpPushArgs.rtmpPushFile !== '') {
       for (const key in rtmpPushArgs) {
-        configuration[key] = rtmpPushArgs[key];
+        if (!key.match(/\b.*Ms\b/g)){
+          configuration[key] = rtmpPushArgs[key];
+        }
       }
     }
   }
@@ -69,6 +74,123 @@ function parseAssertions(title, assertions) {
   return report;
 }
 
+async function CreateHumanReadableTestReport(testController, page, header, content, additionalInfo = '') {
+  const {args, backendUri, channelAlias} = config;
+  const {browser, ctx} = testController;
+  const {errors, assertionResults} = ctx;
+  const obj = await testController.getBrowserConsoleMessages();
+
+  const reportHeader = moment.utc(new Date()).format(config.args.dateFormat) +
+    `\n${backendUri}#${channelAlias}` +
+    '\n\nBrowser: ' + browser.name + ' (' + browser.version + ')' +
+    `\nTest runtime: ${args.testRuntime}` +
+    additionalInfo +
+    (errors && errors.length > 0 ? '\n\nErrors:\n' + JSON.stringify(errors, undefined, 2) : '') +
+    (obj.error.length > 0 ? '\n\nConsole errors:\n' + JSON.stringify(obj.error, undefined, 2) : '');
+
+  let reportDetails =
+    '\n\nConfiguration:\n' +
+    JSON.stringify(getTestConfiguration(), undefined, 2);
+
+  for (const memberID in assertionResults) {
+    const {passed, failed, skipped} = assertionResults[memberID];
+
+    const screenName = shared.getMemberScreenNameFromID(memberID);
+    const sessionID = shared.getMemberSessionIDFromID(memberID);
+
+    const title =
+      memberID === 'default'
+        ? ''
+        : `\n\nResults for ${screenName} (session ID: ${sessionID})`;
+
+    const memberHeader = header[memberID] || header;
+    const memberContent = content[memberID] || content;
+
+    reportDetails += '\n\n' + title + '\n' + memberHeader;
+
+    reportDetails += parseAssertions('ASSERTIONS PASSED', passed);
+    reportDetails += parseAssertions('FAILURES', failed);
+    reportDetails += parseAssertions('SKIPPED', skipped);
+
+    reportDetails += '\n' + memberContent;
+
+    const allStats = page.stats[memberID] || page.stats;
+
+    reportDetails +=
+      args.logAllStatsInReport === 'true'
+        ? `\n\nAll Stats:\n + ${JSON.stringify(allStats, undefined, 2)}`
+        : '';
+  }
+
+  return reportHeader + reportDetails;
+}
+
+async function CreateJSONTestReport(testController, page, header, content, additionalInfo = '') {
+  const {args, backendUri, channelAlias} = config;
+  const {browser, ctx} = testController;
+  const {errors, assertionResults} = ctx;
+  const obj = await testController.getBrowserConsoleMessages();
+
+  const jsonReport = {
+    timestamp: moment.utc(new Date()).format(config.args.dateFormat),
+    channel: `${backendUri}#${channelAlias}`,
+    browser: browser.name + ' (' + browser.version + ')',
+    testRuntime: args.testRuntime,
+    testStatus: ctx.testFailed ? 'failed' : 'passed',
+    additionalInfo: additionalInfo,
+    errors: JSON.stringify(errors, undefined, 2),
+    consoleErrors: obj.error,
+    configuration: getTestConfiguration(),
+    members: []
+  };
+
+  for (const memberID in assertionResults) {
+    const {passed, failed, skipped} = assertionResults[memberID];
+    const screenName = shared.getMemberScreenNameFromID(memberID);
+    const sessionID = shared.getMemberSessionIDFromID(memberID);
+    const memberHeader = header[memberID] || header;
+
+    const failedAssertions = [];
+    for (const failedAssertion in failed) {
+      failedAssertions.push({
+        status: 'failed',
+        message: failed[failedAssertion]
+      });
+    }
+
+    const passedAssertions = [];
+    for (const passedAssertion in passed) {
+      passedAssertions.push({
+        status: 'passed',
+        message: passed[passedAssertion]
+      });
+    }
+
+    const skippedAssertions = [];
+    for (const skippedAssertion in skipped) {
+      skippedAssertions.push({
+        status: 'skipped',
+        message: skipped[skippedAssertion]
+      });
+    }
+
+    jsonReport['members'].push({
+      screenName: memberID === 'default' ? '' : screenName,
+      memberId: memberID,
+      assertions: failedAssertions.concat(passedAssertions).concat(skippedAssertions),
+      stats: memberHeader,
+      memberContent: content[memberID] !== undefined ? content[memberID] : {}
+    });
+
+    if (args.logAllStatsInReport === 'true') {
+      const allStats = page.stats[memberID] || page.stats;
+      jsonReport['allStats'] = allStats;
+    }
+  }
+
+  return JSON.stringify(jsonReport, undefined, 2);
+}
+
 module.exports = {
   async CreateConsoleDump(testController) {
     const obj = await testController.getBrowserConsoleMessages();
@@ -82,54 +204,13 @@ module.exports = {
   },
 
   async CreateTestReport(testController, page, header, content, additionalInfo = '') {
-    const {args, backendUri, channelAlias} = config;
-    const {browser, ctx} = testController;
-    const {errors, assertionResults} = ctx;
-    const obj = await testController.getBrowserConsoleMessages();
+    const {args} = config;
 
-    const reportHeader = new Date() +
-      `\n${backendUri}#${channelAlias}` +
-      '\n\nBrowser: ' + browser.name + ' (' + browser.version + ')' +
-      `\nTest runtime: ${args.testRuntime}` +
-      additionalInfo +
-      (errors && errors.length > 0 ? '\n\nErrors:\n' + JSON.stringify(errors, undefined, 2) : '') +
-      (obj.error.length > 0 ? '\n\nConsole errors:\n' + JSON.stringify(obj.error, undefined, 2) : '');
-
-    let reportDetails =
-      '\n\nConfiguration:\n' +
-      JSON.stringify(getTestConfiguration(), undefined, 2);
-
-    for (const memberID in assertionResults) {
-      const {passed, failed, skipped} = assertionResults[memberID];
-
-      const screenName = shared.getMemberScreenNameFromID(memberID);
-      const sessionID = shared.getMemberSessionIDFromID(memberID);
-
-      const title =
-        memberID === 'default'
-          ? ''
-          : `\n\nResults for ${screenName} (session ID: ${sessionID})`;
-
-      const memberHeader = header[memberID] || header;
-      const memberContent = content[memberID] || content;
-
-      reportDetails += '\n\n' + title + '\n' + memberHeader;
-
-      reportDetails += parseAssertions('ASSERTIONS PASSED', passed);
-      reportDetails += parseAssertions('FAILURES', failed);
-      reportDetails += parseAssertions('SKIPPED', skipped);
-
-      reportDetails += '\n' + memberContent;
-
-      const allStats = page.stats[memberID] || page.stats;
-
-      reportDetails +=
-        args.logAllStatsInReport === 'true'
-          ? `\n\nAll Stats:\n + ${JSON.stringify(allStats, undefined, 2)}`
-          : '';
+    if (args.reportFormat === 'json') {
+      return await CreateJSONTestReport(testController, page, header, content, additionalInfo);
     }
 
-    return reportHeader + reportDetails;
+    return await CreateHumanReadableTestReport(testController, page, header, content, additionalInfo);
   },
 
   LogAssertionResults: function(assertions, memberID) {

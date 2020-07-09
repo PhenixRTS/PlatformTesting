@@ -366,13 +366,13 @@ module.exports = class Asserts {
       'lte'
     );
     this.assert(
-      'Video firs sent',
+      'Video FIRs sent',
       streamStats.nativeReport.googFirsSent,
       config.videoAssertProfile.firsSent,
       'eql'
     );
     this.assert(
-      'Video plis sent',
+      'Video PLIs sent',
       streamStats.nativeReport.googPlisSent / (config.args.testRuntimeMs / 60000),
       config.videoAssertProfile.maxPlisSentPerMinute,
       'lte'

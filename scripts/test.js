@@ -61,6 +61,7 @@ const argv = require('yargs')
   .describe('noSignalColorTolerance', 'Describes how big the difference between the defined noScreenColor and actual screen color can be')
   .describe('noSignalWaitingTime', 'Time how long to wait for the signal in seconds')
   .describe('dateFormat', 'Date format in which timestamps in test report will be formatted')
+  .describe('reportFormat', 'Format in which test report will be generated. Available formats [json, text]')
   .describe('silent', 'Argument which silences the normal std output from the tool')
   .default({
     localServerPort: 3333,
@@ -79,10 +80,10 @@ const argv = require('yargs')
     concurrency: 1,
     logAllStatsInReport: false,
     saveConsoleLogs: false,
-    record: 0,
-    recordPublisher: 0,
+    record: 'PT0S',
+    recordPublisher: 'PT0S',
     media: 'video,audio',
-    screenshotInterval: 0,
+    screenshotInterval: 'PT0S',
     screenshotName: 'phenix_test_screenshot',
     ignoreJsConsoleErrors: false,
     audio: undefined,
@@ -103,10 +104,11 @@ const argv = require('yargs')
     noSignalColor: '',
     noSignalColorTolerance: 5,
     noSignalWaitingTime: 'PT10S',
-    dateFormat: 'YYYY-MM-DD HH:mm:ss.SSS z'
+    dateFormat: 'YYYY-MM-DDTHH:mm:ss.SSSZ',
+    reportFormat: 'json'
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
-  .epilog('Available browsers: chrome chrome:headless firefox firefox:headless safari ie edge opera')
+  .epilog('Available browsers: chrome, chrome:headless, firefox, firefox --headless, safari, ie, edge, opera')
   .argv;
 
 function silentTestCafeReporter() {
@@ -138,11 +140,11 @@ async function test() {
     `&applicationId=${config.args.applicationId}` +
     `&secret=${config.publisherArgs.secret}` +
     `&rtmpPush=${config.rtmpPushArgs.rtmpPushFile !== ''}` +
-    `&recordingMedia=${config.args.recordingMedia}` +
-    `&recordingMs=${config.args.recordingMs}` +
+    `&media=${config.args.media}` +
+    `&recordMs=${config.args.recordMs}` +
     `&publisherRecordingMs=${config.publisherArgs.publisherRecordingMs}` +
-    `&screenshotAfterMs=${config.args.screenshotAfterMs}` +
-    `&downloadImgName=${config.args.downloadImgName}` +
+    `&screenshotIntervalMs=${config.args.screenshotIntervalMs}` +
+    `&screenshotName=${config.args.screenshotName}` +
     `&syncFps=${config.args.videoProfile.syncPublishedVideoFps}` +
     `&failIfMemberHasNoStream=${config.args.failIfMemberHasNoStream}` +
     `&channelJoinRetries=${config.args.channelJoinRetries}`;
@@ -230,22 +232,26 @@ function parseTestArgs() {
     concurrency: argv.concurrency,
     logAllStatsInReport: argv.logAllStatsInReport,
     saveConsoleLogs: argv.saveConsoleLogs,
-    recordingMs: parseToMilliseconds(argv.record),
-    recordingMedia: argv.media,
-    screenshotAfterMs: parseToMilliseconds(argv.screenshotInterval),
-    downloadImgName: argv.screenshotName,
+    record: argv.record,
+    recordMs: parseToMilliseconds(argv.record),
+    media: argv.media,
+    screenshotInterval: argv.screenshotInterval,
+    screenshotIntervalMs: parseToMilliseconds(argv.screenshotInterval),
+    screenshotName: argv.screenshotName,
     ignoreJsConsoleErrors: argv.ignoreJsConsoleErrors,
     applicationId: argv.applicationId,
     edgeToken: argv.edgeToken,
     authToken: argv.authToken,
     channelJoinRetries: argv.channelJoinRetries,
-    publisherWaitTime: parseToMilliseconds(argv.publisherWaitTime),
+    publisherWaitTime: argv.publisherWaitTime,
+    publisherWaitTimeMs: parseToMilliseconds(argv.publisherWaitTime),
     region: argv.region,
     capabilities: argv.capabilities,
     noSignalColor: parsedColor || argv.noSignalColor,
     noSignalColorTolerance: argv.noSignalColorTolerance,
     noSignalWaitingTime: argv.noSignalWaitingTime,
     dateFormat: argv.dateFormat,
+    reportFormat: argv.reportFormat,
     silent: argv.silent
   };
 
@@ -346,7 +352,9 @@ function parsePublisherArgs() {
   const publisherArgs = {
     publisherBackendUri: argv.publisherBackendUri,
     publisherPcastUri: argv.publisherPcastUri,
-    publisherWaitTime: parseToMilliseconds(argv.publisherWaitTime),
+    publisherWaitTime: argv.publisherWaitTime,
+    publisherWaitTimeMs: parseToMilliseconds(argv.publisherWaitTime),
+    publisherRecording: argv.recordPublisher,
     publisherRecordingMs: parseToMilliseconds(argv.recordPublisher),
     region: argv.region,
     capabilities: argv.capabilities,

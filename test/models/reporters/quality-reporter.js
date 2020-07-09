@@ -18,6 +18,7 @@ import {t} from 'testcafe';
 import Logger from '../../../scripts/logger.js';
 import reporter from './common-reporter.js';
 import math from '../math.js';
+import config from '../../../config.js';
 
 const logger = new Logger('Quality Test');
 
@@ -107,6 +108,7 @@ async function CollectMediaStreamStats() {
     infoLogElement = infoLogElement.replace(streamStatsTitle, '');
 
     const stats = JSON.parse(infoLogElement);
+
     const {mediaType, ssrc} = stats.stat;
 
     if (collectedStats[mediaType][ssrc] === undefined) {
@@ -128,7 +130,7 @@ async function GetMeanVideoStats(stats) {
     direction: null,
     nativeReport: {},
     bitrateMean: null,
-    maxBitrateMean: null,
+    maxBitrate: null,
     targetDelay: null,
     currentDelay: null,
     maxDelay: null,
@@ -179,8 +181,9 @@ async function GetMeanVideoStats(stats) {
         meanVideoStats.codecName = stat.nativeReport.googCodecName;
       }
 
+      meanVideoStats.maxBitrate = parseFloat(((stat.bitrateMean > meanVideoStats.maxBitrate ? stat.bitrateMean : meanVideoStats.maxBitrate) / 1024).toFixed(2));
       meanVideoStats.maxDelay = stat.currentDelay > meanVideoStats.maxDelay ? stat.currentDelay : meanVideoStats.maxDelay;
-      meanVideoStats.interframeDelayMax = stat.nativeReport.googInterframeDelayMax > meanVideoStats.interframeDelayMax ? stat.nativeReport.googInterframeDelayMax : meanVideoStats.interframeDelayMax;
+      meanVideoStats.interframeDelayMax = parseFloat(stat.nativeReport.googInterframeDelayMax > meanVideoStats.interframeDelayMax ? stat.nativeReport.googInterframeDelayMax : meanVideoStats.interframeDelayMax);
       meanVideoStats.downloadRate = stat.downloadRate;
       meanVideoStats.droppedFrames += stat.droppedFrames;
       meanVideoStats.nativeReport = stat.nativeReport;
@@ -205,13 +208,13 @@ async function GetMeanVideoStats(stats) {
       videoStats[videoStats.length - 1].stat.nativeReport.timestamp - videoStats[0].stat.nativeReport.timestamp;
   });
 
-  meanVideoStats.targetDelay = math.average(targetDelays).toFixed(2);
-  meanVideoStats.currentDelay = math.average(currentDelays).toFixed(2);
-  meanVideoStats.bitrateMean = (math.average(meanBitrates) / 1024).toFixed(2);
+  meanVideoStats.targetDelay = parseFloat(math.average(targetDelays).toFixed(2));
+  meanVideoStats.currentDelay = parseFloat(math.average(currentDelays).toFixed(2));
+  meanVideoStats.bitrateMean = parseFloat((math.average(meanBitrates) / 1024).toFixed(2));
   meanVideoStats.avgFrameWidth = math.average(frameWidths.slice(3));
   meanVideoStats.avgFrameHeight = math.average(frameHeights.slice(3));
-  meanVideoStats.avgFrameRateDecoded = math.average(frameRateDecodes).toFixed(1);
-  meanVideoStats.avgFrameRateOutput = math.average(frameRateOutputs).toFixed(1);
+  meanVideoStats.avgFrameRateDecoded = parseFloat(math.average(frameRateDecodes).toFixed(1));
+  meanVideoStats.avgFrameRateOutput = parseFloat(math.average(frameRateOutputs).toFixed(1));
   meanVideoStats.interframeDelaysPerMinute = math.chunk(allInterframeDelayMaxs, 60);
   meanVideoStats.framerateMeansPerMinute = math.chunk(framerateMeans, 60);
   meanVideoStats.framerateMean =
@@ -235,19 +238,21 @@ async function GetMeanAudioStats(stats) {
     direction: null,
     nativeReport: {},
     bitrateMean: null,
+    maxBitrate: null,
     currentDelay: null,
-    delaysPerMin: [],
     audioOutputLevel: null,
     jitter: null,
     jitterBuffer: null,
     totalSamplesDuration: null,
     totalAudioEnergy: null,
     totalStatsReceived: 0,
-    statsCaptureDuration: 0
+    statsCaptureDuration: 0,
+    delaysPerMinute: []
   };
   const currentDelays = [];
   const audioOutputLevels = [];
   const jitters = [];
+  const meanBitrates = [];
   const jitterBuffers = [];
   const totalAudioEnergies = [];
   const allDelays = [];
@@ -266,6 +271,7 @@ async function GetMeanAudioStats(stats) {
       jitterBuffers.push(stat.jitterBuffer);
       totalSamplesDurationsSum += stat.totalSamplesDuration;
       totalAudioEnergies.push(stat.totalAudioEnergy);
+      meanBitrates.push(stat.bitrateMean);
 
       if (meanAudioStats.mediaType === null) {
         meanAudioStats.mediaType = stat.mediaType;
@@ -275,7 +281,7 @@ async function GetMeanAudioStats(stats) {
       }
 
       meanAudioStats.downloadRate = stat.downloadRate;
-      meanAudioStats.bitrateMean = stat.bitrateMean;
+      meanAudioStats.maxBitrate = parseFloat(((stat.bitrateMean > meanAudioStats.maxBitrate ? stat.bitrateMean : meanAudioStats.maxBitrate) / 1024).toFixed(2));
       meanAudioStats.nativeReport = stat.nativeReport;
       allDelays.push({
         delay: stat.currentDelay,
@@ -294,13 +300,15 @@ async function GetMeanAudioStats(stats) {
   meanAudioStats.totalSamplesDuration = totalSamplesDurationsSum;
   meanAudioStats.totalAudioEnergy = math.average(totalAudioEnergies);
   meanAudioStats.delaysPerMinute = math.chunk(allDelays, 60);
+  meanAudioStats.bitrateMean = parseFloat((math.average(meanBitrates) / 1024).toFixed(2));
 
   return meanAudioStats;
 }
 
 async function CreateTestReport(testController, page) {
-  const header = {};
-  const content = {};
+  let header = {};
+  let content = {};
+  let additionalInfo = '';
 
   let members = 0;
 
@@ -309,18 +317,41 @@ async function CreateTestReport(testController, page) {
 
     members++;
 
-    header[memberID] = '\nPTTFF (page load to first frame): ' +
-      JSON.stringify(streamReceivedAt - loadedAt, undefined, 2) +
-      ' ms' +
-      '\nInterframe Max delay: ' + meanVideoStats.interframeDelayMax;
+    if (config.args.reportFormat === 'json') {
+      header[memberID] = {
+        otherStats: [
+          {
+            name: 'PTTFF',
+            value: streamReceivedAt - loadedAt,
+            units: 'milliseconds'
+          },
+          {
+            name: 'InterframeMaxDelay',
+            value: meanVideoStats.interframeDelayMax,
+            units: 'milliseconds'
+          }
+        ],
+        aggregateStats: {
+          video: meanVideoStats,
+          audio: meanAudioStats
+        }
+      };
 
-    content[memberID] = '\n\nMean Video Stats:\n' +
-      JSON.stringify(meanVideoStats, undefined, 2) +
-      '\n\nMean Audio Stats:\n' +
-      JSON.stringify(meanAudioStats, undefined, 2);
+      additionalInfo = members > 1 ? {members_in_room: members} : '';
+    } else {
+      header[memberID] = '\nPTTFF (page load to first frame): ' +
+        JSON.stringify(streamReceivedAt - loadedAt, undefined, 2) +
+        ' ms' +
+        '\nInterframe Max delay: ' + meanVideoStats.interframeDelayMax;
+
+      content[memberID] = '\n\nMean Video Stats:\n' +
+        JSON.stringify(meanVideoStats, undefined, 2) +
+        '\n\nMean Audio Stats:\n' +
+        JSON.stringify(meanAudioStats, undefined, 2);
+
+      additionalInfo = members > 1 ? `\nMembers in the room: ${members}` : '';
+    }
   }
-
-  const additionalInfo = members > 1 ? `\nMembers in the room: ${members}` : '';
 
   return reporter.CreateTestReport(testController, page, header, content, additionalInfo);
 }

@@ -182,7 +182,10 @@ function startStatsLogging() {
 
 function getStatsCallback(stats, memberID) {
   stats.forEach(stat => {
-    log(`[Media Stream Stats] [memberID:${memberID}] ${JSON.stringify(stat)}`);
+    log(`[Media Stream Stats] [memberID:${memberID}] ${JSON.stringify({
+      timestamp: Date.now(),
+      stat
+    })}`);
   });
 }
 

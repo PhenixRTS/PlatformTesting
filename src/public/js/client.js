@@ -80,22 +80,22 @@ function subscriberCallback(err, response) {
 }
 
 function startRecordings() {
-  const recordingMs = getUrlParams('recordingMs');
-  const recordingMedia = getUrlParams('recordingMedia');
+  const recordMs = getUrlParams('recordMs');
+  const recordMedia = getUrlParams('media');
 
-  if (recordingMs <= 0) {
+  if (recordMs <= 0) {
     return;
   }
 
-  if (recordingMedia.includes('video') && recordingMedia.includes('audio')) {
-    startMultimediaRecordingFor(recordingMs, stream.Zo);
+  if (recordMedia.includes('video') && recordMedia.includes('audio')) {
+    startMultimediaRecordingFor(recordMs, stream.Zo);
   } else {
-    if (recordingMedia.includes('audio')) {
-      startAudioRecordingFor(recordingMs);
+    if (recordMedia.includes('audio')) {
+      startAudioRecordingFor(recordMs);
     }
 
-    if (recordingMedia.includes('video')) {
-      startVideoRecordingFor(recordingMs);
+    if (recordMedia.includes('video')) {
+      startVideoRecordingFor(recordMs);
     }
   }
 }
@@ -150,12 +150,12 @@ function startAudioRecordingFor(timeMs) {
 }
 
 function startScreenshots() {
-  const screenshotAfterMs = getUrlParams('screenshotAfterMs');
+  const screenshotIntervalMs = getUrlParams('screenshotIntervalMs');
 
-  if (screenshotAfterMs > 0) {
+  if (screenshotIntervalMs > 0) {
     setInterval(() => {
       captureImage();
-    }, screenshotAfterMs);
+    }, screenshotIntervalMs);
   }
 }
 
@@ -177,7 +177,7 @@ function captureImage() {
 function download(dataUrl) {
   const link = document.createElement('a');
   link.setAttribute('href', dataUrl);
-  link.setAttribute('download', `${getUrlParams('downloadImgName')}.jpg`);
+  link.setAttribute('download', `${getUrlParams('screenshotName')}.jpg`);
   link.setAttribute('target', '_blank');
   link.style.display = 'none';
   link.click();
