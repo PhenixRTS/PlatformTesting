@@ -22,13 +22,13 @@ class Logger {
   }
 
   log(msg) {
-    if (config.args.silent !== true) {
+    if (config.args && config.args.silent !== true) {
       console.log(`[${this.format(new Date())}] [${this.prefix}] ${msg}`);
     }
   }
 
   error(msg) {
-    if (config.args.silent !== true) {
+    if (config.args && config.args.silent !== true) {
       console.error(`[${this.format(new Date())}] [${this.prefix} ERROR] ${msg}\n`);
     }
   }
