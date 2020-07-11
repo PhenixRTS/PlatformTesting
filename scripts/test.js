@@ -63,6 +63,7 @@ const argv = require('yargs')
   .describe('dateFormat', 'Date format in which timestamps in test report will be formatted')
   .describe('reportFormat', 'Format in which test report will be generated. Available formats [json, text]')
   .describe('silent', 'Argument which silences the normal std output from the tool')
+  .describe('dumpReport', 'Argument which dumps the report file to std out')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -252,7 +253,8 @@ function parseTestArgs() {
     noSignalWaitingTime: argv.noSignalWaitingTime,
     dateFormat: argv.dateFormat,
     reportFormat: argv.reportFormat,
-    silent: argv.silent
+    silent: argv.silent,
+    dumpReport: argv.dumpReport
   };
 
   if (argv.channelAlias !== '') {

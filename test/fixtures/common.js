@@ -251,6 +251,11 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   const status = t.ctx.testFailed || page.stats === {} ? 'FAIL' : 'PASS';
   const report = await reporter.CreateTestReport(t, page, createdChannel);
   const reportFormat = config.args.reportFormat === 'json' ? 'json' : 'txt';
+
+  if (config.args.dumpReport === true){
+    console.log(report);
+  }
+
   const filePath = persistence.saveToFile(reportFileName, status, report, reportFormat);
   commonReporter.LogReportPath(filePath);
 
