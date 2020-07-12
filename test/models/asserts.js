@@ -284,7 +284,7 @@ module.exports = class Asserts {
       'gte'
     );
     this.assert(
-      'Video max mean bitrate',
+      'Video mean bitrate',
       streamStats.bitrateMean,
       config.videoAssertProfile.maxBitrateMeanKps,
       'lte'
