@@ -106,7 +106,7 @@ const argv = require('yargs')
     noSignalColorTolerance: 5,
     noSignalWaitingTime: 'PT10S',
     dateFormat: 'YYYY-MM-DDTHH:mm:ss.SSSZ',
-    reportFormat: 'json'
+    reportFormat: 'text'
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome, chrome:headless, firefox, firefox --headless, safari, ie, edge, opera')
