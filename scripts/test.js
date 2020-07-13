@@ -62,8 +62,8 @@ const argv = require('yargs')
   .describe('noSignalWaitingTime', 'Time how long to wait for the signal in seconds')
   .describe('dateFormat', 'Date format in which timestamps in test report will be formatted')
   .describe('reportFormat', 'Format in which test report will be generated. Available formats [json, text]')
-  .describe('silent', 'Argument which silences the normal std output from the tool')
-  .describe('dumpReport', 'Argument which dumps the report file to std out')
+  .describe('silent', 'Silences the normal std output from the tool')
+  .describe('dumpReport', 'Dumps the report file to std out')
   .default({
     localServerPort: 3333,
     channelAlias: '',

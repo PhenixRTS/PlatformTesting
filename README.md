@@ -222,26 +222,26 @@ You can silence the normal std output from the tool with `--silent` argument. Th
 
 Example:
 ```
-npm run test -- --tests="test/fixtures/channel-sync-test.js" --silent
+npm run test -- --tests=test/fixtures/channel-sync-test.js --silent
 ```
 
 But to suppress the output of npm script and node overall, you need to pass `--silent` argument to npm.
 
 Example:
 ```
-npm run --silent test -- --tests="test/fixtures/channel-sync-test.js"
+npm run --silent test -- --tests=test/fixtures/channel-sync-test.js
 ```
 
 To dump the report file to std out you need to pass `--dumpReport` argument.
 
 Example:
 ```
-npm run test -- --tests="test/fixtures/channel-sync-test.js --dumpReport" 
+npm run test -- --tests=test/fixtures/channel-sync-test.js --dumpReport 
 ```
 
 Passing the `--silent` argument together with `--dumpReport` argument will still dump the report file to std out but silence the rest of the std output from the tool.
 
 Example:
 ```
-npm run test -- --tests="test/fixtures/channel-sync-test.js --dumpReport --silent" 
+npm run test -- --tests=test/fixtures/channel-sync-test.js --dumpReport --silent 
 ```
