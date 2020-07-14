@@ -105,7 +105,7 @@ const argv = require('yargs')
     noSignalColor: '',
     noSignalColorTolerance: 5,
     noSignalWaitingTime: 'PT10S',
-    dateFormat: 'YYYY-MM-DDTHH:mm:ss.SSSZ',
+    dateFormat: 'YYYY-MM-DDTHH:mm:ss.SSS[Z]',
     reportFormat: 'text'
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
