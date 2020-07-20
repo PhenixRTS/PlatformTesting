@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable padding-line-between-statements */
+
 import {ok} from 'assert';
 import {ClientFunction, Selector} from 'testcafe';
 
@@ -180,7 +182,6 @@ const monitorStream = async(testController, canvasID, videoID = '') => {
   }
 };
 
-// eslint-disable-next-line padding-line-between-statements
 const waitForPublisher = channelId =>
   new Promise(resolve => {
     const statusInterval = setInterval(() => {
@@ -200,7 +201,6 @@ const waitForPublisher = channelId =>
     }, 1000);
   });
 
-// eslint-disable-next-line padding-line-between-statements
 const initRtmpPush = async(testType) => {
   const {channelAlias} = config;
   const {capabilities, region} = config.publisherArgs;

@@ -54,7 +54,7 @@ function subscriberCallback(err, response) {
   if (response.status === 'no-stream-playing') {
     console.warn('No stream playing');
   } else if (response.status !== 'ok') {
-    error(err);
+    error(`Response status: [${response.status}], Error: [${err}]`);
   }
 
   if (response.renderer) {

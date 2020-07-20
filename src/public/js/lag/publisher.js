@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherMessage, subscribe, stopPublisher, error */
+/* global log, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherErrorMessage, showPublisherMessage, subscribe, stopPublisher, error */
 
 var canvasColorArr = ['#ffff00', '#009900', '#ff0000', '#0000ff', '#000000'];
 var nextCanvasColor = canvasColorArr[0];
@@ -109,7 +109,8 @@ async function publish(
     publisherBackendUri,
     publisherPcastUri,
     channelName,
-    publishCallback
+    publishCallback,
+    true
   );
 }
 
@@ -117,7 +118,7 @@ function publishCallback(err, response) {
   if (err) {
     const message = `Error in publish callback - ${err.message}`;
 
-    showPublisherMessage(`\n${message}\n`);
+    showPublisherErrorMessage(`\n${message}\n`);
     error(message);
     stopPublisher(publisherChannelExpress);
   }
@@ -129,7 +130,7 @@ function publishCallback(err, response) {
   ) {
     const message = `Error in publish callback - got response status: ${response.status}`;
 
-    showPublisherMessage(`\n${message}\n`);
+    showPublisherErrorMessage(`\n${message}\n`);
     error(message);
     stopPublisher(publisherChannelExpress);
   }

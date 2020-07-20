@@ -121,7 +121,7 @@ function rejoinChannel(channelExpress, videoElement, alias, joinChannelCallback,
   channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
 }
 
-async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName, publishCallback) {
+async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName, publishCallback, createChannel) {
   log(`Publisher backend uri: ${backendUri}`);
   log(`Publisher PCast uri: ${pcastUri}`);
 
@@ -150,6 +150,29 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
   var publishChannelExpress = new sdk.express.ChannelExpress(channelExpressOptions);
   log(`Created channel express with options: ${JSON.stringify(channelExpressOptions)}`);
 
+  if (createChannel) {
+    await publishChannelExpress.createChannel({
+      channel: {
+        name: channelName,
+        alias: channelAlias
+      }
+    }, (error, response) => {
+      if (error) {
+        showPublisherErrorMessage(`Got error in createChannel callback [${error}]`);
+      }
+
+      if (response.status === 'already-exists') {
+        showPublisherMessage('Channel already exists');
+      }
+
+      if (response.channelService) {
+        showPublisherMessage('Successfully created channel');
+      } else if (response.status !== 'ok') {
+        showPublisherMessage(`Got response status [${response.status}] in createChannel callback`);
+      }
+    });
+  }
+
   var publishOptions = {
     capabilities: [
       'hd',
@@ -162,9 +185,40 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
     userMediaStream: stream
   };
 
-  publishChannelExpress.publishToChannel(publishOptions, publishCallback);
+  const successCallback = () => {
+    log(`Successfully validated that no other stream is playing`);
+    publishChannelExpress.publishToChannel(publishOptions, publishCallback);
 
-  return publishChannelExpress;
+    return publishChannelExpress;
+  };
+
+  return await validateThatNoOtherStreamIsPlaying(publishChannelExpress, channelAlias, successCallback);
+}
+
+async function validateThatNoOtherStreamIsPlaying(channelExpress, channelAlias, successCallback) {
+  channelExpress.joinChannel({alias: channelAlias}, (error, response) => {
+    if (error) {
+      showPublisherErrorMessage(`Got error in join channel callback (while trying to validate that no other stream is playing before publishing): ${error}`);
+    }
+
+    if (response.status === 'room-not-found') {
+      log(`Room was not found with channel alias [${channelAlias}] while validating that no other stream is playing before publishing`);
+      successCallback();
+    } else if (response.status !== 'ok') {
+      showPublisherErrorMessage(`Got response status [${response.status}] (while trying to validate that no other stream is playing before publishing)`);
+    }
+  }, (error, response) => {
+    if (error) {
+      showPublisherErrorMessage(`Got error in subscriber callback (while trying to validate that no other stream is playing before publishing): ${error}`);
+    }
+
+    if (response.status !== 'no-stream-playing') {
+      showPublisherErrorMessage('Will not publish - there is other stream already playing!');
+    }
+
+    log('Validation succesful - no other stream is playing before publishing');
+    successCallback();
+  });
 }
 
 function stopPublisher(publisherChannelExpress) {
@@ -178,8 +232,13 @@ function stopPublisher(publisherChannelExpress) {
   /* eslint-enable no-undef */
 }
 
-function showPublisherMessage(message) {
+function showPublisherErrorMessage(message) {
   document.getElementById('publisherError').innerHTML += message;
+  error(message);
+}
+
+function showPublisherMessage(message) {
+  document.getElementById('publisherMessage').innerHTML += message;
 }
 
 function showSubscriberError(message) {
