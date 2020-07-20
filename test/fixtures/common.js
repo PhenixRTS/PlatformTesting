@@ -21,6 +21,7 @@ import {ClientFunction, Selector} from 'testcafe';
 
 import moment from 'moment';
 import path from 'path';
+import _ from 'lodash';
 
 import config from '../../config';
 import shared from '../../shared/shared';
@@ -249,6 +250,7 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   }
 
   let reporter = qualityReporter;
+  let report = '';
 
   if (testFile.indexOf('lag-test') > -1) {
     reporter = lagReporter;
@@ -258,11 +260,23 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
     reporter = syncReporter;
   }
 
-  const status = t.ctx.testFailed || page.stats === {} ? 'FAIL' : 'PASS';
-  const report = await reporter.CreateTestReport(t, page, createdChannel);
-  const reportFormat = config.args.reportFormat === 'json' ? 'json' : 'txt';
+  if (_.isEmpty(page.stats)) {
+    t.ctx.testFailed = true;
 
-  if (config.args.dumpReport === true){
+    const message = 'Please check console output for errors!';
+
+    if (config.args.reportFormat === 'json') {
+      t.ctx.error = message;
+    } else {
+      report = `\n\n${message}\n\n`;
+    }
+  }
+
+  const status = t.ctx.testFailed ? 'FAIL' : 'PASS';
+  const reportFormat = config.args.reportFormat === 'json' ? 'json' : 'txt';
+  report += await reporter.CreateTestReport(t, page, createdChannel);
+
+  if (config.args.dumpReport === true) {
     console.log(report);
   }
 

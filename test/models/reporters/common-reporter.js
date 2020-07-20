@@ -141,7 +141,8 @@ async function CreateJSONTestReport(testController, page, header, content, addit
     errors: JSON.stringify(errors, undefined, 2),
     consoleErrors: obj.error,
     configuration: getTestConfiguration(),
-    members: []
+    members: [],
+    error: ctx.error
   };
 
   for (const memberID in assertionResults) {
