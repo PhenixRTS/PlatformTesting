@@ -206,7 +206,7 @@ const initRtmpPush = async(testType) => {
   const {channelAlias} = config;
   const {capabilities, region} = config.publisherArgs;
   const {rtmpPushFile, rtmpLinkProtocol, rtmpPort} = config.rtmpPushArgs;
-  const channel = await createChannel(channelAlias);
+  const channel = await pcastApi.createChannel(channelAlias);
   ok(channel !== undefined, 'Could not create channel for RTMP Push');
 
   rtmpPush.startRtmpPush(
@@ -218,16 +218,6 @@ const initRtmpPush = async(testType) => {
     channel,
     capabilities
   );
-
-  return channel;
-};
-
-const createChannel = async() => {
-  const {channelAlias} = config;
-  const channel = await pcastApi.createChannel(channelAlias);
-
-  ok(channel !== undefined, `Could not create channel with alias [${channelAlias}]`);
-  console.log(`Created channel with alias [${channelAlias}]`);
 
   return channel;
 };
@@ -296,6 +286,5 @@ module.exports = {
   monitorStream,
   monitorRoomStreams,
   subscribeFromClient,
-  waitForPublisher,
-  createChannel
+  waitForPublisher
 };

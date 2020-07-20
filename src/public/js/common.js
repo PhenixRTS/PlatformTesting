@@ -178,7 +178,7 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
       'hd',
       'multi-bitrate'
     ],
-    channel: {
+    room: {
       alias: channelAlias,
       name: channelName
     },

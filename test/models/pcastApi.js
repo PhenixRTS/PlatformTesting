@@ -36,7 +36,7 @@ async function request(method, endpoint, body = null) {
 
   const response = await fetch(baseUrl + endpoint, requestConf);
 
-  return await response;
+  return await response.json();
 }
 
 async function createChannel(name, description = '', options = []) {
@@ -50,19 +50,14 @@ async function createChannel(name, description = '', options = []) {
   };
   const response = await request('PUT', '/channel', body);
 
-  if (response.error || response.statusCode !== 200) {
-    console.error(`Got response status [${response.status}] when tried to create channel:`);
-    console.log(response);
-  }
-
-  return response.json().channel;
+  return response.channel;
 }
 
 async function getChannelState(channelId) {
   const endpoint = `/channel/${encodeURIComponent(channelId)}/publishers/count`;
   const response = await request('GET', endpoint);
 
-  return response.json();
+  return response;
 }
 
 async function deleteChannel(channelId) {
