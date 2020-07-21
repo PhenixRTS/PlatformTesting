@@ -99,6 +99,18 @@ const videoLag = async(page, rtmpPush, doAssertion) => {
     analyzedData.push(data);
   });
 
+  if (analyzedData.length > (rtmpPush ? subscriberStats.length : publisherStats.length)) {
+    if (t.ctx.errors === undefined) {
+      t.ctx.errors = [];
+    }
+
+    const errorMessage = `AnalyzedData count [${analyzedData.length}] was greater than ${rtmpPush ? `subscriber [${subscriberStats.length}]` : `publisher [${publisherStats.length}]`} stats count`;
+    t.ctx.testFailed = true;
+    t.ctx.errors.push(errorMessage);
+
+    throw errorMessage;
+  }
+
   const {maxLag, maxRTMPLag} = config.videoAssertProfile;
   const maxVideoLag = rtmpPush ? maxRTMPLag : maxLag;
   const meanLagMs = math.average(analyzedData.map(e => e.lag));
@@ -111,20 +123,6 @@ const videoLag = async(page, rtmpPush, doAssertion) => {
       'gt'
     );
   }
-
-  doAssertion(
-    'Video stats (less than analyzed stats) count. Should be',
-    rtmpPush ? subscriberStats.length : publisherStats.length,
-    analyzedData.length,
-    'gte'
-  );
-
-  doAssertion(
-    'Collected and analyzed video stats',
-    analyzedData.length,
-    (rtmpPush ? subscriberStats.length : publisherStats.length) - 5,
-    'gt'
-  );
 
   doAssertion(
     'Subscriber video changes count',
