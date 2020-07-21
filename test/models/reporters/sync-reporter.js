@@ -29,11 +29,13 @@ async function CollectMediaChanges() {
   const streamReceivedAtTitle = '[Acceptance Testing] [Subscriber Stream received] ';
   const subscriberVideoTitle = '[Acceptance Testing] [Subscriber Video] ';
   const subscriberAudioTitle = '[Acceptance Testing] [Subscriber Audio] ';
-  const streamIdTitle = '[Acceptance Testing] [Stream ID]';
+  const streamIdTitle = '[Acceptance Testing] [Stream ID] ';
+  const sessionIdTitle = '[Acceptance Testing] [Session ID] ';
   const logs = await t.getBrowserConsoleMessages();
   const collectedStats = {
     streamReceivedAt: undefined,
     streamId: undefined,
+    sessionId: undefined,
     averageSync: undefined,
     maxSync: undefined,
     video: [],
@@ -57,6 +59,12 @@ async function CollectMediaChanges() {
       collectedStats.streamId = streamId;
 
       return;
+    }
+
+    if (el.startsWith(sessionIdTitle)) {
+      const sessionId = el.replace(sessionIdTitle, '');
+      logger.log(`For session [${sessionId}]`);
+      collectedStats.sessionId = sessionId;
     }
 
     var title = '';

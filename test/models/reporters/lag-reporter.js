@@ -30,11 +30,13 @@ async function CollectMediaChanges() {
   const publisherAudioTitle = '[Acceptance Testing] [Publisher Audio] ';
   const subscriberVideoTitle = '[Acceptance Testing] [Subscriber Video] ';
   const subscriberAudioTitle = '[Acceptance Testing] [Subscriber Audio] ';
-  const streamIdTitle = '[Acceptance Testing] [Stream ID]';
+  const streamIdTitle = '[Acceptance Testing] [Stream ID] ';
+  const sessionIdTitle = '[Acceptance Testing] [Session ID] ';
   const logs = await t.getBrowserConsoleMessages();
   const collectedStats = {
     streamReceivedAt: undefined,
     streamId: undefined,
+    sessionId: undefined,
     publisher: {
       video: [],
       audio: []
@@ -60,6 +62,12 @@ async function CollectMediaChanges() {
       collectedStats.streamId = streamId;
 
       return;
+    }
+
+    if (el.startsWith(sessionIdTitle)) {
+      const sessionId = el.replace(sessionIdTitle, '');
+      logger.log(`For session [${sessionId}]`);
+      collectedStats.sessionId = sessionId;
     }
 
     var title = '';

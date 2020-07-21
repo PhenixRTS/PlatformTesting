@@ -129,6 +129,7 @@ function membersChangedCallback(members) {
     }
 
     const memberStream = member.getObservableStreams().getValue()[0];
+    const streamId = memberStream.ji;
     const options = {videoElement: document.getElementById(memberID)};
 
     roomExpress.subscribeToMemberStream(
@@ -159,6 +160,8 @@ function membersChangedCallback(members) {
 
         if (status === 'ok' && mediaStream) {
           log(`[Stream received] [memberID:${memberID}] ${Date.now()}`);
+          log(`[Stream ID] ${streamId}`);
+          log(`[Session ID] ${sessionID}`);
           streams[memberID] = mediaStream;
         }
       }

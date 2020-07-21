@@ -30,12 +30,14 @@ async function CollectMediaStreamStats() {
   const streamStatsTitle = '[Acceptance Testing] [Media Stream Stats] ';
   const urlLoadedTitle = '[Acceptance Testing] [Url loaded] ';
   const streamReceivedTitle = '[Acceptance Testing] [Stream received] ';
-  const streamIdTitle = '[Acceptance Testing] [Stream ID]';
+  const streamIdTitle = '[Acceptance Testing] [Stream ID] ';
+  const sessionIdTitle = '[Acceptance Testing] [Session ID] ';
   const logs = await t.getBrowserConsoleMessages();
 
   const streamStats = {
     loadedAt: undefined,
     streamId: undefined,
+    sessionId: undefined,
     streamReceivedAt: undefined,
     audio: {},
     video: {}
@@ -53,10 +55,18 @@ async function CollectMediaStreamStats() {
       return;
     }
 
-    if (infoLogElement.startsWith(streamIdTitle)) {
+    if (!streamStats.streamId && infoLogElement.startsWith(streamIdTitle)) {
       const streamId = infoLogElement.replace(streamIdTitle, '');
       logger.log(`For stream [${streamId}]`);
       streamStats.streamId = streamId;
+
+      return;
+    }
+
+    if (!streamStats.sessionId && infoLogElement.startsWith(sessionIdTitle)) {
+      const sessionId = infoLogElement.replace(sessionIdTitle, '');
+      logger.log(`For session [${sessionId}]`);
+      streamStats.sessionId = sessionId;
 
       return;
     }
@@ -86,6 +96,14 @@ async function CollectMediaStreamStats() {
         ...streamStats,
         loadedAt: pageLoaded
       };
+    }
+
+    if (testStats[memberID].sessionId === undefined && streamStats.sessionId !== undefined){
+      testStats[memberID].sessionId = streamStats.sessionId;
+    }
+
+    if (testStats[memberID].streamId === undefined && streamStats.streamId !== undefined){
+      testStats[memberID].streamId = streamStats.streamId;
     }
 
     const collectedStats = testStats[memberID];
