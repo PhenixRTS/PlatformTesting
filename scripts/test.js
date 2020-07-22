@@ -64,6 +64,10 @@ const argv = require('yargs')
   .describe('reportFormat', 'Format in which test report will be generated. Available formats [json, text]')
   .describe('silent', 'When present, silences the normal std output from the tool')
   .describe('dumpReport', 'When present, dumps the report file to std out')
+  .describe('browserstackUser', 'Browserstack user name. Can skip if using local browsers')
+  .describe('browserstackKey', 'Browserstack access key. Can skip if using local browsers')
+  .describe('browserstackProjectName', 'Browserstack project name. Can skip if using local browsers')
+  .describe('browserstackBuildId', 'Browserstack build ID. Can skip if using local browsers')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -106,7 +110,11 @@ const argv = require('yargs')
     noSignalColorTolerance: 5,
     noSignalWaitingTime: 'PT10S',
     dateFormat: 'YYYY-MM-DDTHH:mm:ss.SSS[Z]',
-    reportFormat: 'text'
+    reportFormat: 'text',
+    browserstackUser: '',
+    browserstackKey: '',
+    browserstackProjectName: 'PlatformTestingTool',
+    browserstackBuildId: 'PlatformTestingTool Daily Run'
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome, chrome:headless, firefox, firefox --headless, safari, ie, edge, opera')
@@ -199,7 +207,16 @@ function parseBrowsers(browsers) {
   return configuredBrowsers;
 }
 
+function setEnvironmentVariables() {
+  process.env.BROWSERSTACK_USERNAME = argv.browserstackUser;
+  process.env.BROWSERSTACK_ACCESS_KEY = argv.browserstackKey;
+  process.env.BROWSERSTACK_PROJECT_NAME = argv.browserstackProjectName;
+  process.env.BROWSERSTACK_BUILD_ID = argv.browserstackBuildId;
+}
+
 function parseTestArgs() {
+  setEnvironmentVariables();
+
   config.backendUri = argv.backendUri;
   config.pcastUri = argv.pcastUri;
 

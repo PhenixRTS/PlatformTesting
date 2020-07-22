@@ -245,3 +245,22 @@ Example:
 ```
 npm run test -- --tests=test/fixtures/channel-sync-test.js --dumpReport --silent 
 ```
+
+## BrowserStack
+
+You can also use BrowserStack as browser provider. The tool integrates [testcafe-browser-provider-browserstack plugin](https://github.com/DevExpress/testcafe-browser-provider-browserstack)
+
+To use it you must set `--browserstackUser` and `--browserstackKey` arguments.
+Example:
+```
+npm run test -- --tests=test/fixtures/channel-quality-test.js --browserstackUser=<your-user-name> --browserstackKey=<your-key> --browsers="browserstack:Chrome:Windows 10"
+```
+`--browsers` flag is set using pattern `browserstack:<desired-browser-name-with-version>:<os-name>`.
+If there is no browser version provided then the latest version available in BrowserStack will be used.
+
+You can also override default browserstack project name with `--browserstackProjectName` and default browserstack build id with `--browserstackBuildId`
+Example:
+```
+npm run test -- --tests=test/fixtures/channel-quality-test.js --browserstackUser=<your-user-name> --browserstackKey=<your-key> --browserstackProjectName=<custom-name> --browserstackBuildId=<custom-id> --browsers="browserstack:Chrome:Windows 10"
+```
+(In BrowserStack dashboard builds will have project and build names)
