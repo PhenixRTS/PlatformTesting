@@ -46,7 +46,7 @@ const argv = require('yargs')
   .describe('media', 'Record video, audio or both')
   .describe('screenshotInterval', 'Create screenshot from video element after each duration whole testrun')
   .describe('screenshotName', 'Name of the screenshots that will be taken if screenshotInterval was provided')
-  .describe('ignoreJsConsoleErrors', 'If true, ignore JavaScript errors logged by tested website')
+  .describe('ignoreJsConsoleErrors', 'When present, ignores JavaScript errors logged by tested website')
   .describe('rtmpLinkProtocol', 'Link protocol that will be used for RTMP push')
   .describe('rtmpPort', 'Port that will be used for RTMP push')
   .describe('rtmpPushFile', 'Video file that will be published with RTMP Push')
@@ -64,6 +64,8 @@ const argv = require('yargs')
   .describe('reportFormat', 'Format in which test report will be generated. Available formats [json, text]')
   .describe('silent', 'When present, silences the normal std output from the tool')
   .describe('dumpReport', 'When present, dumps the report file to std out')
+  .describe('logAllStatsInReport', 'When present, logs all stats in the report')
+  .describe('saveConsoleLogs', 'When present, saves console logs to a separate file')
   .describe('browserstackUser', 'Browserstack user name. Can skip if using local browsers')
   .describe('browserstackKey', 'Browserstack access key. Can skip if using local browsers')
   .describe('browserstackProjectName', 'Browserstack project name. Can skip if using local browsers')
@@ -83,14 +85,11 @@ const argv = require('yargs')
     profileFile: 'test/profiles/default.js',
     screenName: '',
     concurrency: 1,
-    logAllStatsInReport: false,
-    saveConsoleLogs: false,
     record: 'PT0S',
     recordPublisher: 'PT0S',
     media: 'video,audio',
     screenshotInterval: 'PT0S',
     screenshotName: 'phenix_test_screenshot',
-    ignoreJsConsoleErrors: false,
     audio: undefined,
     video: undefined,
     syncPublishedVideoFps: 1,
@@ -174,7 +173,7 @@ async function test() {
       .browsers(parseBrowsers(config.args.browsers))
       .reporter(config.args.silent ? silentTestCafeReporter : 'spec')
       .concurrency(config.args.concurrency)
-      .run({skipJsErrors: config.args.ignoreJsConsoleErrors === 'true'});
+      .run({skipJsErrors: config.args.ignoreJsConsoleErrors === true || config.args.ignoreJsConsoleErrors === 'true'});
   }).then(failedCount => {
     logger.log(`Failed tests: ${failedCount}`);
     app.stopServer();

@@ -116,10 +116,9 @@ async function CreateHumanReadableTestReport(testController, page, header, conte
 
     const allStats = page.stats[memberID] || page.stats;
 
-    reportDetails +=
-      args.logAllStatsInReport === 'true'
-        ? `\n\nAll Stats:\n + ${JSON.stringify(allStats, undefined, 2)}`
-        : '';
+    if (args.logAllStatsInReport === true || args.logAllStatsInReport === 'true'){
+      reportDetails += `\n\nAll Stats:\n + ${JSON.stringify(allStats, undefined, 2)}`;
+    }
   }
 
   return reportHeader + reportDetails;
@@ -183,7 +182,7 @@ async function CreateJSONTestReport(testController, page, header, content, addit
       memberContent: content[memberID] !== undefined ? content[memberID] : {}
     });
 
-    if (args.logAllStatsInReport === 'true') {
+    if (args.logAllStatsInReport === true || args.logAllStatsInReport === 'true') {
       const allStats = page.stats[memberID] || page.stats;
       jsonReport['allStats'] = allStats;
     }
