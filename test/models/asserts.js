@@ -319,12 +319,12 @@ module.exports = class Asserts {
       t.ctx.skippedAssertions.push(videoCurrentDelay);
     }
 
-    const shouldSkipDroppedFramesAssertion = config.videoAssertProfile.maxDroppedFrames === null || config.videoAssertProfile.minFrameRateMean === null;
-    const maxAllowedDroppedFramesCount = config.videoAssertProfile.maxDroppedFrames * config.videoAssertProfile.minFrameRateMean;
+    const shouldSkipDroppedFramesAssertion = config.videoAssertProfile.maxDroppedFramesPerSecond === null || config.videoAssertProfile.minFrameRateMean === null;
+    const maxAllowedDroppedFramesCountPerMinute = config.videoAssertProfile.maxDroppedFramesPerSecond * config.videoAssertProfile.minFrameRateMean;
     this.assert(
       'Video dropped frames',
       streamStats.droppedFrames,
-      shouldSkipDroppedFramesAssertion ? null : maxAllowedDroppedFramesCount,
+      shouldSkipDroppedFramesAssertion ? null : maxAllowedDroppedFramesCountPerMinute * (config.args.testRuntimeMs / 60000),
       'lte'
     );
 

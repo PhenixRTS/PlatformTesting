@@ -23,7 +23,7 @@ const videoProfile = {
   minFrameRateMean: 1,
   minFrameRate: null,
   maxFrameRate: null,
-  maxDroppedFrames: null,
+  maxDroppedFramesPerSecond: null,
   maxPacketLossPerMinute: null,
   frameWidth: null,
   frameHeight: null,

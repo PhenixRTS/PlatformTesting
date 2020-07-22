@@ -34,7 +34,7 @@ const videoProfile = {
       timesPerMinute: 0
     }
   ],
-  maxDroppedFrames: 0.01,
+  maxDroppedFramesPerSecond: 0.01,
   maxPacketLossPerMinute: 3,
   frameWidth: 1280,
   frameHeight: 720,
