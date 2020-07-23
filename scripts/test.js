@@ -25,7 +25,10 @@ const app = new App();
 const logger = new Logger('Test script');
 const _ = require('lodash');
 const moment = require('moment');
+const path = require('path');
+const {getFileNameFromTestsConfigArgument} = require('../shared/shared');
 const {parseColor} = require('../test/models/format.js');
+const {reportsPath} = config;
 const argv = require('yargs')
   .help()
   .strict()
@@ -70,6 +73,7 @@ const argv = require('yargs')
   .describe('browserstackKey', 'Browserstack access key. Can skip if using local browsers')
   .describe('browserstackProjectName', 'Browserstack project name. Can skip if using local browsers')
   .describe('browserstackBuildId', 'Browserstack build ID. Can skip if using local browsers')
+  .describe('testcafeReporterType', 'Name of a built-in TestCafe reporter that outputs test report to stdout [spec, list, minimal, xunit, json]')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -110,6 +114,7 @@ const argv = require('yargs')
     noSignalWaitingTime: 'PT10S',
     dateFormat: 'YYYY-MM-DDTHH:mm:ss.SSS[Z]',
     reportFormat: 'text',
+    testcafeReporterType: 'spec',
     browserstackUser: '',
     browserstackKey: '',
     browserstackProjectName: 'PlatformTestingTool',
@@ -118,16 +123,6 @@ const argv = require('yargs')
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome, chrome:headless, firefox, firefox --headless, safari, ie, edge, opera')
   .argv;
-
-function silentTestCafeReporter() {
-  return {
-    async reportTaskStart() {},
-    async reportFixtureStart() {},
-    async reportTestStart() {},
-    async reportTestDone() {},
-    async reportTaskDone() {}
-  };
-}
 
 async function test() {
   config.args = parseTestArgs();
@@ -168,10 +163,13 @@ async function test() {
     testcafe = tc;
     logger.log(`Will run: ${config.args.tests}`);
 
+    const fileName = getFileNameFromTestsConfigArgument(config.args.tests);
+    const reporterFilePath = path.join(reportsPath, `${fileName}-${moment().format(config.args.dateFormat)}.xml`);
+
     return runner
       .src(config.args.tests)
       .browsers(parseBrowsers(config.args.browsers))
-      .reporter(config.args.silent ? silentTestCafeReporter : 'spec')
+      .reporter(config.args.testcafeReporterType, reporterFilePath)
       .concurrency(config.args.concurrency)
       .run({skipJsErrors: config.args.ignoreJsConsoleErrors === true || config.args.ignoreJsConsoleErrors === 'true'});
   }).then(failedCount => {
@@ -270,7 +268,8 @@ function parseTestArgs() {
     dateFormat: argv.dateFormat,
     reportFormat: argv.reportFormat,
     silent: argv.silent,
-    dumpReport: argv.dumpReport
+    dumpReport: argv.dumpReport,
+    testcafeReporterType: argv.testcafeReporterType
   };
 
   if (argv.channelAlias !== '') {

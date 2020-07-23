@@ -26,4 +26,22 @@
 
     return matches ? matches[1] : null;
   };
+
+  exports.getFileNameFromTestsConfigArgument = testsArgument => {
+    let fileName;
+
+    if (testsArgument.includes('test/fixtures/') && testsArgument.includes('.js')){
+      fileName = testsArgument.match(/(?<=test\/fixtures\/)(.*)(?=\.js)/g);
+    } else if (!testsArgument.includes('.js') && testsArgument.includes('/')) {
+      if (testsArgument.charAt(testsArgument.length - 1) === '/'){
+        testsArgument = testsArgument.slice(0, -1);
+      }
+
+      fileName = testsArgument.match(/([^\/]*)\/*$/g)[0];
+    } else {
+      fileName = testsArgument;
+    }
+
+    return fileName;
+  };
 }(typeof exports === 'undefined' ? this['shared'] = {} : exports));
