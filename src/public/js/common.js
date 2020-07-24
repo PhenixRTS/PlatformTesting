@@ -210,10 +210,14 @@ async function validateThatNoOtherStreamIsPlaying(channelExpress, channelAlias, 
   }, (error, response) => {
     if (error) {
       showPublisherErrorMessage(`Got error in subscriber callback (while trying to validate that no other stream is playing before publishing): ${error}`);
+
+      return;
     }
 
     if (response.status !== 'no-stream-playing') {
       showPublisherErrorMessage('Will not publish - there is other stream already playing!');
+
+      return;
     }
 
     log('Validation succesful - no other stream is playing before publishing');
