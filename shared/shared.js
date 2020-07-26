@@ -37,7 +37,7 @@
         testsArgument = testsArgument.slice(0, -1);
       }
 
-      fileName = testsArgument.match(/([^\/]*)\/*$/g)[0];
+      fileName = testsArgument.match(/([^/]*)\/*$/g)[0];
     } else {
       fileName = testsArgument;
     }
