@@ -40,6 +40,8 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
       .eql(1, 'Failed to join the channel: publisher not ready');
 
     await common.subscribeFromClient(createdChannel.channelId);
+  } else {
+    createdChannel = await common.createChannel(t);
   }
 
   await t

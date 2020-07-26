@@ -143,6 +143,8 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
     channelExpressOptions.authToken = await getAuthToken(applicationId, secret);
 
     if (channelExpressOptions.authToken === undefined) {
+      showPublisherErrorMessage(`Error: Will not publish - got undefined authToken [${channelExpressOptions.authToken}]`);
+
       return;
     }
   }
@@ -158,7 +160,7 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
       }
     }, (error, response) => {
       if (error) {
-        showPublisherErrorMessage(`Got error in createChannel callback [${error}]`);
+        showPublisherErrorMessage(`Error: Got error in createChannel callback [${error}]`);
       }
 
       if (response.status === 'already-exists') {
@@ -178,7 +180,7 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
       'hd',
       'multi-bitrate'
     ],
-    room: {
+    channel: {
       alias: channelAlias,
       name: channelName
     },
@@ -198,24 +200,24 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
 async function validateThatNoOtherStreamIsPlaying(channelExpress, channelAlias, successCallback) {
   channelExpress.joinChannel({alias: channelAlias}, (error, response) => {
     if (error) {
-      showPublisherErrorMessage(`Got error in join channel callback (while trying to validate that no other stream is playing before publishing): ${error}`);
+      showPublisherErrorMessage(`Error: Got error in join channel callback (while trying to validate that no other stream is playing before publishing): ${error}`);
     }
 
     if (response.status === 'room-not-found') {
       log(`Room was not found with channel alias [${channelAlias}] while validating that no other stream is playing before publishing`);
       successCallback();
     } else if (response.status !== 'ok') {
-      showPublisherErrorMessage(`Got response status [${response.status}] (while trying to validate that no other stream is playing before publishing)`);
+      showPublisherErrorMessage(`Error: Got response status [${response.status}] (while trying to validate that no other stream is playing before publishing)`);
     }
   }, (error, response) => {
     if (error) {
-      showPublisherErrorMessage(`Got error in subscriber callback (while trying to validate that no other stream is playing before publishing): ${error}`);
+      showPublisherErrorMessage(`Error: Got error in subscriber callback (while trying to validate that no other stream is playing before publishing): ${error}`);
 
       return;
     }
 
     if (response.status !== 'no-stream-playing') {
-      showPublisherErrorMessage('Will not publish - there is other stream already playing!');
+      showPublisherErrorMessage('Error: Will not publish - there is other stream already playing!');
 
       return;
     }
@@ -237,7 +239,7 @@ function stopPublisher(publisherChannelExpress) {
 }
 
 function showPublisherErrorMessage(message) {
-  document.getElementById('publisherError').innerHTML += message;
+  document.getElementById('publisherError').innerHTML += message + '\n';
   error(message);
 }
 
@@ -306,25 +308,31 @@ async function startMultimediaRecordingFor(timeMs, stream) {
 
 async function getAuthToken(applicationId, secret) {
   const authUrl = getUrlParams('publisherBackendUri') + '/auth';
-  const response = await fetch(authUrl, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      'Content-Length': '68'
-    },
-    body: JSON.stringify({
-      applicationId,
-      secret
+
+  return new Promise(resolve => {
+    fetch(authUrl, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Content-Length': '68'
+      },
+      body: JSON.stringify({
+        applicationId,
+        secret
+      })
     })
+      .then(response => response.json())
+      .then(result => {
+        if (result.error || result.status !== 'ok') {
+          document.getElementById('publisherAuthError').innerHTML = `
+            Error: Could not get auth token with provided applicationId (${applicationId}) and secret (${secret}).
+            Response status: ${result.status}
+            Response error: ${result.error}
+          `;
+        }
+
+        resolve(result.authenticationToken);
+      });
   });
-
-  if (response.status !== 'ok') {
-    document.getElementById('publisherAuthError').innerHTML = `
-      Error: Could not get auth token with provided applicationId (${applicationId}) and secret (${secret}).
-      Response status: ${response.status}
-    `;
-  }
-
-  return response.authenticationToken;
 }

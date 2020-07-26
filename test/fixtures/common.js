@@ -206,7 +206,7 @@ const initRtmpPush = async(testType) => {
   const {channelAlias} = config;
   const {capabilities, region} = config.publisherArgs;
   const {rtmpPushFile, rtmpLinkProtocol, rtmpPort} = config.rtmpPushArgs;
-  const channel = await pcastApi.createChannel(channelAlias);
+  const channel = await createChannel(channelAlias);
   ok(channel !== undefined, 'Could not create channel for RTMP Push');
 
   rtmpPush.startRtmpPush(
@@ -222,20 +222,37 @@ const initRtmpPush = async(testType) => {
   return channel;
 };
 
+const createChannel = async(testcafe) => {
+  const {channelAlias} = config;
+  const channel = await pcastApi.createChannel(channelAlias);
+
+  ok(channel !== undefined, `Could not create channel with alias [${channelAlias}]`);
+
+  if (channel === undefined) {
+    testcafe.ctx.testFailed = true;
+    return;
+  }
+
+  console.log(`Created channel with alias [${channelAlias}]`);
+
+  return channel;
+};
+
 const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   const {saveConsoleLogs} = config.args;
   let reportFileName = `${path.basename(testFile).split('.')[0]}`;
 
+  if (config.rtmpPushArgs.rtmpPushFile !== '') {
+    rtmpPush.stopRtmpPush();
+    reportFileName = `${reportFileName}-rtmp`;
+  }
+
   if (createdChannel.channelId !== undefined) {
     const {channelId} = createdChannel;
+    const deleteResponse = await pcastApi.deleteChannel(channelId);
 
-    rtmpPush.stopRtmpPush();
-    await pcastApi.deleteChannel(channelId);
-
-    reportFileName = `${reportFileName}-rtmp`;
-
-    if (config.args.silent !== true){
-      console.log(`Stopped RTMP Push and deleted created channel with id ${channelId}`);
+    if (config.args.silent !== true && deleteResponse.status === 'ok'){
+      console.log(`Deleted channel that was created previously. ChannelAlias: [${config.channelAlias}], id: [${channelId}]`);
     }
   }
 
@@ -286,5 +303,6 @@ module.exports = {
   monitorStream,
   monitorRoomStreams,
   subscribeFromClient,
-  waitForPublisher
+  waitForPublisher,
+  createChannel
 };

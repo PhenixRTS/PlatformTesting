@@ -221,6 +221,8 @@ function subscriberCallback(receivedError, response) {
     response.renderer.on('failedToPlay', reason => {
       error(`Failed to play stream. Reason: ${reason}`);
     });
+
+    subscriberVideoEl.muted = false;
   }
 
   log(`[Subscriber Stream received] ${Date.now()}`);

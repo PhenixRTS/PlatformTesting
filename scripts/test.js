@@ -205,8 +205,13 @@ function parseBrowsers(browsers) {
 }
 
 function setEnvironmentVariables() {
+  // BrowserStack Chrome autoplay
+  process.env.BROWSERSTACK_USE_AUTOMATE = '1';
+  process.env.BROWSERSTACK_CHROME_ARGS = '--autoplay-policy=no-user-gesture-required --disable-gesture-requirement-for-media-playback --use-fake-ui-for-media-stream';
+  // BrowserStack access
   process.env.BROWSERSTACK_USERNAME = argv.browserstackUser;
   process.env.BROWSERSTACK_ACCESS_KEY = argv.browserstackKey;
+  // BrowserStack configuration
   process.env.BROWSERSTACK_PROJECT_NAME = argv.browserstackProjectName;
   process.env.BROWSERSTACK_BUILD_ID = argv.browserstackBuildId;
 }

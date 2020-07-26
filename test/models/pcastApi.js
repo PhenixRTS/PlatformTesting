@@ -36,7 +36,7 @@ async function request(method, endpoint, body = null) {
 
   const response = await fetch(baseUrl + endpoint, requestConf);
 
-  return await response.json();
+  return await response;
 }
 
 async function createChannel(name, description = '', options = []) {
@@ -48,20 +48,41 @@ async function createChannel(name, description = '', options = []) {
       options
     }
   };
-  const response = await request('PUT', '/channel', body);
 
-  return response.channel;
+  return new Promise(resolve => {
+    request('PUT', '/channel', body)
+      .then(response => response.json())
+      .then(result => {
+        if (result.status !== 'ok') {
+          console.error(`Got response status [${result.status}] when tried to create channel:`);
+          console.log(result);
+        }
+
+        resolve(result.channel);
+      });
+  });
 }
 
 async function getChannelState(channelId) {
   const endpoint = `/channel/${encodeURIComponent(channelId)}/publishers/count`;
   const response = await request('GET', endpoint);
 
-  return response;
+  return response.json();
 }
 
 async function deleteChannel(channelId) {
-  await request('DELETE', `/channel/${encodeURIComponent(channelId)}`, {});
+  return new Promise(resolve => {
+    request('DELETE', `/channel/${encodeURIComponent(channelId)}`, {})
+      .then(response => response.json())
+      .then(result => {
+        if (result.status !== 'ok') {
+          console.error(`Got response status [${result.status}] when tried to delete channel:`);
+          console.log(result);
+        }
+
+        resolve(result);
+      });
+  });
 }
 
 async function terminateStream(streamId, reason) {
