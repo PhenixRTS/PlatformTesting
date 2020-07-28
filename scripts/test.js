@@ -423,10 +423,7 @@ function validateProfile(type, defaultProfile, customProfile) {
 }
 
 function exitWithErrorMessage(msg) {
-  if (config.args.silent !== true){
-    console.log(chalk.red(`${msg}\n`));
-  }
-
+  console.error(chalk.red(`${msg}\n`));
   process.exit(1);
 }
 
