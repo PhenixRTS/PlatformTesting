@@ -219,6 +219,7 @@ function setEnvironmentVariables() {
 
 function parseTestArgs() {
   setEnvironmentVariables();
+  validateTestTypeArguments();
 
   config.backendUri = argv.backendUri;
   config.pcastUri = argv.pcastUri;
@@ -261,6 +262,7 @@ function parseTestArgs() {
     screenshotName: argv.screenshotName,
     ignoreJsConsoleErrors: argv.ignoreJsConsoleErrors,
     applicationId: argv.applicationId,
+    secret: argv.secret,
     edgeToken: argv.edgeToken,
     authToken: argv.authToken,
     channelJoinRetries: argv.channelJoinRetries,
@@ -275,23 +277,14 @@ function parseTestArgs() {
     reportFormat: argv.reportFormat,
     silent: argv.silent,
     dumpReport: argv.dumpReport,
-    testcafeReporterType: argv.testcafeReporterType
+    testcafeReporterType: argv.testcafeReporterType,
+    roomAlias: argv.roomAlias
   };
 
   if (argv.channelAlias !== '') {
     config.channelAlias = argv.channelAlias;
   } else {
     config.channelAlias = argv.rtmpPushFile !== '' ? 'PlatformTestingRtmp' : `PlatformTesting-${moment().format('YYYY-MM-DD.HH.mm')}`;
-  }
-
-  if (args.tests.indexOf('room-quality-test') > -1) {
-    if (argv.roomAlias === '') {
-      exitWithErrorMessage(
-        `Error: roomAlias is requred`
-      );
-    }
-
-    args.roomAlias = argv.roomAlias;
   }
 
   if (args.browsers.includes('ie')) {
@@ -369,6 +362,26 @@ function parseTestArgs() {
   }
 
   return args;
+}
+
+function validateTestTypeArguments() {
+  if (argv.tests.indexOf('room-quality-test') > -1) {
+    if (argv.roomAlias === '') {
+      exitWithErrorMessage(`Error: --roomAlias is required for room quality test`);
+    }
+  }
+
+  if (argv.tests.indexOf('channel-sync-test') > -1) {
+    if (argv.secret === '' || argv.applicationId === '') {
+      exitWithErrorMessage(`Error: --secret and --applicationId are required for sync test`);
+    }
+  }
+
+  if (argv.tests.indexOf('channel-lag-test') > -1) {
+    if (argv.secret === '' || argv.applicationId === '') {
+      exitWithErrorMessage(`Error: --secret and --applicationId are required for lag test`);
+    }
+  }
 }
 
 function parsePublisherArgs() {
