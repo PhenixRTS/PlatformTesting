@@ -329,11 +329,11 @@ function parseTestArgs() {
           if (args.videoProfile[key][index]) {
             _.merge(args.videoProfile[key][index], argv.video[key][index]);
           } else {
-            args.videoProfile[key].push(JSON.parse(argv.video[key][index]));
+            args.videoProfile[key].push(argv.video[key][index]);
           }
         });
       } else {
-        args.videoProfile[key] = JSON.parse(argv.video[key]);
+        args.videoProfile[key] = argv.video[key];
       }
     });
   }
@@ -352,11 +352,11 @@ function parseTestArgs() {
           if (args.audioProfile[key][index]) {
             _.merge(args.audioProfile[key][index], argv.audio[key][index]);
           } else {
-            args.audioProfile[key].push(JSON.parse(argv.audio[key][index]));
+            args.audioProfile[key].push(argv.audio[key][index]);
           }
         });
       } else {
-        args.audioProfile[key] = JSON.parse(argv.audio[key]);
+        args.audioProfile[key] = argv.audio[key];
       }
     });
   }
