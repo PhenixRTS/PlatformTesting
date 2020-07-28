@@ -251,8 +251,16 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
     const {channelId} = createdChannel;
     const deleteResponse = await pcastApi.deleteChannel(channelId);
 
-    if (config.args.silent !== true && deleteResponse.status === 'ok'){
-      console.log(`Deleted channel that was created previously. ChannelAlias: [${config.channelAlias}], id: [${channelId}]`);
+    if (deleteResponse.status === 'ok'){
+      if (config.args.silent !== true) {
+        console.log(`Deleted channel that was created previously. ChannelAlias: [${config.channelAlias}], id: [${channelId}]`);
+      }
+    } else {
+      console.error(`Error: could not delete channel that was created previously.
+        ChannelAlias: [${config.channelAlias}], id: [${channelId}].
+        Error: [${deleteResponse.error}]
+        Status: [${deleteResponse.status}]`
+      );
     }
   }
 

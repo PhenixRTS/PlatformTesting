@@ -76,7 +76,7 @@ async function deleteChannel(channelId) {
       .then(response => response.json())
       .then(result => {
         if (result.status !== 'ok') {
-          console.error(`Got response status [${result.status}] when tried to delete channel:`);
+          console.error(`Got response status [${result.status}] when tried to delete channel with id [${channelId}]`);
           console.log(result);
         }
 

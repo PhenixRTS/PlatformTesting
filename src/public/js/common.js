@@ -315,12 +315,9 @@ async function getAuthToken(applicationId, secret) {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        'Content-Length': '68'
-      },
-      body: JSON.stringify({
-        applicationId,
-        secret
-      })
+        'Content-Length': '68',
+        Authorization: 'Basic ' + btoa(applicationId + ':' + unescape(encodeURIComponent(secret)))
+      }
     })
       .then(response => response.json())
       .then(result => {
