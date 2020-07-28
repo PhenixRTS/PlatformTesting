@@ -26,7 +26,7 @@ const logger = new Logger('Test script');
 const _ = require('lodash');
 const moment = require('moment');
 const path = require('path');
-const {getFileNameFromTestsConfigArgument} = require('../shared/shared');
+const {getFileExtensionBasedOnTestcafeReporterType, getFileNameFromTestsConfigArgument} = require('../shared/shared');
 const {parseColor} = require('../test/models/format.js');
 const {reportsPath} = config;
 const argv = require('yargs')
@@ -164,7 +164,8 @@ async function test() {
     logger.log(`Will run: ${config.args.tests}`);
 
     const fileName = getFileNameFromTestsConfigArgument(config.args.tests);
-    const reporterFilePath = path.join(reportsPath, `${fileName}-${moment().format(config.args.dateFormat)}.xml`);
+    const extension = getFileExtensionBasedOnTestcafeReporterType(config.args.testcafeReporterType);
+    const reporterFilePath = path.join(reportsPath, `${fileName}-${config.args.testcafeReporterType}-${moment().format(config.args.dateFormat)}.${extension}`);
 
     return runner
       .src(config.args.tests)

@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+const chalk = require('chalk');
+const fs = require('fs');
+
 (function(exports){
   exports.getMemberScreenNameFromID = id => {
     const matches = id.match(/screenName_(.*?)_sessionID_/);
@@ -27,21 +30,35 @@
     return matches ? matches[1] : null;
   };
 
+  // Function takes config argument "tests" and returns either test file name or tests directory name
+  // from the test path, depending on which one is given. If the path does not match a directory or is not
+  // a .js file it returns the tests argument value as it is.
   exports.getFileNameFromTestsConfigArgument = testsArgument => {
-    let fileName;
+    try {
+      const testPath = fs.statSync(testsArgument);
 
-    if (testsArgument.includes('test/fixtures/') && testsArgument.includes('.js')){
-      fileName = testsArgument.match(/(?<=test\/fixtures\/)(.*)(?=\.js)/g);
-    } else if (!testsArgument.includes('.js') && testsArgument.includes('/')) {
-      if (testsArgument.charAt(testsArgument.length - 1) === '/'){
+      if (testPath.isFile() && testsArgument.endsWith('.js')){
+        testsArgument = testsArgument.replace('.js', '');
+      }
+
+      if (testPath.isDirectory() && testsArgument.charAt(testsArgument.length - 1) === '/'){
         testsArgument = testsArgument.slice(0, -1);
       }
 
-      fileName = testsArgument.match(/([^/]*)\/*$/g)[0];
-    } else {
-      fileName = testsArgument;
+      return testsArgument.split('/').pop();
+    } catch (e) {
+      console.error(chalk.red(`${e}\n`));
     }
+  };
 
-    return fileName;
+  exports.getFileExtensionBasedOnTestcafeReporterType = type => {
+    switch (type) {
+      case 'xunit':
+        return 'xml';
+      case 'json':
+        return 'json';
+      default:
+        return 'txt';
+    }
   };
 }(typeof exports === 'undefined' ? this['shared'] = {} : exports));
