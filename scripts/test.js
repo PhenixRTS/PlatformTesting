@@ -329,11 +329,11 @@ function parseTestArgs() {
           if (args.videoProfile[key][index]) {
             _.merge(args.videoProfile[key][index], argv.video[key][index]);
           } else {
-            args.videoProfile[key].push(argv.video[key][index]);
+            args.videoProfile[key].push(parseJsonIfPossible(argv.video[key][index]));
           }
         });
       } else {
-        args.videoProfile[key] = argv.video[key];
+        args.videoProfile[key] = parseJsonIfPossible(argv.video[key]);
       }
     });
   }
@@ -352,11 +352,11 @@ function parseTestArgs() {
           if (args.audioProfile[key][index]) {
             _.merge(args.audioProfile[key][index], argv.audio[key][index]);
           } else {
-            args.audioProfile[key].push(argv.audio[key][index]);
+            args.audioProfile[key].push(parseJsonIfPossible(argv.audio[key][index]));
           }
         });
       } else {
-        args.audioProfile[key] = argv.audio[key];
+        args.audioProfile[key] = parseJsonIfPossible(argv.audio[key]);
       }
     });
   }
@@ -445,6 +445,17 @@ function parseToMilliseconds(time) {
   const timeAsDuration = moment.duration(time);
 
   return timeAsDuration.asMilliseconds();
+}
+
+function parseJsonIfPossible(value) {
+  let json = value;
+  try {
+    json = JSON.parse(value);
+  } catch {
+    return value;
+  }
+
+  return json;
 }
 
 module.exports = test();
