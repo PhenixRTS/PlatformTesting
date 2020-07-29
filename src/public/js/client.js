@@ -30,13 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function joinChannelCallback(err, response) {
   if (err) {
-    log('Failed to join channel!');
+    log('Error: Failed to join channel!');
     log(err);
     error(err);
   }
 
   if (response.status === 'room-not-found') {
-    console.warn('Room not found');
+    error('Error: Room not found');
   } else if (response.status !== 'ok') {
     error(err);
   }
@@ -52,7 +52,7 @@ function subscriberCallback(err, response) {
   }
 
   if (response.status === 'no-stream-playing') {
-    console.warn('No stream playing');
+    error(`Error: No stream playing in channel with alias [${getUrlParams('channelAlias')}]`);
   } else if (response.status !== 'ok') {
     error(`Response status: [${response.status}], Error: [${err}]`);
   }
@@ -69,7 +69,7 @@ function subscriberCallback(err, response) {
     });
 
     response.renderer.on('failedToPlay', reason => {
-      error(`Failed to play stream. Reason: ${reason}`);
+      error(`Error: Failed to play stream. Reason: ${reason}`);
     });
   }
 
@@ -104,7 +104,7 @@ function startRecordings() {
 function startStatsLogging() {
   setInterval(() => {
     if (stream === undefined) {
-      const errorMessage = 'There is no media stream! Is the channel online?';
+      const errorMessage = 'Error: There is no media stream! Is the channel online?';
       error(errorMessage);
 
       throw Error(errorMessage);
