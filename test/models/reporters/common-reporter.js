@@ -196,6 +196,12 @@ module.exports = {
     const obj = await testController.getBrowserConsoleMessages();
     const {error, info, log, warn} = obj;
 
+    if (error.length > 0) {
+      error.forEach(e => {
+        console.error(`${chalk.red(e)}\n`);
+      });
+    }
+
     return new Date() +
       '\n\nERRORS:\n' + error +
       '\n\nWARNINGS:\n' + warn +

@@ -298,9 +298,8 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   const filePath = persistence.saveToFile(reportFileName, status, report, reportFormat);
   commonReporter.LogReportPath(filePath);
 
+  const consoleDump = await reporter.CreateConsoleDump(t);
   if (saveConsoleLogs === true || saveConsoleLogs === 'true') {
-    const consoleDump = await reporter.CreateConsoleDump(t);
-
     persistence.saveToFile(`${t.browser.name}-console-logs`, '', consoleDump);
   }
 };

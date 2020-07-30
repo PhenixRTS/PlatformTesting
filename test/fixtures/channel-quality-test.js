@@ -31,7 +31,7 @@ test(`Measure channel for ${config.args.testRuntime} and assert quality of video
     .wait(3 * 1000)
     .expect(page.videoEl.exists).ok()
     .expect(page.offlineTitle.exists).notOk()
-    .expect(Selector('#subscriberError').innerText).notContains('Error', 'Got an error in subscriber callback', {timeout: 35 * 1000});
+    .expect(Selector('#subscriberError').innerText).notContains('Error', 'Got an error in subscriber callback', {timeout: 5 * 1000});
 
   await common.monitorStream(t, 'videoCanvasImg', 'videoEl');
 
