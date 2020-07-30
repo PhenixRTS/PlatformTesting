@@ -17,6 +17,7 @@
 /* global log, getUrlParams, joinChannel, RecordRTC, error, startMultimediaRecordingFor */
 
 let stream = undefined;
+const channelInformation = `ChannelAlias [${getUrlParams('channelAlias')}], applicationId [${getUrlParams('applicationId')}], backendUri [${getUrlParams('backendUri')}]`;
 
 document.addEventListener('DOMContentLoaded', () => {
   log(`[Url loaded] ${Date.now()}`);
@@ -30,31 +31,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function joinChannelCallback(err, response) {
   if (err) {
-    log('Error: Failed to join channel!');
-    log(err);
-    error(err);
+    error(`Failed to join the channel! ${channelInformation}. Error: [${err}]`);
   }
 
-  if (response.status === 'room-not-found') {
-    error('Error: Room not found');
-  } else if (response.status !== 'ok') {
-    error(err);
+  if (response.status !== 'ok') {
+    error(`Join channel callback response status: [${response.status}]. ${channelInformation}. Error: [${err}]`);
   }
 
-  if (response.status === 'ok' && response.channelService) {
-    log('Successfully joined channel');
+  if (response.status === 'ok') {
+    if (response.channelService) {
+      log('Successfully joined the channel');
+    } else {
+      error(`Error: [${response.channelService}] channel service in response from joining the channel. ${channelInformation}`);
+    }
   }
 }
 
 function subscriberCallback(err, response) {
   if (err) {
-    error(err);
+    error(`Error in subscriber callback! ${channelInformation}. Error: [${err}]`);
   }
 
-  if (response.status === 'no-stream-playing') {
-    error(`Error: No stream playing in channel with alias [${getUrlParams('channelAlias')}]`);
-  } else if (response.status !== 'ok') {
-    error(`Response status: [${response.status}], Error: [${err}]`);
+  if (response.status !== 'ok') {
+    error(`Subscriber callback response status: [${response.status}]. ${channelInformation}. Error: [${err}]`);
   }
 
   if (response.renderer) {
