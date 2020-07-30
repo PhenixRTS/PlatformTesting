@@ -28,9 +28,7 @@ class Logger {
   }
 
   error(msg) {
-    if (config.args && config.args.silent !== true) {
-      console.error(`[${this.format(new Date())}] [${this.prefix} ERROR] ${msg}\n`);
-    }
+    console.error(`[${this.format(new Date())}] [${this.prefix} ERROR] ${msg}\n`);
   }
 
   format(datetime) {

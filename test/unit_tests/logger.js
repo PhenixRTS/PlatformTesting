@@ -50,9 +50,9 @@ describe('When using the logger utility', function() {
       assert(!consoleLog.calledWith(`[${testToolLogger.format(new Date())}] [${loggerPrefix}] ${msg}`));
     });
 
-    it('it logs no error message to standard output', function() {
+    it('it logs error message to standard err', function() {
       testToolLogger.error(msg);
-      assert(!consoleError.calledWith(`[${testToolLogger.format(new Date())}] [${loggerPrefix} ERROR] ${msg}\n`));
+      assert(consoleError.calledWith(`[${testToolLogger.format(new Date())}] [${loggerPrefix} ERROR] ${msg}\n`));
     });
   });
 
@@ -83,7 +83,7 @@ describe('When using the logger utility', function() {
       assert(consoleLog.calledWith(`[${testToolLogger.format(new Date())}] [${loggerPrefix}] ${msg}`));
     });
 
-    it('it logs error message to standard output', function() {
+    it('it logs error message to standard err', function() {
       testToolLogger.error(msg);
       assert(consoleError.calledWith(`[${testToolLogger.format(new Date())}] [${loggerPrefix} ERROR] ${msg}\n`));
     });
