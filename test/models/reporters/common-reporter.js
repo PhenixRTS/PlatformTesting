@@ -17,6 +17,9 @@
 /* eslint-disable no-unused-vars */
 const chalk = require('chalk');
 const moment = require('moment');
+const fs = require('fs');
+const path = require('path');
+const XMLWriter = require('xml-writer');
 
 const shared = require('../../../shared/shared');
 const config = require('../../../config.js');
@@ -265,10 +268,56 @@ module.exports = {
   },
 
   LogReportPath: function(filePath) {
-    if (config.args.silent !== true){
+    if (config.args.silent !== true) {
       console.log(`\n================== REPORT ==================`);
       console.log(`${filePath}`);
       console.log(`============================================\n`);
+    }
+  },
+
+  CreateXMLTestReport: function(t, reportFileName) {
+    const {reportsPath} = config;
+    const assertionResults = t.ctx.assertionResults;
+    const testName = t.testRun.test.testFile.currentFixture.name;
+    let xmlContent = new XMLWriter(true);
+
+    xmlContent.startDocument('1.0', 'UTF-8');
+    xmlContent.startElement('testsuite');
+    xmlContent.writeAttribute('name', `${t.testRun.test.name}`);
+    xmlContent.writeAttribute('time', `${config.args.testRuntimeMs}`);
+    xmlContent.writeAttribute('timestamp', `${moment.utc(new Date()).format(config.args.dateFormat)}`);
+
+    for (const memberID in assertionResults) {
+      const {passed, failed, skipped} = assertionResults[memberID];
+
+      this.CreateCustomXMLAssertElements(passed, 'passed', xmlContent, testName);
+      this.CreateCustomXMLAssertElements(failed, 'failed', xmlContent, testName);
+      this.CreateCustomXMLAssertElements(skipped, 'skipped', xmlContent, testName);
+
+      xmlContent.endElement();
+    }
+
+    xmlContent.endDocument();
+
+    const xmlFilePath = path.join(reportsPath, `${reportFileName}-XML-report-${moment().format(config.args.dateFormat)}.xml`);
+    fs.writeFileSync(xmlFilePath, xmlContent);
+  },
+
+  CreateCustomXMLAssertElements: function(assertArray, assertType, xmlContent, testName) {
+    for (const assert in assertArray) {
+      xmlContent.startElement('testcase');
+      xmlContent.writeAttribute('classname', `${testName}`);
+      xmlContent.writeAttribute('name', `${assertArray[assert]}`);
+
+      if (assertType === 'failed') {
+        xmlContent.startElement('error').writeAttribute('message', `${assertArray[assert]}`).endElement();
+      }
+
+      if (assertType === 'skipped'){
+        xmlContent.startElement('skipped').endElement();
+      }
+
+      xmlContent.endElement();
     }
   }
 };
