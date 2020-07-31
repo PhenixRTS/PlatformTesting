@@ -220,6 +220,7 @@ function setEnvironmentVariables() {
 function parseTestArgs() {
   setEnvironmentVariables();
   validateTestTypeArguments();
+  validateBrowserstackArguments();
 
   config.backendUri = argv.backendUri;
   config.pcastUri = argv.pcastUri;
@@ -381,6 +382,22 @@ function validateTestTypeArguments() {
     if (argv.secret === '' || argv.applicationId === '') {
       exitWithErrorMessage(`Error: --secret and --applicationId are required for lag test`);
     }
+  }
+}
+
+function validateBrowserstackArguments() {
+  if (argv.browsers.indexOf('browserstack') > -1) {
+    if (argv.browserstackUser === '' || argv.browserstackKey === '') {
+      exitWithErrorMessage(`Error: --browserstackUser and --browserstackKey are required to run tests in BrowserStack`);
+    }
+  }
+
+  if (argv.browserstackUser !== '' && argv.browsers.indexOf('browserstack') === -1) {
+    exitWithErrorMessage(`Error: --browserstackUser should not be provided when not running tests in BrowserStack`);
+  }
+
+  if (argv.browserstackKey !== '' && argv.browsers.indexOf('browserstack') === -1) {
+    exitWithErrorMessage(`Error: --browserstackKey should not be provided when not running tests in BrowserStack`);
   }
 }
 
