@@ -78,24 +78,18 @@ function joinRoom(roomAlias) {
 }
 
 function joinRoomCallback(err, response) {
-  const {status} = response;
-
   if (err) {
-    log(`Failed to join room! Got error: ${err.message}`);
-    error(err);
+    error(`Error: Failed to join the room! [${err}]`);
   }
 
-  if (status === 'room-not-found') {
-    console.warn('Room not found!');
-  }
-
-  if (status !== 'ok' && response.status !== 'ended') {
-    log('Unable to join room, got status: ' + response.status);
-    error(err);
-  }
-
-  if (status === 'ok' && response.roomService) {
-    log('Successfully joined to the room');
+  if (response.status === 'ok') {
+    if (response.roomService) {
+      log('Successfully joined the room');
+    } else {
+      error('Error: There is no room service in response!');
+    }
+  } else {
+    error(`Error: Unable to join the room, got status [${response.status}]`);
   }
 }
 
@@ -139,30 +133,22 @@ function membersChangedCallback(members) {
         const {mediaStream, status} = response;
 
         if (err) {
-          log(
-            `Failed to subscribe to ${screenName} (session ID: ${sessionID}) stream! Got error: ${err.message}`
-          );
-          error(err);
+          error(`Error: Failed to subscribe to [${screenName}] (session ID: [${sessionID}]) stream! [${err}]`);
         }
 
-        if (status !== 'ok') {
-          const newStatusMsg = `Failed to subscribe to ${screenName} (session ID: ${sessionID}) stream! Got status: ${status}`;
-
-          error(newStatusMsg);
-        }
-
-        if (!mediaStream && failIfMemberHasNoStream) {
-          const msg = `Error: ${screenName} (session ID: ${sessionID}) has no media stream!`;
-          document.getElementById('roomError').innerHTML = msg;
-
-          error(msg);
-        }
-
-        if (status === 'ok' && mediaStream) {
-          log(`[Stream received] [memberID:${memberID}] ${Date.now()}`);
-          log(`[Stream ID] ${streamId}`);
-          log(`[Session ID] ${sessionID}`);
-          streams[memberID] = mediaStream;
+        if (status === 'ok') {
+          if (mediaStream) {
+            log(`[Stream received] [memberID:${memberID}] ${Date.now()}`);
+            log(`[Stream ID] ${streamId}`);
+            log(`[Session ID] ${sessionID}`);
+            streams[memberID] = mediaStream;
+          } else if (failIfMemberHasNoStream) {
+            const msg = `Error: [${screenName}] (session ID: [${sessionID}]) has no media stream!`;
+            document.getElementById('roomError').innerHTML = msg;
+            error(msg);
+          }
+        } else {
+          error(`Error: Failed to subscribe to [${screenName}] (session ID: [${sessionID}]) stream! Got status [${status}]`);
         }
       }
     );

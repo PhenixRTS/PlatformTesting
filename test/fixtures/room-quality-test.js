@@ -17,6 +17,7 @@
 import config from '../../config.js';
 import ChannelPage from '../models/channel-page.js';
 import reporter from '../models/reporters/quality-reporter.js';
+import {Selector} from 'testcafe';
 
 const common = require('./common');
 const page = new ChannelPage();
@@ -41,7 +42,9 @@ test(`Monitor room for ${config.args.testRuntime} with multiple members and asse
     .expect(page.videoEl.exists)
     .ok(memberError)
     .expect(page.offlineTitle.exists)
-    .notOk();
+    .notOk()
+    .expect(Selector('#subscriberError').innerText)
+    .notContains('Error', 'Got an error in subscriber callback', {timeout: 5 * 1000});
 
   await common.monitorRoomStreams(t);
 
