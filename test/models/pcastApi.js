@@ -53,12 +53,14 @@ async function createChannel(name, description = '', options = []) {
     request('PUT', '/channel', body)
       .then(response => response.json())
       .then(result => {
-        if (result.status !== 'ok') {
+        if (result.status === 'ok') {
+          console.log(`Created channel with alias [${name}]`);
+          resolve(result.channel);
+        } else {
           console.error(`Got response status [${result.status}] when tried to create channel:`);
           console.log(result);
+          resolve(null);
         }
-
-        resolve(result.channel);
       });
   });
 }

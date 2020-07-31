@@ -233,8 +233,6 @@ const createChannel = async(testcafe) => {
     return;
   }
 
-  console.log(`Created channel with alias [${channelAlias}]`);
-
   return channel;
 };
 
