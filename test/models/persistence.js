@@ -19,7 +19,7 @@ const path = require('path');
 const moment = require('moment');
 const config = require('../../config.js');
 
-function saveToFile(fileName, filenamePrefix, content, extension = 'txt') {
+function saveToFile(fileName, filenamePrefix, content, extension = 'txt', withTimestamp = true) {
   const {reportsPath} = config;
 
   if (!fs.existsSync(reportsPath)){
@@ -28,7 +28,7 @@ function saveToFile(fileName, filenamePrefix, content, extension = 'txt') {
 
   const filePath = path.join(
     reportsPath,
-    `${filenamePrefix}-${fileName}-${moment().format('YYYY-MM-DD-HH.mm.ss')}.${extension}`
+    `${filenamePrefix}-${fileName}${withTimestamp ? moment().format('-YYYY-MM-DD-HH.mm.ss') : ''}.${extension}`
   );
 
   fs.writeFileSync(filePath, content);

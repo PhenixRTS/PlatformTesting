@@ -20,6 +20,7 @@ const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
 const XMLWriter = require('xml-writer');
+const persistence = require('../persistence.js');
 
 const shared = require('../../../shared/shared');
 const config = require('../../../config.js');
@@ -194,6 +195,45 @@ async function CreateJSONTestReport(testController, page, header, content, addit
   return JSON.stringify(jsonReport, undefined, 2);
 }
 
+function CreatePostResultsJSON(testController) {
+  const {args, backendUri, channelAlias} = config;
+  const {browser, ctx} = testController;
+  const jsonReport = {
+    timestamp: moment.utc(new Date()).format(config.args.dateFormat),
+    backendUri: backendUri,
+    channelAlias: channelAlias,
+    testName: args.tests,
+    profileFile: args.profileFile,
+    browser: browser.name + ' (' + browser.version + ')',
+    testRuntime: args.testRuntime,
+    testStatus: ctx.testFailed ? 'failed' : 'passed'
+  };
+
+  for (const memberID in ctx.assertionResults) {
+    const {passed, failed, skipped} = ctx.assertionResults[memberID];
+    const screenName = shared.getMemberScreenNameFromID(memberID);
+    const sessionID = shared.getMemberSessionIDFromID(memberID);
+
+    jsonReport.failedAssertions = [];
+    jsonReport.passedAssertions = [];
+    jsonReport.skippedAssertions = [];
+
+    for (const failedAssertion in failed) {
+      jsonReport.failedAssertions.push(failed[failedAssertion]);
+    }
+
+    for (const passedAssertion in passed) {
+      jsonReport.passedAssertions.push(passed[passedAssertion]);
+    }
+
+    for (const skippedAssertion in skipped) {
+      jsonReport.skippedAssertions.push(skipped[skippedAssertion]);
+    }
+  }
+
+  return JSON.stringify(jsonReport, undefined, 2);
+}
+
 module.exports = {
   async CreateConsoleDump(testController) {
     const obj = await testController.getBrowserConsoleMessages();
@@ -214,6 +254,7 @@ module.exports = {
 
   async CreateTestReport(testController, page, header, content, additionalInfo = '') {
     const {args} = config;
+    persistence.saveToFile(`results`, 'post', CreatePostResultsJSON(testController), 'json', false);
 
     if (args.reportFormat === 'json') {
       return await CreateJSONTestReport(testController, page, header, content, additionalInfo);

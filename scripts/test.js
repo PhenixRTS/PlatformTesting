@@ -279,7 +279,8 @@ function parseTestArgs() {
     silent: argv.silent,
     dumpReport: argv.dumpReport,
     testcafeReporterType: argv.testcafeReporterType,
-    roomAlias: argv.roomAlias
+    roomAlias: argv.roomAlias,
+    profileFile: argv.profileFile
   };
 
   if (argv.channelAlias !== '') {

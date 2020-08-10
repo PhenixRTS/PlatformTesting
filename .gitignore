@@ -48,3 +48,4 @@ reports/
 test/assets/qr-timestamp.png
 configured_browser_profiles/firefox-profile/*
 !configured_browser_profiles/firefox-profile/user.js
+*.zip
