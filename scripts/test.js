@@ -74,6 +74,9 @@ const argv = require('yargs')
   .describe('browserstackProjectName', 'Browserstack project name. Can skip if using local browsers')
   .describe('browserstackBuildId', 'Browserstack build ID. Can skip if using local browsers')
   .describe('testcafeReporterType', 'Name of a built-in TestCafe reporter that outputs test report to stdout [spec, list, minimal, xunit, json]')
+  .describe('mode', 'Room chat test action type [send, receive]')
+  .describe('messageInterval', 'Message sending interval')
+  .describe('numMessages', 'Message sending limit')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -118,7 +121,10 @@ const argv = require('yargs')
     browserstackUser: '',
     browserstackKey: '',
     browserstackProjectName: 'PlatformTestingTool',
-    browserstackBuildId: 'PlatformTestingTool Daily Run'
+    browserstackBuildId: 'PlatformTestingTool Daily Run',
+    mode: 'receive',
+    messageInterval: 'PT5S',
+    numMessages: 11
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome, chrome:headless, firefox, firefox --headless, safari, ie, edge, opera')
@@ -150,7 +156,9 @@ async function test() {
     `&screenshotName=${config.args.screenshotName}` +
     `&syncFps=${config.args.videoProfile.syncPublishedVideoFps}` +
     `&failIfMemberHasNoStream=${config.args.failIfMemberHasNoStream}` +
-    `&channelJoinRetries=${config.args.channelJoinRetries}`;
+    `&channelJoinRetries=${config.args.channelJoinRetries}` +
+    `&mode=${config.args.mode}` +
+    `&messageInterval=${config.args.messageIntervalMs}`;
   config.videoAssertProfile = config.args.videoProfile;
   config.audioAssertProfile = config.args.audioProfile;
 
@@ -280,7 +288,11 @@ function parseTestArgs() {
     dumpReport: argv.dumpReport,
     testcafeReporterType: argv.testcafeReporterType,
     roomAlias: argv.roomAlias,
-    profileFile: argv.profileFile
+    profileFile: argv.profileFile,
+    mode: argv.mode,
+    messageInterval: argv.messageInterval,
+    messageIntervalMs: parseToMilliseconds(argv.messageInterval),
+    numMessages: argv.numMessages
   };
 
   if (argv.channelAlias !== '') {
@@ -382,6 +394,16 @@ function validateTestTypeArguments() {
   if (argv.tests.indexOf('channel-lag-test') > -1) {
     if (argv.secret === '' || argv.applicationId === '') {
       exitWithErrorMessage(`Error: --secret and --applicationId are required for lag test`);
+    }
+  }
+
+  if (argv.tests.indexOf('room-chat-test') > -1) {
+    if (argv.roomAlias === '') {
+      exitWithErrorMessage(`Error: --roomAlias is required for room chat test`);
+    }
+
+    if (argv.mode === '' || argv.mode !== 'send' && argv.mode !== 'receive'){
+      exitWithErrorMessage(`Error: --mode=send or --mode=receive is required for room chat test`);
     }
   }
 }

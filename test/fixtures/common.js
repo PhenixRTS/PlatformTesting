@@ -156,6 +156,31 @@ const monitorRoomStreams = async(testController) => {
   }
 };
 
+const monitorRoomChat = async(testController) => {
+  const {testRuntimeMs} = config.args;
+
+  let i = Math.floor(testRuntimeMs / 1000);
+
+  while (i > 0) {
+    await testController.wait(1000);
+    i--;
+
+    await testController
+      .expect(Selector('#roomError').innerText)
+      .notContains('Error', 'Error: Unable to join the room, got status')
+      .expect(Selector('#roomError').innerText)
+      .notContains('Error', 'Error: There is no room service in response!')
+      .expect(Selector('#chatStatusError').innerText)
+      .notContains('Error', 'Error: Chat is DISABLED')
+      .expect(Selector('#messageSentError').innerText)
+      .notContains('Error', 'Error: Can NOT send messages right now')
+      .expect(Selector('#messageSentError').innerText)
+      .notContains('Error', 'Error: Failed to send message')
+      .expect(Selector('#senderChatError').innerText)
+      .notContains('Error', 'Error: Sender chat is DISABLED');
+  }
+};
+
 const monitorStream = async(testController, canvasID, videoID = '') => {
   const {noSignalColor, noSignalColorTolerance, noSignalWaitingTime, testRuntimeMs} = config.args;
   const waitingTimes = Math.ceil(moment.duration(noSignalWaitingTime).asSeconds());
@@ -308,6 +333,7 @@ module.exports = {
   initRtmpPush,
   monitorStream,
   monitorRoomStreams,
+  monitorRoomChat,
   subscribeFromClient,
   waitForPublisher,
   createChannel

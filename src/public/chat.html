@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <script src="https://dl.phenixrts.com/WebSDK/2020.1.1/phenix-web-sdk.min.js"></script>
+    <script src="https://momentjs.com/downloads/moment.min.js"></script>
+    <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
+
+    <script src="js/common.js"></script>
+    <script src="js/client_chat.js"></script>
+
+    <title>Phenix Chat Test</title>
+</head>
+
+<body>
+<div class="room">
+    <h2>Room chat test</h2>
+    <p id="roomClientMessage"></p>
+    <p id="roomError"></p>
+    <div style="border-bottom: 1px solid black; padding: 20px 0;">
+        <h3>Sender</h3>
+        <div>
+            <p id="senderMessage"></p>
+        </div>
+        <div style="padding: 10px 5;" id="senderChatError"></div>
+        <div style="padding: 10px 0;" id="messageSentError"></div>
+    </div>
+    <div style="padding: 20px 5;">
+        <h3>Receiver</h3>
+        <div style="padding: 10px 0;" id="chatStatus"></div>
+        <div style="padding: 10px 0;" id="chatStatusError"></div>
+        <div>
+            <h4>Received messages</h4>
+            <pre id="receivedMessages"></pre>
+        </div>
+    </div>
+    <div style="height: 50px;"></div>
+</div>
+</body>
+
+</html>

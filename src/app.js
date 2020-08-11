@@ -43,6 +43,10 @@ class App {
       res.sendFile(path.join(__dirname, 'public', 'sync.html')); // eslint-disable-line no-undef
     });
 
+    app.get('/chat', (req, res) => {
+      res.sendFile(path.join(__dirname, 'public', 'chat.html')); // eslint-disable-line no-undef
+    });
+
     app.get('*', (req, res) => res.status(404).send(
       {message: '404, not found'}
     ));

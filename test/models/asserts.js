@@ -556,4 +556,43 @@ module.exports = class Asserts {
 
     await this.finishTest();
   }
+
+  async assertReceiverChat(stats) {
+    let maxTime = NaN;
+
+    stats.received.forEach(stat => {
+      const timeDifference = moment(stat.receivedTimestamp).diff(moment(stat.sentTimestamp));
+
+      if (timeDifference > maxTime || isNaN(maxTime)) {
+        maxTime = timeDifference;
+      }
+    });
+
+    this.assert(
+      'Max sent message duration',
+      maxTime,
+      300,
+      'lte'
+    );
+
+    this.assert(
+      'Received message count',
+      stats.received.length,
+      1,
+      'gte'
+    );
+
+    await this.finishTest();
+  }
+
+  async assertSenderChat(stats) {
+    this.assert(
+      'Messages sent',
+      stats.sent.length,
+      config.args.numMessages,
+      'eql'
+    );
+
+    await this.finishTest();
+  }
 };

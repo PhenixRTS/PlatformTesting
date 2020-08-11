@@ -264,3 +264,30 @@ Example:
 npm run test -- --tests=test/fixtures/channel-quality-test.js --browserstackUser=<your-user-name> --browserstackKey=<your-key> --browserstackProjectName=<custom-name> --browserstackBuildId=<custom-id> --browsers="browserstack:Chrome:Windows 10"
 ```
 (In BrowserStack dashboard builds will have project and build names)
+
+## Room chat test using ExpressRoom API
+
+There is `./test/fixtures/room-chat-test.js` test for running chat test in the room. 
+
+To run it you must set the `--roomAlias` and `--mode` arguments. This test can be run in two modes either as a message sender or as a message receiver, you can set this with `--mode=send` or `--mode=receive`.
+
+Example:
+```
+npm run test -- --tests=test/fixtures/room-chat-test.js --roomAlias=MyAwesomeRoomAlias --mode=send
+```
+
+You can set a message sending interval with argument `--messageInterval` when `--mode=send`.
+
+Example:
+```
+npm run test -- --tests=test/fixtures/room-chat-test.js --messageInterval=PT1S --roomAlias=MyAwesomeRoomAlias --mode=send 
+```
+
+By setting `--numMessages` argument, tool exits after sending or receiving given message count. 
+
+Example:
+```
+npm run test -- --tests=test/fixtures/room-chat-test.js --numMessages=500 --roomAlias=MyAwesomeRoomAlias --mode=send 
+```
+
+To be able to synchronize time in between send and receive client in different regions you need to configure your network settings to use `time.google.com` as your NTP server. See more information here: https://developers.google.com/time/ and https://developers.google.com/time/guides. 
