@@ -581,21 +581,21 @@ module.exports = class Asserts {
     });
 
     this.assert(
-      'Max [receivedTimestamp - sentTimestamp]',
+      'Max end-to-end latency',
       maxFullTime,
-      300,
+      400,
       'lte'
     );
 
     this.assert(
-      'Max [receivedTimestamp - serverTimestamp]',
+      'Max sender-to-server latency',
       maxTimeToServer,
       200,
       'lte'
     );
 
     this.assert(
-      'Max [serverTimestamp - sentTimestamp]',
+      'Max server-to-receiver latency',
       maxTimeFromServer,
       200,
       'lte'
