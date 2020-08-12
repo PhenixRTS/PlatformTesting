@@ -44,4 +44,6 @@ test(`Monitor room for ${config.args.testRuntime} with multiple members and asse
   if (config.args.mode === 'receive'){
     await page.asserts.assertReceiverChat(page.stats);
   }
+
+  await page.asserts.reportAssertionResults();
 });
