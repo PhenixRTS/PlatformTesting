@@ -558,27 +558,53 @@ module.exports = class Asserts {
   }
 
   async assertReceiverChat(stats) {
-    let maxTime = NaN;
+    let maxFullTime = NaN;
+    let maxTimeToServer = NaN;
+    let maxTimeFromServer = NaN;
 
     stats.received.forEach(stat => {
-      const timeDifference = moment(stat.receivedTimestamp).diff(moment(stat.sentTimestamp));
+      const sentTimeDifference = moment(stat.receivedTimestamp).diff(moment(stat.sentTimestamp));
+      const toServerTimeDifference = moment(stat.serverTimestamp).diff(moment(stat.sentTimestamp));
+      const fromServerTimeDifference = moment(stat.receivedTimestamp).diff(moment(stat.serverTimestamp));
 
-      if (timeDifference > maxTime || isNaN(maxTime)) {
-        maxTime = timeDifference;
+      if (sentTimeDifference > maxFullTime || isNaN(maxFullTime)) {
+        maxFullTime = sentTimeDifference;
+      }
+
+      if (fromServerTimeDifference > maxTimeFromServer || isNaN(maxTimeFromServer)){
+        maxTimeFromServer = fromServerTimeDifference;
+      }
+
+      if (toServerTimeDifference > maxTimeToServer || isNaN(maxTimeToServer)){
+        maxTimeToServer = toServerTimeDifference;
       }
     });
 
     this.assert(
-      'Max sent message duration',
-      maxTime,
+      'Max [receivedTimestamp - sentTimestamp]',
+      maxFullTime,
       300,
+      'lte'
+    );
+
+    this.assert(
+      'Max [receivedTimestamp - serverTimestamp]',
+      maxTimeToServer,
+      200,
+      'lte'
+    );
+
+    this.assert(
+      'Max [serverTimestamp - sentTimestamp]',
+      maxTimeFromServer,
+      200,
       'lte'
     );
 
     this.assert(
       'Received message count',
       stats.received.length,
-      1,
+      config.args.numMessages,
       'gte'
     );
 
