@@ -199,11 +199,14 @@ function CreatePostResultsJSON(testController) {
   const {args, backendUri, channelAlias} = config;
   const {browser, ctx} = testController;
   const jsonReport = {
+    failedAssertions: [],
+    passedAssertions: [],
+    skippedAssertions: [],
     timestamp: moment.utc(new Date()).format(config.args.dateFormat),
     backendUri: backendUri,
-    channelAlias: channelAlias,
-    testName: args.tests,
-    profileFile: args.profileFile,
+    channelAlias: `#${channelAlias}`,
+    testName: path.basename(args.tests),
+    profileFile: path.basename(args.profileFile),
     browser: browser.name + ' (' + browser.version + ')',
     testRuntime: args.testRuntime,
     testStatus: ctx.testFailed ? 'failed' : 'passed'
@@ -213,10 +216,6 @@ function CreatePostResultsJSON(testController) {
     const {passed, failed, skipped} = ctx.assertionResults[memberID];
     const screenName = shared.getMemberScreenNameFromID(memberID);
     const sessionID = shared.getMemberSessionIDFromID(memberID);
-
-    jsonReport.failedAssertions = [];
-    jsonReport.passedAssertions = [];
-    jsonReport.skippedAssertions = [];
 
     for (const failedAssertion in failed) {
       jsonReport.failedAssertions.push(failed[failedAssertion]);

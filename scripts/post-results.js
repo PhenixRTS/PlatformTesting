@@ -39,95 +39,91 @@ const argv = require('yargs')
 async function postResults() {
   validateArguments();
 
-  const rawJson = fs.readFileSync(path.join('.', 'test', 'reports', 'post-results.json'));
-  const jsonReport = JSON.parse(rawJson);
-
-  sendSlackMessage(jsonReport)
-    .then(response => {
-      uploadFile({
-        token: argv['slack-token'],
-        title: 'Report',
-        channels: argv['slack-channel'],
-        thread_ts: response.ts,
-        filename: 'report.json',
-        filetype: 'json',
-        content: rawJson
-      });
-
-      const zipFilename = 'reports.zip';
-      createZipArchive(zipFilename)
-        .then(() => {
-          const readZipFileStream = fs.createReadStream(zipFilename);
-
-          uploadFile({
-            token: argv['slack-token'],
-            title: 'Reports archive',
-            channels: argv['slack-channel'],
-            thread_ts: response.ts,
-            filename: zipFilename,
-            filetype: 'zip',
-            file: readZipFileStream
-          }, {'content-type': 'multipart/form-data'});
-        });
-    });
-}
-
-function sendSlackMessage(jsonReport) {
-  return new Promise(resolve => {
-    const messageBody = {text: `*${jsonReport.testStatus.toUpperCase()} ${jsonReport.testName} ${jsonReport.profileFile}*\n*${jsonReport.backendUri} ${jsonReport.channelAlias} ${jsonReport.browser} ${jsonReport.testRuntime}*\n\n`};
-
-    if (argv['full-results-url'] !== '') {
-      messageBody.text += `Full Results: ${argv['full-results-url']}\n\n`;
+  sendSlackMessage().then(response => {
+    if (response.ok) {
+      console.log(chalk.green(`Successfuly posted results\n`));
+    } else {
+      console.log(chalk.yellow(`There was a problem posting results! Response body [`, response.body, `]\n`));
     }
 
-    messageBody.text += `
-      Passed: ${jsonReport.passedAssertions.length}\n
-      Failed: ${jsonReport.failedAssertions.length} ${jsonReport.failedAssertions.length > 0 ? ':boom:' : ''}\n
-      Skipped: ${jsonReport.skippedAssertions.length}\n
-      Total: ${jsonReport.passedAssertions.length + jsonReport.failedAssertions.length + jsonReport.skippedAssertions.length}\n
-    `;
+    const zipFilename = 'reports.zip';
+    createZipArchive(zipFilename).then(() => {
+      const readZipFileStream = fs.createReadStream(zipFilename);
+      let threadTs;
 
-    request.post({
-      url: 'https://slack.com/api/chat.postMessage',
-      formData: {
-        token: argv['slack-token'],
-        text: messageBody.text,
-        channel: argv['slack-channel']
+      if (response.file.shares.private) {
+        threadTs = response.file.shares.private[response.file.channels[0]][0].ts;
+      } else {
+        threadTs = response.file.shares.public[response.file.channels[0]][0].ts;
       }
+
+      uploadFile({
+        token: argv['slack-token'],
+        title: 'Reports archive',
+        channels: argv['slack-channel'],
+        thread_ts: threadTs,
+        filename: zipFilename,
+        filetype: 'zip',
+        file: readZipFileStream
+      }, {'content-type': 'multipart/form-data'})
+        .then(response => {
+          if (response.ok) {
+            console.log(chalk.green(`Successfuly uploaded file [${zipFilename}]\n`));
+          } else {
+            console.log(chalk.yellow(`There was a problem uploading [${zipFilename}]! Response body [`, response.body, `]\n`));
+          }
+        });
+    });
+  });
+}
+
+function sendSlackMessage() {
+  return new Promise(resolve => {
+    const reportFilename = 'post-results.json';
+    const rawJson = fs.readFileSync(path.join('.', 'test', 'reports', reportFilename));
+    const jsonReport = JSON.parse(rawJson);
+    let message = `*${jsonReport.testStatus.toUpperCase()} ${jsonReport.testName} ${jsonReport.profileFile}*\n*${jsonReport.backendUri} ${jsonReport.channelAlias} ${jsonReport.browser} ${jsonReport.testRuntime}*\n\n`;
+
+    if (argv['full-results-url'] !== '') {
+      message += `Full Results: ${argv['full-results-url']}\n\n`;
+    }
+
+    message += `Passed: ${jsonReport.passedAssertions.length}\nFailed: ${jsonReport.failedAssertions.length} ${jsonReport.failedAssertions.length > 0 ? ':boom:' : ''}\nSkipped: ${jsonReport.skippedAssertions.length}\nTotal: ${jsonReport.passedAssertions.length + jsonReport.failedAssertions.length + jsonReport.skippedAssertions.length}\n`;
+
+    uploadFile({
+      token: argv['slack-token'],
+      title: 'Report',
+      initial_comment: message,
+      channels: argv['slack-channel'],
+      filename: reportFilename,
+      filetype: 'json',
+      content: rawJson
+    }).then(response => {
+      if (response.ok) {
+        console.log(chalk.green(`Successfuly uploaded [${reportFilename}]\n`));
+      } else {
+        console.log(chalk.yellow(`There was a problem uploading report.json! Response body [`, response.body, `]\n`));
+      }
+
+      resolve(response);
+    });
+  });
+}
+
+function uploadFile(formData, headers) {
+  return new Promise(resolve => {
+    request.post({
+      url: 'https://slack.com/api/files.upload',
+      headers: headers,
+      formData: formData
     }, (error, response) => {
       if (error) {
         console.error(chalk.red(error), '\n', error);
       }
 
       const responseJson = JSON.parse(response.body);
-
-      if (responseJson.ok) {
-        console.log(chalk.green(`Successfuly posted results\n`));
-        resolve(responseJson);
-      } else {
-        console.log(chalk.yellow(`There was a problem posting results! Response body [`, response.body, `]\n`));
-      }
+      resolve(responseJson);
     });
-  });
-}
-
-async function uploadFile(formData, headers) {
-  await request.post({
-    url: 'https://slack.com/api/files.upload',
-    headers: headers,
-    formData: formData
-  }, (error, response) => {
-    if (error) {
-      console.error(chalk.red(error), '\n', error);
-    }
-
-    const responseJson = JSON.parse(response.body);
-
-    if (responseJson.ok) {
-      console.log(chalk.green(`Successfuly uploaded file ${formData.filename}\n`));
-    } else {
-      console.log(chalk.yellow(`There was a problem uploading ${formData.filename}! Response body [`, response.body, `]\n`));
-    }
   });
 }
 
