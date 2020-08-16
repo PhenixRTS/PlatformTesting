@@ -165,19 +165,18 @@ const monitorRoomChat = async(testController) => {
     await testController.wait(1000);
     i--;
 
+    const roomError = Selector('#roomError');
+    const senderChatError = Selector('#senderChatError');
+    const messageSentError = Selector('#messageSentError');
+    const chatStatusError = Selector('#chatStatusError');
+
     await testController
-      .expect(Selector('#roomError').innerText)
-      .notContains('Error', 'Error: Unable to join the room, got status')
-      .expect(Selector('#roomError').innerText)
-      .notContains('Error', 'Error: There is no room service in response!')
-      .expect(Selector('#chatStatusError').innerText)
-      .notContains('Error', 'Error: Chat is DISABLED')
-      .expect(Selector('#messageSentError').innerText)
-      .notContains('Error', 'Error: Can NOT send messages right now')
-      .expect(Selector('#messageSentError').innerText)
-      .notContains('Error', 'Error: Failed to send message')
-      .expect(Selector('#senderChatError').innerText)
-      .notContains('Error', 'Error: Sender chat is DISABLED');
+      .expect(roomError().innerText).notContains('Error', 'Error: Unable to join the room, got status')
+      .expect(roomError().innerText).notContains('Error', 'Error: There is no room service in response!')
+      .expect(senderChatError().innerText).notContains('Error', 'Error: Sender chat is DISABLED')
+      .expect(messageSentError().innerText).notContains('Error', 'Error: Can NOT send messages right now')
+      .expect(messageSentError().innerText).notContains('Error', 'Error: Failed to send message')
+      .expect(chatStatusError().innerText).notContains('Error', 'Error: Chat is DISABLED');
   }
 };
 
