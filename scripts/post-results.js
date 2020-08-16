@@ -79,8 +79,8 @@ async function postResults() {
 
 function sendSlackMessage() {
   return new Promise(resolve => {
-    const reportFilename = 'post-results.json';
-    const rawJson = fs.readFileSync(path.join('.', 'test', 'reports', reportFilename));
+    const assertsSummaryFilename = 'asserts-summary.txt';
+    const rawJson = fs.readFileSync(path.join('.', 'test', 'reports', 'post-results.json'));
     const jsonReport = JSON.parse(rawJson);
     let message = `*${jsonReport.testStatus.toUpperCase()} ${jsonReport.testName} ${jsonReport.profileFile}*\n*${jsonReport.backendUri} ${jsonReport.channelAlias} ${jsonReport.browser} ${jsonReport.testRuntime}*\n\n`;
 
@@ -95,12 +95,12 @@ function sendSlackMessage() {
       title: 'Report',
       initial_comment: message,
       channels: argv['slack-channel'],
-      filename: reportFilename,
+      filename: assertsSummaryFilename,
       filetype: 'json',
-      content: rawJson
+      content: fs.readFileSync(path.join('.', 'test', 'reports', assertsSummaryFilename))
     }).then(response => {
       if (response.ok) {
-        console.log(chalk.green(`Successfuly uploaded [${reportFilename}]\n`));
+        console.log(chalk.green(`Successfuly uploaded [${assertsSummaryFilename}]\n`));
       } else {
         console.log(chalk.yellow(`There was a problem uploading report.json! Response body [`, response.body, `]\n`));
       }

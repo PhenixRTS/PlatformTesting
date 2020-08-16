@@ -233,6 +233,29 @@ function CreatePostResultsJSON(testController) {
   return JSON.stringify(jsonReport, undefined, 2);
 }
 
+function CreateAssertsSummary(testController) {
+  const {ctx} = testController;
+  let summary = '';
+
+  for (const memberID in ctx.assertionResults) {
+    const {passed, failed, skipped} = ctx.assertionResults[memberID];
+
+    for (const failedAssertion in failed) {
+      summary += `FAIL: ${failed[failedAssertion].replace(/Observations([\s\S]*)]/gmi, '')}\n`;
+    }
+
+    for (const passedAssertion in passed) {
+      summary += `PASS: ${passed[passedAssertion]}\n`;
+    }
+
+    for (const skippedAssertion in skipped) {
+      summary += `SKIP: ${skipped[skippedAssertion]}\n`;
+    }
+  }
+
+  return summary;
+}
+
 module.exports = {
   async CreateConsoleDump(testController) {
     const obj = await testController.getBrowserConsoleMessages();
@@ -254,6 +277,7 @@ module.exports = {
   async CreateTestReport(testController, page, header, content, additionalInfo = '') {
     const {args} = config;
     persistence.saveToFile(`results`, 'post', CreatePostResultsJSON(testController), 'json', false);
+    persistence.saveToFile(`summary`, 'asserts', CreateAssertsSummary(testController), 'txt', false);
 
     if (args.reportFormat === 'json') {
       return await CreateJSONTestReport(testController, page, header, content, additionalInfo);
