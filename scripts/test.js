@@ -26,7 +26,7 @@ const logger = new Logger('Test script');
 const _ = require('lodash');
 const moment = require('moment');
 const path = require('path');
-const {getFileExtensionBasedOnTestcafeReporterType, getFileNameFromTestsConfigArgument} = require('../shared/shared');
+const {getFileExtensionBasedOnTestcafeReporterType, getFileNameFromTestsConfigArgument, byteSize} = require('../shared/shared');
 const {parseColor} = require('../test/models/format.js');
 const {reportsPath} = config;
 const argv = require('yargs')
@@ -77,6 +77,7 @@ const argv = require('yargs')
   .describe('mode', 'Room chat test action type [send, receive]')
   .describe('messageInterval', 'Message sending interval')
   .describe('numMessages', 'Message sending limit')
+  .describe('messageSize', 'Byte size of message that gets sent [minimum is 56]')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -124,7 +125,8 @@ const argv = require('yargs')
     browserstackBuildId: 'PlatformTestingTool Daily Run',
     mode: 'receive',
     messageInterval: 'PT5S',
-    numMessages: 11
+    numMessages: 11,
+    messageSize: 72
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome, chrome:headless, firefox, firefox --headless, safari, ie, edge, opera')
@@ -158,7 +160,9 @@ async function test() {
     `&failIfMemberHasNoStream=${config.args.failIfMemberHasNoStream}` +
     `&channelJoinRetries=${config.args.channelJoinRetries}` +
     `&mode=${config.args.mode}` +
-    `&messageInterval=${config.args.messageIntervalMs}`;
+    `&messageInterval=${config.args.messageIntervalMs}` +
+    `&messageSize=${config.args.messageSize}` +
+    `&dateFormat=${config.args.dateFormat}`;
   config.videoAssertProfile = config.args.videoProfile;
   config.audioAssertProfile = config.args.audioProfile;
 
@@ -292,7 +296,8 @@ function parseTestArgs() {
     mode: argv.mode,
     messageInterval: argv.messageInterval,
     messageIntervalMs: parseToMilliseconds(argv.messageInterval),
-    numMessages: argv.numMessages
+    numMessages: argv.numMessages,
+    messageSize: argv.messageSize
   };
 
   if (argv.channelAlias !== '') {
@@ -404,6 +409,15 @@ function validateTestTypeArguments() {
 
     if (argv.mode === '' || argv.mode !== 'send' && argv.mode !== 'receive'){
       exitWithErrorMessage(`Error: --mode=send or --mode=receive is required for room chat test`);
+    }
+
+    const minSize = byteSize(JSON.stringify({
+      sentTimestamp: moment().format(argv.dateFormat),
+      payload: ''
+    }));
+
+    if (parseInt(argv.messageSize) < minSize){
+      exitWithErrorMessage(`Error: --messageSize minimum is ${minSize}`);
     }
   }
 }

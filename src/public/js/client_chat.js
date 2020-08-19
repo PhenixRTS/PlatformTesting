@@ -17,7 +17,8 @@
 /* global getUrlParams, getChannelUri, log, sdk, moment */
 
 let roomExpress = null;
-const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
+const dateFormat = getUrlParams('dateFormat');
+const byteSize = str => new Blob([str]).size;
 
 document.addEventListener('DOMContentLoaded', () => {
   log(`[Url loaded] ${Date.now()}`);
@@ -130,7 +131,6 @@ function startReceivingMessages(chatService){
 }
 
 function startSendingMessages(chatService){
-  let messageIdx = 0;
   const interval = getUrlParams('messageInterval');
   setInterval(() => {
     if (!chatService.getObservableChatEnabled().getValue()) {
@@ -145,10 +145,13 @@ function startSendingMessages(chatService){
       return;
     }
 
-    const message = JSON.stringify({
-      messageIdx: messageIdx++,
-      sentTimestamp: moment().format(dateFormat)
-    });
+    const messageObject = {
+      sentTimestamp: moment().format(dateFormat),
+      payload: ''
+    };
+    messageObject.payload = getMessagePayload(messageObject);
+
+    const message = JSON.stringify(messageObject);
     chatService.sendMessageToRoom(message, (error) => {
       if (error) {
         showMessageSentError('Error: Failed to send message', error);
@@ -156,8 +159,12 @@ function startSendingMessages(chatService){
         return;
       }
 
-      log(`[Message sent] ${message}`);
-      showSentMessages(`Sent message: '${message}\n`);
+      const messageSize = byteSize(message);
+      log(`[Message Sent] ${JSON.stringify({
+        message: message,
+        size: messageSize
+      })}`);
+      showSentMessages(`Message Size: ${messageSize} | Sent message: '${message}\n`);
     });
   }, interval);
 }
@@ -168,6 +175,32 @@ function membersChangedCallback(members) {
   } else {
     setClientMessage(`Room contains ${members.length} members`);
   }
+}
+
+function getMessagePayload(message){
+  const messageSize = getUrlParams('messageSize');
+  let messageByteSize;
+
+  if (messageSize.includes('-')){
+    const messageByteSizeValues = messageSize.split('-');
+    messageByteSize = randomNumberFromInterval(parseInt(messageByteSizeValues[0]), parseInt(messageByteSizeValues[1]));
+  } else {
+    messageByteSize = parseInt(messageSize);
+  }
+
+  const currentMessageByteSize = byteSize(JSON.stringify(message));
+
+  if (messageByteSize >= currentMessageByteSize){
+    const tempMessage = '0';
+
+    return tempMessage.repeat(messageByteSize - currentMessageByteSize);
+  }
+
+  return '';
+}
+
+function randomNumberFromInterval(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function setClientMessage(message) {

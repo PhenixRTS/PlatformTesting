@@ -24,7 +24,7 @@ async function CollectChatStats() {
   logger.log('Collecting chat stats...');
 
   const messageReceived = '[Acceptance Testing] [Message received] ';
-  const messageSent = '[Acceptance Testing] [Message sent] ';
+  const messageSent = '[Acceptance Testing] [Message Sent] ';
   const logs = await t.getBrowserConsoleMessages();
 
   const chatStats = {
@@ -46,8 +46,8 @@ async function CollectChatStats() {
     }
 
     if (infoLogElement.startsWith(messageSent)) {
-      const sentMessage = infoLogElement.replace(messageSent, '');
-      logger.log(`Sent message: ${sentMessage}`);
+      const sentMessage = JSON.parse(infoLogElement.replace(messageSent, ''));
+      logger.log(`Sent message: ${sentMessage.message}, Size: ${sentMessage.size}`);
       chatStats.sent.push(sentMessage);
     }
   });
