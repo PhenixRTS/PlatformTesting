@@ -17,6 +17,8 @@
 import {t} from 'testcafe';
 import Logger from '../../../scripts/logger.js';
 import moment from 'moment';
+import config from '../../../config';
+import reporter from './common-reporter';
 
 const logger = new Logger('Chat Test');
 
@@ -55,4 +57,33 @@ async function CollectChatStats() {
   return chatStats;
 }
 
-export default {CollectChatStats};
+async function CreateTestReport(testController, page) {
+  let header = {};
+  let content = {};
+  let additionalInfo = '';
+
+  if (config.args.reportFormat === 'json') {
+    header = {
+      expectedMessages: config.args.numMessages,
+      receivedMessages: config.args.mode === 'receive' ? page.stats.received.length : page.stats.sent.length,
+      messages: config.args.mode === 'receive' ? page.stats.received : page.stats.sent
+    };
+  } else {
+    header = 'Expected messages: ' + config.args.numMessages + '\n';
+
+    header += config.args.mode === 'receive' ?
+      'Received messages: ' + page.stats.received.length : 'Sent messages: ' + page.stats.sent.length;
+
+    header += config.args.mode === 'receive' ?
+      '\n\nMessages:\n' + JSON.stringify(page.stats.received, undefined, 2) :
+      '\n\nMessages:\n' + JSON.stringify(page.stats.sent, undefined, 2);
+  }
+
+  return reporter.CreateTestReport(testController, page, header, content, additionalInfo);
+}
+
+export default {
+  CollectChatStats,
+  CreateTestReport,
+  CreateConsoleDump: reporter.CreateConsoleDump
+};

@@ -121,8 +121,8 @@ function startReceivingMessages(chatService){
     const receivedTimestamp = moment().format(dateFormat);
     const jsonMessage = JSON.stringify({
       messageId: message.messageId,
-      receivedTimestamp: receivedTimestamp,
       serverTimestamp: moment(message.timestamp).format(dateFormat),
+      receivedTimestamp: receivedTimestamp,
       body: message.message
     });
     log(`[Message received] ${jsonMessage}`);

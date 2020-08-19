@@ -31,6 +31,7 @@ import commonReporter from '../models/reporters/common-reporter';
 import lagReporter from '../models/reporters/lag-reporter.js';
 import qualityReporter from '../models/reporters/quality-reporter';
 import syncReporter from '../models/reporters/sync-reporter';
+import chatReporter from '../models/reporters/chat-reporter';
 
 const pcastApi = require('../models/pcastApi.js');
 const rtmpPush = require('../models/rtmp-push.js');
@@ -295,6 +296,10 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
 
   if (testFile.indexOf('sync-test') > -1) {
     reporter = syncReporter;
+  }
+
+  if (testFile.indexOf('chat-test') > -1){
+    reporter = chatReporter;
   }
 
   if (_.isEmpty(page.stats)) {
