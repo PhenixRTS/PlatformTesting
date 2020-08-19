@@ -18,6 +18,7 @@ const _ = require('lodash');
 const moment = require('moment');
 const {t} = require('testcafe');
 const {isNull} = require('util');
+const math = require('mathjs');
 
 const config = require('../../config.js');
 const Logger = require('../../scripts/logger.js');
@@ -558,46 +559,46 @@ module.exports = class Asserts {
   }
 
   async assertReceiverChat(stats) {
-    let maxFullTime = NaN;
-    let maxTimeToServer = NaN;
-    let maxTimeFromServer = NaN;
+    const endToEndLatency = [];
+    const senderToServerLatency = [];
+    const serverToReceiverLatency = [];
 
     stats.received.forEach(stat => {
-      const sentTimeDifference = moment(stat.receivedTimestamp).diff(moment(stat.sentTimestamp));
-      const toServerTimeDifference = moment(stat.serverTimestamp).diff(moment(stat.sentTimestamp));
-      const fromServerTimeDifference = moment(stat.receivedTimestamp).diff(moment(stat.serverTimestamp));
-
-      if (sentTimeDifference > maxFullTime || isNaN(maxFullTime)) {
-        maxFullTime = sentTimeDifference;
-      }
-
-      if (fromServerTimeDifference > maxTimeFromServer || isNaN(maxTimeFromServer)){
-        maxTimeFromServer = fromServerTimeDifference;
-      }
-
-      if (toServerTimeDifference > maxTimeToServer || isNaN(maxTimeToServer)){
-        maxTimeToServer = toServerTimeDifference;
-      }
+      endToEndLatency.push(moment(stat.receivedTimestamp).diff(moment(stat.sentTimestamp)));
+      senderToServerLatency.push(moment(stat.serverTimestamp).diff(moment(stat.sentTimestamp)));
+      serverToReceiverLatency.push(moment(stat.receivedTimestamp).diff(moment(stat.serverTimestamp)));
     });
+
+    let maxEndToEndLatency = endToEndLatency.length > 0 ? Math.max.apply(this, endToEndLatency) : 'null';
+    let maxSenderToServerLatency = senderToServerLatency.length > 0 ? Math.max.apply(this, senderToServerLatency) : 'null';
+    let maxServerToReceiverLatency = serverToReceiverLatency.length > 0 ? Math.max.apply(this, serverToReceiverLatency) : 'null';
+    let stddevEndToEndLatency = endToEndLatency.length > 0 ? math.std(endToEndLatency) : 'null';
 
     this.assert(
       'Max end-to-end latency',
-      maxFullTime,
+      maxEndToEndLatency,
       400,
       'lte'
     );
 
     this.assert(
       'Max sender-to-server latency',
-      maxTimeToServer,
+      maxSenderToServerLatency,
       200,
       'lte'
     );
 
     this.assert(
       'Max server-to-receiver latency',
-      maxTimeFromServer,
+      maxServerToReceiverLatency,
       200,
+      'lte'
+    );
+
+    this.assert(
+      'Standard deviation of end-to-end latency',
+      stddevEndToEndLatency,
+      15,
       'lte'
     );
 
