@@ -50,7 +50,7 @@ function initRoom(alias) {
   const roomExpress = new sdk.express.RoomExpress({
     adminApiProxyClient,
     features,
-    disableConsoleLogging: true,
+    disableConsoleLogging: getUrlParams('disableConsoleLogging') === 'true',
     uri: pcastUri
   });
 

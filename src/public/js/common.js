@@ -86,7 +86,7 @@ function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriber
   let channelOptions = {
     adminApiProxyClient,
     features,
-    disableConsoleLogging: true,
+    disableConsoleLogging: getUrlParams('disableConsoleLogging') === 'true',
     uri: pcastUri
   };
 
@@ -133,7 +133,7 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
 
   var channelExpressOptions = {
     adminApiProxyClient: publisherAdminApiProxyClient,
-    disableConsoleLogging: true,
+    disableConsoleLogging: getUrlParams('disableConsoleLogging') === 'true',
     uri: pcastUri
   };
 

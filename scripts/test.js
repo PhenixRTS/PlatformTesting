@@ -77,6 +77,7 @@ const argv = require('yargs')
   .describe('mode', 'Room chat test action type [send, receive]')
   .describe('messageInterval', 'Message sending interval')
   .describe('numMessages', 'Message sending limit')
+  .describe('disableSDKConsoleLogging', 'Toggle console logs from websdk')
   .describe('messageSize', 'Byte size of message that gets sent [minimum is 56]')
   .default({
     localServerPort: 3333,
@@ -126,6 +127,7 @@ const argv = require('yargs')
     mode: 'receive',
     messageInterval: 'PT5S',
     numMessages: 11,
+    disableSDKConsoleLogging: false,
     messageSize: 72
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
@@ -161,6 +163,7 @@ async function test() {
     `&channelJoinRetries=${config.args.channelJoinRetries}` +
     `&mode=${config.args.mode}` +
     `&messageInterval=${config.args.messageIntervalMs}` +
+    `&disableConsoleLogging=${config.args.disableSDKConsoleLogging}` +
     `&messageSize=${config.args.messageSize}` +
     `&dateFormat=${config.args.dateFormat}`;
   config.videoAssertProfile = config.args.videoProfile;
@@ -297,6 +300,7 @@ function parseTestArgs() {
     messageInterval: argv.messageInterval,
     messageIntervalMs: parseToMilliseconds(argv.messageInterval),
     numMessages: argv.numMessages,
+    disableSDKConsoleLogging: argv.disableSDKConsoleLogging,
     messageSize: argv.messageSize
   };
 
