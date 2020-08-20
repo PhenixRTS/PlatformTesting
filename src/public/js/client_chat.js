@@ -152,19 +152,27 @@ function startSendingMessages(chatService){
     messageObject.payload = getMessagePayload(messageObject);
 
     const message = JSON.stringify(messageObject);
-    chatService.sendMessageToRoom(message, (error) => {
+    chatService.sendMessageToRoom(message, (error, response) => {
       if (error) {
         showMessageSentError('Error: Failed to send message', error);
 
         return;
       }
 
-      const messageSize = byteSize(message);
-      log(`[Message Sent] ${JSON.stringify({
-        message: message,
-        size: messageSize
-      })}`);
-      showSentMessages(`Message Size: ${messageSize} | Sent message: '${message}\n`);
+      if (response.status !== 'ok'){
+        showMessageSentError(`Error: Unable to send message, got status [${response.status}]`, response);
+
+        return;
+      }
+
+      if (response.status === 'ok'){
+        const messageSize = byteSize(message);
+        log(`[Message Sent] ${JSON.stringify({
+          message: message,
+          size: messageSize
+        })}`);
+        showSentMessages(`Message Size: ${messageSize} | Sent message: '${message}\n`);
+      }
     });
   }, interval);
 }
@@ -228,8 +236,8 @@ function showReceivedMessages(message){
   document.getElementById('receivedMessages').innerHTML += message;
 }
 
-function showMessageSentError(message){
-  console.error(`[Acceptance Testing Error] ${message}`);
+function showMessageSentError(message, response = ''){
+  console.error(`[Acceptance Testing Error] ${message}`, response);
   document.getElementById('messageSentError').innerHTML += `<br />${message}`;
 }
 
