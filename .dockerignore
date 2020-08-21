@@ -1,0 +1,12 @@
+.dockerignore
+Docker*
+.git*
+.eslint*
+.vscode
+.idea/
+*.log
+*.md
+Thumbs.db
+node_modules
+package-lock.json
+test/reports
