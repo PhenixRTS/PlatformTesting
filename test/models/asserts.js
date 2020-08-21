@@ -18,7 +18,6 @@ const _ = require('lodash');
 const moment = require('moment');
 const {t} = require('testcafe');
 const {isNull} = require('util');
-const math = require('mathjs');
 
 const config = require('../../config.js');
 const Logger = require('../../scripts/logger.js');
@@ -559,46 +558,33 @@ module.exports = class Asserts {
   }
 
   async assertReceiverChat(stats) {
-    const endToEndLatency = [];
-    const senderToServerLatency = [];
-    const serverToReceiverLatency = [];
-
-    stats.received.forEach(stat => {
-      endToEndLatency.push(moment(stat.receivedTimestamp).diff(moment(stat.sentTimestamp)));
-      senderToServerLatency.push(moment(stat.serverTimestamp).diff(moment(stat.sentTimestamp)));
-      serverToReceiverLatency.push(moment(stat.receivedTimestamp).diff(moment(stat.serverTimestamp)));
-    });
-
-    let maxEndToEndLatency = endToEndLatency.length > 0 ? Math.max.apply(this, endToEndLatency) : 'null';
-    let maxSenderToServerLatency = senderToServerLatency.length > 0 ? Math.max.apply(this, senderToServerLatency) : 'null';
-    let maxServerToReceiverLatency = serverToReceiverLatency.length > 0 ? Math.max.apply(this, serverToReceiverLatency) : 'null';
-    let stddevEndToEndLatency = endToEndLatency.length > 0 ? math.std(endToEndLatency) : 'null';
+    const chatReceiveProfile = config.chatAssertProfile.receive;
 
     this.assert(
       'Max end-to-end latency',
-      maxEndToEndLatency,
-      400,
+      stats.maxSenderToReceiverLag,
+      chatReceiveProfile.senderToReceiverLag,
       'lte'
     );
 
     this.assert(
       'Max sender-to-server latency',
-      maxSenderToServerLatency,
-      200,
+      stats.maxSenderToPlatformLag,
+      chatReceiveProfile.senderToPlatformLag,
       'lte'
     );
 
     this.assert(
       'Max server-to-receiver latency',
-      maxServerToReceiverLatency,
-      200,
+      stats.maxPlatformToReceiverLag,
+      chatReceiveProfile.platformToReceiverLag,
       'lte'
     );
 
     this.assert(
       'Standard deviation of end-to-end latency',
-      stddevEndToEndLatency,
-      15,
+      stats.stdDevSenderToReceiverLag,
+      chatReceiveProfile.stdDevSenderToReceiverLag,
       'lte'
     );
 

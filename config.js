@@ -25,6 +25,7 @@ const reportsPath = path.join(__dirname, 'test', 'reports');
 const assetsPath = path.join(__dirname, 'test', 'assets');
 const videoAssertProfile = {};
 const audioAssertProfile = {};
+const chatAssertProfile = {};
 const projectDir = __dirname;
 
 module.exports = {
@@ -38,5 +39,6 @@ module.exports = {
   reportsPath,
   videoAssertProfile,
   audioAssertProfile,
+  chatAssertProfile,
   projectDir
 };

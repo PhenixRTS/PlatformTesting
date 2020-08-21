@@ -21,6 +21,7 @@ import config from '../../../config';
 import reporter from './common-reporter';
 
 const logger = new Logger('Chat Test');
+const math = require('mathjs');
 
 async function CollectChatStats() {
   logger.log('Collecting chat stats...');
@@ -28,31 +29,59 @@ async function CollectChatStats() {
   const messageReceived = '[Acceptance Testing] [Message received] ';
   const messageSent = '[Acceptance Testing] [Message Sent] ';
   const logs = await t.getBrowserConsoleMessages();
+  let chatStats = {};
 
-  const chatStats = {
-    sent: [],
-    received: []
-  };
+  if (config.args.mode === 'receive') {
+    chatStats = {
+      received: [],
+      senderToReceiverLags: [],
+      senderToPlatformLags: [],
+      platformToReceiverLags: [],
+      maxSenderToReceiverLag: undefined,
+      maxSenderToPlatformLag: undefined,
+      maxPlatformToReceiverLag: undefined,
+      stdDevSenderToReceiverLag: undefined
+    };
 
-  logs.info.forEach(infoLogElement => {
-    infoLogElement = infoLogElement.trim();
+    logs.info.forEach(infoLogElement => {
+      infoLogElement = infoLogElement.trim();
 
-    if (infoLogElement.startsWith(messageReceived)) {
-      const receivedMessage = JSON.parse(infoLogElement.replace(messageReceived, ''));
-      logger.log(`Received message: ${JSON.stringify(receivedMessage)}`);
-      receivedMessage.sentTimestamp = moment(JSON.parse(receivedMessage.body).sentTimestamp).format('YYYY-MM-DDTHH:mm:ss.SSS');
-      logger.log(`receivedTimestamp - sentTimestamp: [${moment(receivedMessage.receivedTimestamp).diff(moment(receivedMessage.sentTimestamp))}]`);
-      logger.log(`serverTimestamp - sentTimestamp: [${moment(receivedMessage.serverTimestamp).diff(moment(receivedMessage.sentTimestamp))}]`);
-      logger.log(`receivedTimestamp - serverTimestamp: [${moment(receivedMessage.receivedTimestamp).diff(moment(receivedMessage.serverTimestamp))}]`);
-      chatStats.received.push(receivedMessage);
-    }
+      if (infoLogElement.startsWith(messageReceived)) {
+        const receivedMessage = JSON.parse(infoLogElement.replace(messageReceived, ''));
+        logger.log(`Received message: ${JSON.stringify(receivedMessage)}`);
+        receivedMessage.sentTimestamp = moment(JSON.parse(receivedMessage.body).sentTimestamp).format('YYYY-MM-DDTHH:mm:ss.SSS');
+        logger.log(`receivedTimestamp - sentTimestamp: [${moment(receivedMessage.receivedTimestamp).diff(moment(receivedMessage.sentTimestamp))}]`);
+        logger.log(`serverTimestamp - sentTimestamp: [${moment(receivedMessage.serverTimestamp).diff(moment(receivedMessage.sentTimestamp))}]`);
+        logger.log(`receivedTimestamp - serverTimestamp: [${moment(receivedMessage.receivedTimestamp).diff(moment(receivedMessage.serverTimestamp))}]`);
+        chatStats.received.push(receivedMessage);
+      }
+    });
 
-    if (infoLogElement.startsWith(messageSent)) {
-      const sentMessage = JSON.parse(infoLogElement.replace(messageSent, ''));
-      logger.log(`Sent message: ${sentMessage.message}, Size: ${sentMessage.size}`);
-      chatStats.sent.push(sentMessage);
-    }
-  });
+    chatStats.received.forEach(stat => {
+      chatStats.senderToReceiverLags.push(moment(stat.receivedTimestamp).diff(moment(stat.sentTimestamp)));
+      chatStats.senderToPlatformLags.push(moment(stat.serverTimestamp).diff(moment(stat.sentTimestamp)));
+      chatStats.platformToReceiverLags.push(moment(stat.receivedTimestamp).diff(moment(stat.serverTimestamp)));
+    });
+
+    chatStats.maxSenderToReceiverLag = chatStats.senderToReceiverLags.length > 0 ? Math.max.apply(this, chatStats.senderToReceiverLags) : 'null';
+    chatStats.maxSenderToPlatformLag = chatStats.senderToPlatformLags.length > 0 ? Math.max.apply(this, chatStats.senderToPlatformLags) : 'null';
+    chatStats.maxPlatformToReceiverLag = chatStats.platformToReceiverLags.length > 0 ? Math.max.apply(this, chatStats.platformToReceiverLags) : 'null';
+    chatStats.stdDevSenderToReceiverLag = chatStats.senderToReceiverLags.length > 0 ? math.std(chatStats.senderToReceiverLags) : 'null';
+  }
+
+  if (config.args.mode === 'send') {
+    chatStats = {sent: []};
+
+    logs.info.forEach(infoLogElement => {
+      infoLogElement = infoLogElement.trim();
+
+      if (infoLogElement.startsWith(messageSent)) {
+        const sentMessage = JSON.parse(infoLogElement.replace(messageSent, ''));
+        logger.log(`Sent message: ${sentMessage.message}, Size: ${sentMessage.size}`);
+        chatStats.sent.push(sentMessage);
+      }
+    });
+  }
 
   return chatStats;
 }

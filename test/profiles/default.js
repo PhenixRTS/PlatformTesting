@@ -83,8 +83,18 @@ const audioProfile = {
     }
   ]
 };
+const chatProfile = {
+  send: {},
+  receive: {
+    senderToReceiverLag: 'PT0.4S',
+    senderToPlatformLag: 'PT0.2S',
+    platformToReceiverLag: 'PT0.2S',
+    stdDevSenderToReceiverLag: 'PT0.015S'
+  }
+};
 
 module.exports = {
   videoProfile: videoProfile,
-  audioProfile: audioProfile
+  audioProfile: audioProfile,
+  chatProfile: chatProfile
 };

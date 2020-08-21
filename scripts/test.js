@@ -101,6 +101,7 @@ const argv = require('yargs')
     screenshotName: 'phenix_test_screenshot',
     audio: undefined,
     video: undefined,
+    chat: undefined,
     syncPublishedVideoFps: 1,
     rtmpLinkProtocol: 'rtmp',
     rtmpPort: '80',
@@ -168,6 +169,7 @@ async function test() {
     `&dateFormat=${config.args.dateFormat}`;
   config.videoAssertProfile = config.args.videoProfile;
   config.audioAssertProfile = config.args.audioProfile;
+  config.chatAssertProfile = config.args.chatProfile;
 
   let testcafe = null;
 
@@ -265,6 +267,7 @@ function parseTestArgs() {
     testRuntimeMs: parseToMilliseconds(argv.runtime),
     videoProfile: defaultProfiles.videoProfile,
     audioProfile: defaultProfiles.audioProfile,
+    chatProfile: defaultProfiles.chatProfile,
     screenName: argv.screenName,
     failIfMemberHasNoStream: argv.failIfMemberHasNoStream === true,
     concurrency: argv.concurrency,
@@ -328,6 +331,11 @@ function parseTestArgs() {
       validateProfile('audio', args.audioProfile, customProfile.audioProfile);
       _.merge(args.audioProfile, customProfile.audioProfile);
     }
+
+    if (customProfile.chatProfile) {
+      validateProfile('chat', args.chatProfile, customProfile.chatProfile);
+      _.merge(args.chatProfile, customProfile.chatProfile);
+    }
   }
 
   if (argv.video) {
@@ -381,6 +389,38 @@ function parseTestArgs() {
       } else {
         args.audioProfile[key] = parseJsonIfPossible(argv.audio[key]);
       }
+    });
+  }
+
+  if (argv.chat) {
+    Object.keys(argv.chat).forEach((key) => {
+      if (args.chatProfile[key] === undefined) {
+        exitWithErrorMessage(
+          `Error: unsupported argument override - key '${key}' does not exist on chat profile!` +
+          `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.chatProfile), undefined, 2)}`
+        );
+      }
+
+      if (argv.mode !== key){
+        exitWithErrorMessage(
+          `Error: unsupported argument override - key '${key}' does not match given mode '${argv.mode}'!`
+        );
+      }
+
+      const chatObject = argv.mode === 'receive' ? argv.chat.receive : argv.chat.send;
+      const chatProfileObject = argv.mode === 'receive' ? args.chatProfile.receive : args.chatProfile.send;
+      const chatProfileKeys = argv.mode === 'receive' ? defaultProfiles.chatProfile.receive : defaultProfiles.chatProfile.send;
+
+      Object.keys(chatObject).forEach((key) => {
+        if (chatProfileObject[key] === undefined) {
+          exitWithErrorMessage(
+            `Error: unsupported argument override - key '${key}' does not exist on chat ${argv.mode} profile!` +
+            `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(chatProfileKeys), undefined, 2)}`
+          );
+        }
+
+        chatProfileObject[key] = parseJsonIfPossible(chatObject[key]);
+      });
     });
   }
 
