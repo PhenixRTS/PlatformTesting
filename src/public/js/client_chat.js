@@ -17,6 +17,8 @@
 /* global getUrlParams, getChannelUri, log, sdk, moment */
 
 let roomExpress = null;
+let roomService = null;
+let messageCount = 0;
 const dateFormat = getUrlParams('dateFormat');
 const byteSize = str => new Blob([str]).size;
 
@@ -94,21 +96,23 @@ function joinRoomCallback(err, response) {
   }
 
   log('Successfully joined the room');
+  roomService = response.roomService;
 
   const mode = getUrlParams('mode');
+  const numMessages = parseInt(getUrlParams('numMessages'));
   let chatService = response.roomService.getChatService();
   chatService.start();
 
   if (mode === 'receive'){
-    startReceivingMessages(chatService);
+    startReceivingMessages(chatService, numMessages);
   }
 
   if (mode === 'send'){
-    startSendingMessages(chatService);
+    startSendingMessages(chatService, numMessages);
   }
 }
 
-function startReceivingMessages(chatService){
+function startReceivingMessages(chatService, numMessages){
   chatService.getObservableChatEnabled().subscribe((enabled) => {
     if (enabled) {
       showChatStatus('Chat is ENABLED');
@@ -118,21 +122,31 @@ function startReceivingMessages(chatService){
   }, {initial: 'notify'});
 
   chatService.getObservableLastChatMessage().subscribe((message) => {
-    const receivedTimestamp = moment().format(dateFormat);
-    const jsonMessage = JSON.stringify({
-      messageId: message.messageId,
-      serverTimestamp: moment(message.timestamp).format(dateFormat),
-      receivedTimestamp: receivedTimestamp,
-      body: message.message
-    });
-    log(`[Message received] ${jsonMessage}`);
-    showReceivedMessages(`Received message [${message.messageId}]/[${receivedTimestamp}]: ${message.message}\n`);
+    messageCount++;
+
+    if (messageCount <= numMessages){
+      const receivedTimestamp = moment().format(dateFormat);
+      const jsonMessage = JSON.stringify({
+        messageId: message.messageId,
+        serverTimestamp: moment(message.timestamp).format(dateFormat),
+        receivedTimestamp: receivedTimestamp,
+        body: message.message
+      });
+
+      log(`[Message received] ${jsonMessage}`);
+      showReceivedMessages(`Received message [${message.messageId}]/[${receivedTimestamp}]: ${message.message}\n`);
+    }
+
+    if (numMessages >= messageCount){
+      roomExpress.dispose();
+      roomService.leaveRoom(leaveRoomCallback);
+    }
   });
 }
 
-function startSendingMessages(chatService){
+function startSendingMessages(chatService, numMessages) {
   const interval = getUrlParams('messageInterval');
-  setInterval(() => {
+  const messageInterval = setInterval(() => {
     if (!chatService.getObservableChatEnabled().getValue()) {
       showSenderChatError('Error: Sender chat is DISABLED');
 
@@ -152,29 +166,67 @@ function startSendingMessages(chatService){
     messageObject.payload = getMessagePayload(messageObject);
 
     const message = JSON.stringify(messageObject);
+
     chatService.sendMessageToRoom(message, (error, response) => {
-      if (error) {
-        showMessageSentError('Error: Failed to send message', error);
+      messageCount++;
 
-        return;
+      if (messageCount <= numMessages) {
+        if (error) {
+          showMessageSentError('Error: Failed to send message', error);
+
+          return;
+        }
+
+        if (response.status !== 'ok') {
+          showMessageSentError(`Error: Unable to send message, got status [${response.status}]`, response);
+
+          return;
+        }
+
+        if (response.status === 'ok') {
+          const messageSize = byteSize(message);
+          log(`[Message Sent] ${JSON.stringify({
+            message: message,
+            size: messageSize
+          })}`);
+          showSentMessages(`Message Size: ${messageSize} | Sent message: '${message}\n`);
+        }
+
+        if (messageCount >= numMessages) {
+          clearInterval(messageInterval);
+          roomExpress.dispose();
+          roomService.leaveRoom(leaveRoomCallback);
+        }
       }
+    }, interval);
+  });
+}
 
-      if (response.status !== 'ok'){
-        showMessageSentError(`Error: Unable to send message, got status [${response.status}]`, response);
+function leaveRoomCallback(err, response) {
+  showMessageLimitReach('Message limit reached!');
 
-        return;
-      }
+  if (err) {
+    log(`Error: Unable to leave the room! [${err}]`);
 
-      if (response.status === 'ok'){
-        const messageSize = byteSize(message);
-        log(`[Message Sent] ${JSON.stringify({
-          message: message,
-          size: messageSize
-        })}`);
-        showSentMessages(`Message Size: ${messageSize} | Sent message: '${message}\n`);
-      }
-    });
-  }, interval);
+    return;
+  }
+
+  if (response.status === 'not-in-room') {
+    log(`Error: Unable to leave the room, user not in room!`);
+
+    return;
+  }
+
+  if (response.status !== 'ok') {
+    log(`Error: Unable to leave the room, got status [${response.status}]`);
+
+    return;
+  }
+
+  if (response.status === 'ok') {
+    roomService = null;
+    log('Successfully left room!');
+  }
 }
 
 function membersChangedCallback(members) {
@@ -213,7 +265,6 @@ function randomNumberFromInterval(min, max) {
 
 function setClientMessage(message) {
   const clientMessageElement = document.getElementById('roomClientMessage');
-
   clientMessageElement.innerHTML = message;
 }
 
@@ -234,6 +285,10 @@ function showChatStatus(message){
 
 function showReceivedMessages(message){
   document.getElementById('receivedMessages').innerHTML += message;
+}
+
+function showMessageLimitReach(message){
+  document.getElementById('messageLimitReach').innerHTML = message;
 }
 
 function showMessageSentError(message, response = ''){
