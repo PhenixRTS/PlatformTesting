@@ -63,10 +63,10 @@ async function CollectChatStats() {
       chatStats.platformToReceiverLags.push(moment(stat.receivedTimestamp).diff(moment(stat.serverTimestamp)));
     });
 
-    chatStats.maxSenderToReceiverLag = chatStats.senderToReceiverLags.length > 0 ? Math.max.apply(this, chatStats.senderToReceiverLags) : 'null';
-    chatStats.maxSenderToPlatformLag = chatStats.senderToPlatformLags.length > 0 ? Math.max.apply(this, chatStats.senderToPlatformLags) : 'null';
-    chatStats.maxPlatformToReceiverLag = chatStats.platformToReceiverLags.length > 0 ? Math.max.apply(this, chatStats.platformToReceiverLags) : 'null';
-    chatStats.stdDevSenderToReceiverLag = chatStats.senderToReceiverLags.length > 0 ? math.std(chatStats.senderToReceiverLags) : 'null';
+    chatStats.maxSenderToReceiverLag = chatStats.senderToReceiverLags.length > 0 ? Math.max.apply(this, chatStats.senderToReceiverLags) : undefined;
+    chatStats.maxSenderToPlatformLag = chatStats.senderToPlatformLags.length > 0 ? Math.max.apply(this, chatStats.senderToPlatformLags) : undefined;
+    chatStats.maxPlatformToReceiverLag = chatStats.platformToReceiverLags.length > 0 ? Math.max.apply(this, chatStats.platformToReceiverLags) : undefined;
+    chatStats.stdDevSenderToReceiverLag = chatStats.senderToReceiverLags.length > 0 ? math.std(chatStats.senderToReceiverLags) : undefined;
   }
 
   if (config.args.mode === 'send') {

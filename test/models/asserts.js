@@ -561,28 +561,28 @@ module.exports = class Asserts {
     const chatReceiveProfile = config.chatAssertProfile.receive;
 
     this.assert(
-      'Max end-to-end latency',
+      'Max sender-to-receiver lag',
       stats.maxSenderToReceiverLag,
       chatReceiveProfile.senderToReceiverLag,
       'lte'
     );
 
     this.assert(
-      'Max sender-to-server latency',
+      'Max sender-to-platform lag',
       stats.maxSenderToPlatformLag,
       chatReceiveProfile.senderToPlatformLag,
       'lte'
     );
 
     this.assert(
-      'Max server-to-receiver latency',
+      'Max platform-to-receiver lag',
       stats.maxPlatformToReceiverLag,
       chatReceiveProfile.platformToReceiverLag,
       'lte'
     );
 
     this.assert(
-      'Standard deviation of end-to-end latency',
+      'Standard deviation of sender-to-receiver lag',
       stats.stdDevSenderToReceiverLag,
       chatReceiveProfile.stdDevSenderToReceiverLag,
       'lte'

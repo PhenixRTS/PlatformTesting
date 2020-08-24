@@ -373,7 +373,7 @@ function parseTestArgs() {
     Object.keys(argv.audio).forEach((key) => {
       if (args.audioProfile[key] === undefined) {
         exitWithErrorMessage(
-          `Error: unsupported argument override - key '${key}' does not exist on audio profile!` +
+          `Error: unsupported argument override - key [${key}] does not exist on audio profile!` +
           `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.audioProfile), undefined, 2)}`
         );
       }
@@ -396,14 +396,14 @@ function parseTestArgs() {
     Object.keys(argv.chat).forEach((key) => {
       if (args.chatProfile[key] === undefined) {
         exitWithErrorMessage(
-          `Error: unsupported argument override - key '${key}' does not exist on chat profile!` +
+          `Error: unsupported argument override - key [${key}] does not exist on chat profile!` +
           `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.chatProfile), undefined, 2)}`
         );
       }
 
       if (argv.mode !== key){
         exitWithErrorMessage(
-          `Error: unsupported argument override - key '${key}' does not match given mode '${argv.mode}'!`
+          `Error: unsupported argument override - key [${key}] does not match given mode [${argv.mode}]!`
         );
       }
 
@@ -414,7 +414,7 @@ function parseTestArgs() {
       Object.keys(chatObject).forEach((key) => {
         if (chatProfileObject[key] === undefined) {
           exitWithErrorMessage(
-            `Error: unsupported argument override - key '${key}' does not exist on chat ${argv.mode} profile!` +
+            `Error: unsupported argument override - key [${key}] does not exist on chat [${argv.mode}] profile!` +
             `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(chatProfileKeys), undefined, 2)}`
           );
         }
