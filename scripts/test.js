@@ -164,7 +164,6 @@ async function test() {
     `&channelJoinRetries=${config.args.channelJoinRetries}` +
     `&mode=${config.args.mode}` +
     `&messageInterval=${config.args.messageIntervalMs}` +
-    `&numMessages=${config.args.numMessages}` +
     `&disableConsoleLogging=${config.args.disableSDKConsoleLogging}` +
     `&messageSize=${config.args.messageSize}` +
     `&dateFormat=${config.args.dateFormat}`;

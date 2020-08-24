@@ -176,11 +176,6 @@ const monitorRoomChat = async(testController) => {
       .expect(senderChatError().innerText).notContains('Error', 'Error: Sender chat is DISABLED')
       .expect(messageSentError().innerText).notContains('Error', 'Error: Failed to send message')
       .expect(chatStatusError().innerText).notContains('Error', 'Error: Chat is DISABLED');
-
-    const calculate = Selector(`#messageLimitReach`).innerText;
-    if ((await calculate).includes('Message limit reached!')){
-      break;
-    }
   }
 };
 
