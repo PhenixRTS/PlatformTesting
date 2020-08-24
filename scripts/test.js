@@ -79,6 +79,9 @@ const argv = require('yargs')
   .describe('numMessages', 'Message sending limit')
   .describe('disableSDKConsoleLogging', 'Toggle console logs from websdk')
   .describe('messageSize', 'Byte size of message that gets sent [minimum is 56]')
+  .describe('submitTelemetry', 'When present, submits telemetry records')
+  .describe('telemetryURI', 'Uri where to submit telemetry records')
+  .describe('telemetrySource', 'Source of telemetry')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -129,7 +132,9 @@ const argv = require('yargs')
     messageInterval: 'PT5S',
     numMessages: 11,
     disableSDKConsoleLogging: false,
-    messageSize: 72
+    messageSize: 72,
+    telemetryURI: 'https://telemetry.phenixrts.com',
+    telemetrySource: undefined
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome, chrome:headless, firefox, firefox --headless, safari, ie, edge, opera')
@@ -259,6 +264,7 @@ function parseTestArgs() {
   }
 
   const args = {
+    startTimestamp: new Date(),
     localServerPort: argv.localServerPort,
     browsers: argv.browsers.toString().replace(/,\s/g, ',').split(','),
     tests: argv.tests,
@@ -304,7 +310,10 @@ function parseTestArgs() {
     messageIntervalMs: parseToMilliseconds(argv.messageInterval),
     numMessages: argv.numMessages,
     disableSDKConsoleLogging: argv.disableSDKConsoleLogging,
-    messageSize: argv.messageSize
+    messageSize: argv.messageSize,
+    submitTelemetry: argv.submitTelemetry,
+    telemetryURI: argv.telemetryURI,
+    telemetrySource: argv.telemetrySource === undefined ? argv.profileFile : argv.telemetrySource
   };
 
   if (argv.channelAlias !== '') {

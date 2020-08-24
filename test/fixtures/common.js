@@ -260,7 +260,7 @@ const createChannel = async(testcafe) => {
 };
 
 const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
-  const {saveConsoleLogs} = config.args;
+  const {saveConsoleLogs, submitTelemetry} = config.args;
   let reportFileName = `${path.basename(testFile).split('.')[0]}`;
 
   if (config.rtmpPushArgs.rtmpPushFile !== '') {
@@ -327,6 +327,11 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   const consoleDump = await reporter.CreateConsoleDump(t);
   if (saveConsoleLogs === true || saveConsoleLogs === 'true') {
     persistence.saveToFile(`${t.browser.name}-console-logs`, '', consoleDump);
+  }
+
+  if (submitTelemetry === true) {
+    let records = reporter.GenerateTelemetryRecords(page);
+    pcastApi.postToTelemetry({records});
   }
 };
 

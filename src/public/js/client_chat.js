@@ -182,6 +182,10 @@ function membersChangedCallback(members) {
     setClientMessage('Waiting for members to join');
   } else {
     setClientMessage(`Room contains ${members.length} members`);
+
+    members.forEach(member => {
+      log(`[Session ID] ${member.getSessionId()}`);
+    });
   }
 }
 

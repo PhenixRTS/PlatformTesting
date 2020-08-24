@@ -160,8 +160,15 @@ async function CreateTestReport(testController, page, channel = {}) {
   return reporter.CreateTestReport(testController, page, header, content, additionalInfo);
 }
 
+// eslint-disable-next-line no-unused-vars
+function GenerateTelemetryRecords(page) {
+  // TODO: - Implement this
+  return [];
+}
+
 export default {
   CollectMediaChanges,
   CreateTestReport,
-  CreateConsoleDump: reporter.CreateConsoleDump
+  CreateConsoleDump: reporter.CreateConsoleDump,
+  GenerateTelemetryRecords
 };

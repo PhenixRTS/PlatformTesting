@@ -374,10 +374,17 @@ async function CreateTestReport(testController, page) {
   return reporter.CreateTestReport(testController, page, header, content, additionalInfo);
 }
 
+// eslint-disable-next-line no-unused-vars
+function GenerateTelemetryRecords(page) {
+  // TODO: - Implement this
+  return [];
+}
+
 export default {
   CollectMediaStreamStats,
   GetMeanVideoStats,
   GetMeanAudioStats,
   CreateTestReport,
-  CreateConsoleDump: reporter.CreateConsoleDump
+  CreateConsoleDump: reporter.CreateConsoleDump,
+  GenerateTelemetryRecords
 };

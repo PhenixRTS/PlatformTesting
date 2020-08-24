@@ -26,6 +26,7 @@ const math = require('mathjs');
 async function CollectChatStats() {
   logger.log('Collecting chat stats...');
 
+  const sessionIdTitle = '[Acceptance Testing] [Session ID] ';
   const messageReceived = '[Acceptance Testing] [Message received] ';
   const messageSent = '[Acceptance Testing] [Message Sent] ';
   const logs = await t.getBrowserConsoleMessages();
@@ -33,6 +34,7 @@ async function CollectChatStats() {
 
   if (config.args.mode === 'receive') {
     chatStats = {
+      sessionId: undefined,
       received: [],
       senderToReceiverLags: [],
       senderToPlatformLags: [],
@@ -45,6 +47,12 @@ async function CollectChatStats() {
 
     logs.info.forEach(infoLogElement => {
       infoLogElement = infoLogElement.trim();
+
+      if (infoLogElement.startsWith(sessionIdTitle)) {
+        const sessionId = infoLogElement.replace(sessionIdTitle, '');
+        logger.log(`For session [${sessionId}]`);
+        chatStats.sessionId = sessionId;
+      }
 
       if (infoLogElement.startsWith(messageReceived)) {
         const receivedMessage = JSON.parse(infoLogElement.replace(messageReceived, ''));
@@ -70,10 +78,19 @@ async function CollectChatStats() {
   }
 
   if (config.args.mode === 'send') {
-    chatStats = {sent: []};
+    chatStats = {
+      sessionId: undefined,
+      sent: []
+    };
 
     logs.info.forEach(infoLogElement => {
       infoLogElement = infoLogElement.trim();
+
+      if (infoLogElement.startsWith(sessionIdTitle)) {
+        const sessionId = infoLogElement.replace(sessionIdTitle, '');
+        logger.log(`For session [${sessionId}]`);
+        chatStats.sessionId = sessionId;
+      }
 
       if (infoLogElement.startsWith(messageSent)) {
         const sentMessage = JSON.parse(infoLogElement.replace(messageSent, ''));
@@ -111,8 +128,22 @@ async function CreateTestReport(testController, page) {
   return reporter.CreateTestReport(testController, page, header, content, additionalInfo);
 }
 
+function GenerateTelemetryRecords(page) {
+  if (config.args.mode === 'receive') {
+    return [
+      reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'SenderToReceiver', page.stats.maxSenderToReceiverLag),
+      reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'SenderToPlatform', page.stats.maxSenderToPlatformLag),
+      reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'PlatformToReceiver', page.stats.maxPlatformToReceiverLag),
+      reporter.CreateTelemetryRecord(page, 'Count', 'messaging', 'Received', page.stats.received.length)
+    ];
+  } else if (config.args.mode === 'send') {
+    return [reporter.CreateTelemetryRecord(page, 'Count', 'messaging', 'Sent', page.stats.sent.length)];
+  }
+}
+
 export default {
   CollectChatStats,
   CreateTestReport,
-  CreateConsoleDump: reporter.CreateConsoleDump
+  CreateConsoleDump: reporter.CreateConsoleDump,
+  GenerateTelemetryRecords
 };

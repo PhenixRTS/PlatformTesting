@@ -96,9 +96,32 @@ async function terminateStream(streamId, reason) {
   await request('DELETE', '/stream', body);
 }
 
+async function postToTelemetry(body) {
+  return new Promise(resolve => {
+    const uri = `${config.args.telemetryURI}/telemetry/metrics`;
+    const requestConf = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    };
+
+    return fetch(uri, requestConf)
+      .then(response => {
+        if (response.status === 'ok') {
+          console.log(`Successfully posted to telemetry [${uri}]`);
+          resolve(response);
+        } else {
+          console.error(`Got response status [${response.status}] when posting to telemetry [${uri}].`, response);
+          resolve(null);
+        }
+      });
+  });
+}
+
 module.exports = {
   createChannel,
   deleteChannel,
   getChannelState,
-  terminateStream
+  terminateStream,
+  postToTelemetry
 };
