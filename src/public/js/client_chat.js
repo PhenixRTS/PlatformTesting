@@ -17,6 +17,7 @@
 /* global getUrlParams, getChannelUri, log, sdk, moment */
 
 let roomExpress = null;
+let messageCount = 0;
 const dateFormat = getUrlParams('dateFormat');
 const byteSize = str => new Blob([str]).size;
 
@@ -96,19 +97,20 @@ function joinRoomCallback(err, response) {
   log('Successfully joined the room');
 
   const mode = getUrlParams('mode');
+  const numMessages = parseInt(getUrlParams('numMessages'));
   let chatService = response.roomService.getChatService();
   chatService.start();
 
   if (mode === 'receive'){
-    startReceivingMessages(chatService);
+    startReceivingMessages(chatService, numMessages);
   }
 
   if (mode === 'send'){
-    startSendingMessages(chatService);
+    startSendingMessages(chatService, numMessages);
   }
 }
 
-function startReceivingMessages(chatService){
+function startReceivingMessages(chatService, numMessages){
   chatService.getObservableChatEnabled().subscribe((enabled) => {
     if (enabled) {
       showChatStatus('Chat is ENABLED');
@@ -118,21 +120,30 @@ function startReceivingMessages(chatService){
   }, {initial: 'notify'});
 
   chatService.getObservableLastChatMessage().subscribe((message) => {
-    const receivedTimestamp = moment().format(dateFormat);
+    messageCount++;
+
     const jsonMessage = JSON.stringify({
       messageId: message.messageId,
       serverTimestamp: moment(message.timestamp).format(dateFormat),
-      receivedTimestamp: receivedTimestamp,
+      receivedTimestamp: moment().format(dateFormat),
       body: message.message
     });
-    log(`[Message received] ${jsonMessage}`);
-    showReceivedMessages(`Received message [${message.messageId}]/[${receivedTimestamp}]: ${message.message}\n`);
+
+    if (messageCount <= numMessages) {
+      log(`[Message received] ${jsonMessage}`);
+      showReceivedMessages(`Received message [${message.messageId}]/[${jsonMessage.receivedTimestamp}]: ${message.message}\n`);
+    }
+
+    if (messageCount >= numMessages){
+      roomExpress.dispose();
+      showMessageLimitReach('Message limit reached!');
+    }
   });
 }
 
-function startSendingMessages(chatService){
+function startSendingMessages(chatService, numMessages){
   const interval = getUrlParams('messageInterval');
-  setInterval(() => {
+  const messageInterval = setInterval(() => {
     if (!chatService.getObservableChatEnabled().getValue()) {
       showSenderChatError('Error: Sender chat is DISABLED');
 
@@ -149,31 +160,44 @@ function startSendingMessages(chatService){
       sentTimestamp: moment().format(dateFormat),
       payload: ''
     };
+
     messageObject.payload = getMessagePayload(messageObject);
+    messageObject.sentTimestamp = moment().format(dateFormat);
 
     const message = JSON.stringify(messageObject);
-    chatService.sendMessageToRoom(message, (error, response) => {
-      if (error) {
-        showMessageSentError('Error: Failed to send message', error);
 
-        return;
-      }
+    if (messageCount <= numMessages) {
+      chatService.sendMessageToRoom(message, (error, response) => {
+        if (error) {
+          showMessageSentError('Error: Failed to send message', error);
 
-      if (response.status !== 'ok'){
-        showMessageSentError(`Error: Unable to send message, got status [${response.status}]`, response);
+          return;
+        }
 
-        return;
-      }
+        if (response.status !== 'ok') {
+          showMessageSentError(`Error: Unable to send message, got status [${response.status}]`, response);
 
-      if (response.status === 'ok'){
-        const messageSize = byteSize(message);
-        log(`[Message Sent] ${JSON.stringify({
-          message: message,
-          size: messageSize
-        })}`);
-        showSentMessages(`Message Size: ${messageSize} | Sent message: '${message}\n`);
-      }
-    });
+          return;
+        }
+
+        if (response.status === 'ok') {
+          messageCount++;
+
+          const messageSize = byteSize(message);
+          log(`[Message Sent] ${JSON.stringify({
+            message: message,
+            size: messageSize
+          })}`);
+          showSentMessages(`Message Size: ${messageSize} | Sent message: '${message}\n`);
+        }
+      });
+    }
+
+    if (messageCount >= numMessages) {
+      clearInterval(messageInterval);
+      roomExpress.dispose();
+      showMessageLimitReach('Message limit reached!');
+    }
   }, interval);
 }
 
@@ -257,4 +281,8 @@ function showChatError(message){
 function showSenderChatError(message){
   console.error(`[Acceptance Testing Error] ${message}`);
   document.getElementById('senderChatError').innerHTML += `<br />${message}`;
+}
+
+function showMessageLimitReach(message){
+  document.getElementById('messageLimitReach').innerHTML = message;
 }
