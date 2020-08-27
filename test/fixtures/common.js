@@ -335,8 +335,11 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   }
 
   if (submitTelemetry === true) {
+    console.log('Generating and submitting telemetry records.');
     let records = reporter.GenerateTelemetryRecords(page);
-    pcastApi.postToTelemetry({records});
+    await pcastApi.postToTelemetry({records});
+  } else {
+    console.log('Skipping telemetry.');
   }
 };
 
