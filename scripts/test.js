@@ -78,7 +78,7 @@ const argv = require('yargs')
   .describe('messageInterval', 'Message sending interval')
   .describe('numMessages', 'Message sending limit')
   .describe('disableSDKConsoleLogging', 'Toggle console logs from websdk')
-  .describe('messageSize', 'Byte size of message that gets sent [minimum is 56]')
+  .describe('messageSize', 'Byte size of a message that gets sent. Can also be a range of numbers from which a random number gets chosen each time a message is sent, example "100-500"')
   .describe('submitTelemetry', 'When present, submits telemetry records')
   .describe('telemetryURI', 'Uri where to submit telemetry records')
   .describe('telemetrySource', 'Source of telemetry')
@@ -130,9 +130,9 @@ const argv = require('yargs')
     browserstackBuildId: 'PlatformTestingTool Daily Run',
     mode: 'receive',
     messageInterval: 'PT5S',
-    numMessages: 11,
+    numMessages: 1,
     disableSDKConsoleLogging: false,
-    messageSize: 72,
+    messageSize: 100,
     telemetryURI: 'https://telemetry.phenixrts.com',
     telemetrySource: undefined
   })
@@ -465,13 +465,44 @@ function validateTestTypeArguments() {
       exitWithErrorMessage(`Error: --mode=send or --mode=receive is required for room chat test`);
     }
 
-    const minSize = byteSize(JSON.stringify({
-      sentTimestamp: moment().format(argv.dateFormat),
-      payload: ''
-    }));
+    validateMessageSizeArgument();
+  }
+}
 
-    if (parseInt(argv.messageSize) < minSize){
-      exitWithErrorMessage(`Error: --messageSize minimum is ${minSize}`);
+function validateMessageSizeArgument() {
+  const minSize = byteSize(JSON.stringify({
+    sentTimestamp: moment().format(argv.dateFormat),
+    payload: ''
+  }));
+
+  if (argv.messageSize < minSize){
+    console.error(chalk.yellow(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}] instead.`));
+    argv.messageSize = minSize;
+
+    return;
+  }
+
+  if (typeof argv.messageSize !== 'number' && argv.messageSize.includes('-')) {
+    const messageByteSizeValues = argv.messageSize.split('-');
+    const minGivenValue = parseInt(messageByteSizeValues[0]);
+    const maxGivenValue = parseInt(messageByteSizeValues[1]);
+
+    if (minGivenValue > maxGivenValue){
+      exitWithErrorMessage(`Error: --messageSize range [${argv.messageSize}] min value is bigger then max value.`);
+    }
+
+    if (minGivenValue < minSize && maxGivenValue < minSize) {
+      console.error(chalk.yellow(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}-${minSize}] instead.`));
+      argv.messageSize = minSize;
+
+      return;
+    }
+
+    if (minGivenValue < minSize && maxGivenValue > minSize) {
+      console.error(chalk.yellow(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}-${maxGivenValue}] instead.`));
+      argv.messageSize = `${minSize}-${maxGivenValue}`;
+
+      return;
     }
   }
 }
