@@ -1,6 +1,6 @@
 {
   "name": "phenix-acceptance-testing",
-  "version": "2020.1.2",
+  "version": "2020.1.3",
   "description": "Phenix Acceptance Testing CLI",
   "main": "./src/app.js",
   "scripts": {

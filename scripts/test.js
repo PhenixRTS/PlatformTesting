@@ -66,6 +66,7 @@ const argv = require('yargs')
   .describe('dateFormat', 'Date format in which timestamps in test report will be formatted')
   .describe('reportFormat', 'Format in which test report will be generated. Available formats [json, text]')
   .describe('silent', 'When present, silences the normal std output from the tool')
+  .describe('verbose', 'When present, logs more info to stdout')
   .describe('dumpReport', 'When present, dumps the report file to std out')
   .describe('logAllStatsInReport', 'When present, logs all stats in the report')
   .describe('saveConsoleLogs', 'When present, saves console logs to a separate file')
@@ -190,10 +191,20 @@ async function test() {
     const extension = getFileExtensionBasedOnTestcafeReporterType(config.args.testcafeReporterType);
     const reporterFilePath = path.join(reportsPath, `${fileName}-${config.args.testcafeReporterType}-${moment().format(config.args.dateFormat)}.${extension}`);
 
+    let reporters = [{
+      name: config.args.testcafeReporterType,
+      output: reporterFilePath
+    }];
+
+    if (argv.verbose === true) {
+      // Also log the report to stdout. Note: "output" defaults to stdout.
+      reporters.push({name: config.args.testcafeReporterType});
+    }
+
     return runner
       .src(config.args.tests)
       .browsers(parseBrowsers(config.args.browsers))
-      .reporter(config.args.testcafeReporterType, reporterFilePath)
+      .reporter(reporters)
       .concurrency(config.args.concurrency)
       .run({skipJsErrors: config.args.ignoreJsConsoleErrors === true || config.args.ignoreJsConsoleErrors === 'true'});
   }).then(failedCount => {
@@ -302,6 +313,7 @@ function parseTestArgs() {
     dateFormat: argv.dateFormat,
     reportFormat: argv.reportFormat,
     silent: argv.silent,
+    verbose: argv.verbose,
     dumpReport: argv.dumpReport,
     testcafeReporterType: argv.testcafeReporterType,
     roomAlias: argv.roomAlias,
