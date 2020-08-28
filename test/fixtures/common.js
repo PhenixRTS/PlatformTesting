@@ -35,6 +35,7 @@ import chatReporter from '../models/reporters/chat-reporter';
 
 const pcastApi = require('../models/pcastApi.js');
 const rtmpPush = require('../models/rtmp-push.js');
+const Logger = require('../../scripts/logger.js');
 const subscribeFromClient = ClientFunction(() => window.subscribe());
 
 const getRoomMembers = ClientFunction(() => {
@@ -158,6 +159,8 @@ const monitorRoomStreams = async(testController) => {
 };
 
 const monitorRoomChat = async(testController) => {
+  const logger = new Logger('Monitor Test');
+  logger.log('Chat test');
   const {testRuntimeMs} = config.args;
 
   let i = Math.floor(testRuntimeMs / 1000);
@@ -179,6 +182,7 @@ const monitorRoomChat = async(testController) => {
 
     const messageLimitElement = Selector(`#messageLimitReach`).innerText;
     if ((await messageLimitElement).includes('Message limit reached!')){
+      logger.log('Message limit reached!');
       break;
     }
   }
