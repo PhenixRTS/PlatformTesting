@@ -269,6 +269,7 @@ const createChannel = async(testcafe) => {
 };
 
 const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
+  const logger = new Logger('Finish and Report');
   const {saveConsoleLogs, submitTelemetry} = config.args;
   let reportFileName = `${path.basename(testFile).split('.')[0]}`;
 
@@ -339,11 +340,11 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   }
 
   if (submitTelemetry === true) {
-    console.log('Generating and submitting telemetry records.');
+    logger.log('Generating and submitting telemetry records.');
     let records = reporter.GenerateTelemetryRecords(page);
     await pcastApi.postToTelemetry({records});
   } else {
-    console.log('Skipping telemetry.');
+    logger.log('Skipping telemetry.');
   }
 };
 

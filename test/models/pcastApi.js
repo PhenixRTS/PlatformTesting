@@ -20,6 +20,8 @@ const baseUrl = config.publisherArgs.publisherBackendUri;
 const applicationId = config.args.applicationId;
 const secret = config.publisherArgs.secret;
 const base64authData = Buffer.from(`${applicationId}:${secret}`).toString('base64');
+const Logger = require('../../scripts/logger.js');
+const logger = new Logger('REST API');
 
 async function request(method, endpoint, body = null) {
   const requestConf = {
@@ -106,10 +108,10 @@ async function postToTelemetry(body) {
     };
 
     return fetch(uri, requestConf)
-      .then(console.log(`Submitted telemetry request [${JSON.stringify(requestConf)}]`))
+      .then(logger.log(`Submitted telemetry request [${JSON.stringify(requestConf)}]`))
       .then(response => {
         if (response.status === 200) {
-          console.log(`Successfully posted to telemetry [${uri}]. Response status [${response.status}]`);
+          logger.log(`Successfully posted to telemetry [${uri}]. Response status [${response.status}]`);
           resolve(response);
         } else {
           console.error(`Got response status [${response.status}] when posting to telemetry [${uri}].`, response);
