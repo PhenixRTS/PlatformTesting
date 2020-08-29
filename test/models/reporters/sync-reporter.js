@@ -21,7 +21,7 @@ import moment from 'moment';
 import math from '../math.js';
 import config from '../../../config.js';
 
-const logger = new Logger('Lag Test');
+const logger = new Logger('Sync Test');
 
 async function CollectMediaChanges() {
   logger.log('Collecting media changes...');
