@@ -124,8 +124,8 @@ function startReceivingMessages(chatService, numMessages){
 
     const jsonMessage = JSON.stringify({
       messageId: message.messageId,
-      serverTimestamp: moment(message.timestamp).format(dateFormat),
-      receivedTimestamp: moment().format(dateFormat),
+      serverTimestamp: moment().utc(message.timestamp).format(dateFormat),
+      receivedTimestamp: moment().utc().format(dateFormat),
       body: message.message
     });
 
@@ -157,12 +157,12 @@ function startSendingMessages(chatService, numMessages){
     }
 
     const messageObject = {
-      sentTimestamp: moment().format(dateFormat),
+      sentTimestamp: moment().utc().format(dateFormat),
       payload: ''
     };
 
     messageObject.payload = getMessagePayload(messageObject);
-    messageObject.sentTimestamp = moment().format(dateFormat);
+    messageObject.sentTimestamp = moment().utc().format(dateFormat);
 
     const message = JSON.stringify(messageObject);
 

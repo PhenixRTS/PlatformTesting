@@ -57,7 +57,7 @@ async function CollectChatStats() {
       if (infoLogElement.startsWith(messageReceived)) {
         const receivedMessage = JSON.parse(infoLogElement.replace(messageReceived, ''));
         logger.log(`Received message: ${JSON.stringify(receivedMessage)}`);
-        receivedMessage.sentTimestamp = moment(JSON.parse(receivedMessage.body).sentTimestamp).format('YYYY-MM-DDTHH:mm:ss.SSS');
+        receivedMessage.sentTimestamp = moment(JSON.parse(receivedMessage.body).sentTimestamp).format(config.args.dateFormat);
         logger.log(`receivedTimestamp - sentTimestamp: [${moment(receivedMessage.receivedTimestamp).diff(moment(receivedMessage.sentTimestamp))}]`);
         logger.log(`serverTimestamp - sentTimestamp: [${moment(receivedMessage.serverTimestamp).diff(moment(receivedMessage.sentTimestamp))}]`);
         logger.log(`receivedTimestamp - serverTimestamp: [${moment(receivedMessage.receivedTimestamp).diff(moment(receivedMessage.serverTimestamp))}]`);
