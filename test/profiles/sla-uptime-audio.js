@@ -14,21 +14,46 @@
  * limitations under the License.
  */
 
-const videoProfile = {inherits: null};
-
+const videoProfile = {
+  minBitrateMeanKbps: null,
+  maxBitrateMeanKps: null,
+  maxDelay: null,
+  maxMeanDelay: null,
+  maxTargetDelayOvershoot: null,
+  minFrameRateMean: null,
+  minFrameRate: null,
+  maxFrameRate: null,
+  maxDroppedFramesPerSecond: null,
+  maxPacketLossPerMinute: null,
+  frameWidth: null,
+  frameHeight: null,
+  maxMsToFirstFrameDecoded: null,
+  maxNacksSentPerMinute: null,
+  firsSent: null,
+  maxPlisSentPerMinute: null,
+  codecName: null,
+  maxVideoFreezes: null,
+  maxPTTFF: null,
+  maxResolutionChangeCountPerMinute: null,
+  interframeDelayThresholds: null,
+  maxLag: null,
+  syncPublishedVideoFps: null,
+  maxAverageSync: null,
+  maxSingleSync: null
+};
 const audioProfile = {
-  inherits: null,
   minBitrateMeanKbps: 1,
+  maxJitter: null,
   minAudioOutputLevel: 10,
+  maxMeanDelay: null,
+  maxPacketsLossPerMinute: null,
   totalSamplesDurationPerc: 0.1,
+  codecName: null,
   maxLag: 'PT1.5S',
   maxRTMPLag: 'PT2.5S'
 };
 
-const chatProfile = {inherits: 'test/profiles/default.js'};
-
 module.exports = {
   videoProfile: videoProfile,
-  audioProfile: audioProfile,
-  chatProfile: chatProfile
+  audioProfile: audioProfile
 };

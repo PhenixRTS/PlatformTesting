@@ -15,7 +15,6 @@
  */
 
 const videoProfile = {
-  inherits: 'test/profiles/default.js',
   minBitrateMeanKbps: 1600,
   minFrameRateMean: 25,
   minFrameRate: [
@@ -43,12 +42,5 @@ const videoProfile = {
     }
   ]
 };
-const audioProfile = {inherits: 'test/profiles/default.js'};
 
-const chatProfile = {inherits: 'test/profiles/default.js'};
-
-module.exports = {
-  videoProfile: videoProfile,
-  audioProfile: audioProfile,
-  chatProfile: chatProfile
-};
+module.exports = {videoProfile: videoProfile};

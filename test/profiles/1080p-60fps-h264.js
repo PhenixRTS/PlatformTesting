@@ -35,12 +35,4 @@ const videoProfile = {
   codecName: 'H264'
 };
 
-const audioProfile = {inherits: null};
-
-const chatProfile = {inherits: 'test/profiles/default.js'};
-
-module.exports = {
-  videoProfile: videoProfile,
-  audioProfile: audioProfile,
-  chatProfile: chatProfile
-};
+module.exports = {videoProfile: videoProfile};

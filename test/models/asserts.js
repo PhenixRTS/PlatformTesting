@@ -48,7 +48,7 @@ module.exports = class Asserts {
     let actual = actualValue;
     let expected = expectedValue;
 
-    if (_.isNaN(expected) || _.isNil(expected) || expected === null || tolerance === null) {
+    if (expected === null || tolerance === null) {
       t.ctx.skippedAssertions.push(name);
 
       return;
@@ -195,7 +195,7 @@ module.exports = class Asserts {
     const {framerateMeansPerMinute} = streamStats;
     const name = `Video ${type} framerate`;
 
-    if (_.isNil(expected) || expected === null) {
+    if (expected === null) {
       t.ctx.skippedAssertions.push(name);
 
       return;
@@ -466,12 +466,6 @@ module.exports = class Asserts {
   }
 
   async assertThreshold(allowedThresholds, collectedResults, assertMessageUnit, failedAssertMessageUnit) {
-    if (_.isNil(allowedThresholds) || allowedThresholds === null) {
-      t.ctx.skippedAssertions.push(assertMessageUnit);
-
-      return;
-    }
-
     allowedThresholds.forEach(threshold => {
       const {maxAllowed, timesPerMinute} = threshold;
       const msg = `${assertMessageUnit.charAt(0).toUpperCase() + assertMessageUnit.slice(1)} threshold ${

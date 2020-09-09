@@ -15,25 +15,46 @@
  */
 
 const videoProfile = {
-  inherits: null,
   minBitrateMeanKbps: 1,
+  maxBitrateMeanKps: null,
+  maxDelay: null,
+  maxMeanDelay: null,
+  maxTargetDelayOvershoot: null,
   minFrameRateMean: 1,
+  minFrameRate: null,
+  maxFrameRate: null,
+  maxDroppedFramesPerSecond: null,
+  maxPacketLossPerMinute: null,
+  frameWidth: null,
+  frameHeight: null,
+  decodedFrameRateTolerance: null,
+  maxNacksSentPerMinute: null,
+  firsSent: null,
+  maxPlisSentPerMinute: null,
+  codecName: null,
+  maxVideoFreezes: null,
   maxPTTFF: 25000,
-  syncPublishedVideoFps: 1
+  maxResolutionChangeCountPerMinute: null,
+  interframeDelayThresholds: null,
+  maxLag: null,
+  maxRTMPLag: null,
+  syncPublishedVideoFps: 1,
+  maxAverageSync: null,
+  maxSingleSync: null
 };
-
 const audioProfile = {
-  inherits: null,
   minBitrateMeanKbps: 1,
+  maxJitter: null,
+  minAudioOutputLevel: null,
+  maxMeanDelay: null,
+  maxPacketsLossPerMinute: null,
   totalSamplesDurationPerc: 0.1,
+  codecName: null,
   maxLag: 'PT1.5S',
   maxRTMPLag: 'PT2.5S'
 };
 
-const chatProfile = {inherits: 'test/profiles/default.js'};
-
 module.exports = {
   videoProfile: videoProfile,
-  audioProfile: audioProfile,
-  chatProfile: chatProfile
+  audioProfile: audioProfile
 };
