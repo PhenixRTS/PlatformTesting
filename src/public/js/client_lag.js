@@ -211,6 +211,8 @@ function subscriberCallback(receivedError, response) {
     log(`[Stream ID] ${response.renderer.ji}`);
     log(`[Session ID] ${response.renderer.cr.Cr}`);
 
+    subscriberVideoEl.muted = false;
+
     response.renderer.on('autoMuted', () => {
       log(`[${Date.now()}] Stream was autoMuted`);
 

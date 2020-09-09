@@ -61,6 +61,8 @@ function subscriberCallback(err, response) {
     log(`[Stream ID] ${response.renderer.ji}`);
     log(`[Session ID] ${response.renderer.cr.Cr}`);
 
+    document.getElementById('videoEl').muted = false;
+
     response.renderer.on('autoMuted', () => {
       log(`[${Date.now()}] Stream was autoMuted`);
       document.getElementById('videoEl').muted = false;
