@@ -15,24 +15,16 @@
  */
 
 const videoProfile = {
-  minBitrateMeanKbps: 3000,
-  maxBitrateMeanKps: 3750,
-  minFrameRateMean: 60,
-  minFrameRate: [
-    {
-      allowed: 55,
-      timesPerMinute: 0
-    }
-  ],
-  maxFrameRate: [
-    {
-      allowed: 65,
-      timesPerMinute: 0
-    }
-  ],
-  frameWidth: 1920,
-  frameHeight: 1080,
+  inherits: 'test/profiles/1080p-60fps-h264.js',
   codecName: 'VP8'
 };
 
-module.exports = {videoProfile: videoProfile};
+const audioProfile = {inherits: null};
+
+const chatProfile = {inherits: 'test/profiles/default.js'};
+
+module.exports = {
+  videoProfile: videoProfile,
+  audioProfile: audioProfile,
+  chatProfile: chatProfile
+};

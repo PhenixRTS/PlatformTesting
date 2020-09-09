@@ -16,18 +16,18 @@
 
 const createTestCafe = require('testcafe');
 const p = require('path');
-const chalk = require('chalk');
 const config = require('../config.js');
 const App = require('../src/app.js');
 const Logger = require('../scripts/logger.js');
 const defaultProfiles = require('../test/profiles/default.js');
 const app = new App();
 const logger = new Logger('Test script');
-const _ = require('lodash');
 const moment = require('moment');
 const path = require('path');
 const {getFileExtensionBasedOnTestcafeReporterType, getFileNameFromTestsConfigArgument, byteSize} = require('../shared/shared');
 const {parseColor} = require('../test/models/format.js');
+const {prepareProfiles} = require('../test/models/profiles.js');
+const {exitWithErrorMessage, logWarning} = require('../test/models/console-messaging.js');
 const {reportsPath} = config;
 const argv = require('yargs')
   .help()
@@ -341,110 +341,7 @@ function parseTestArgs() {
     args.features = args.features || 'real-time';
   }
 
-  if (argv.profileFile) {
-    const customProfile = require(p.join('..', argv.profileFile));
-
-    if (customProfile.videoProfile) {
-      validateProfile('video', args.videoProfile, customProfile.videoProfile);
-      _.merge(args.videoProfile, customProfile.videoProfile);
-    }
-
-    if (customProfile.audioProfile) {
-      validateProfile('audio', args.audioProfile, customProfile.audioProfile);
-      _.merge(args.audioProfile, customProfile.audioProfile);
-    }
-
-    if (customProfile.chatProfile) {
-      validateProfile('chat', args.chatProfile, customProfile.chatProfile);
-      _.merge(args.chatProfile, customProfile.chatProfile);
-    }
-  }
-
-  if (argv.video) {
-    Object.keys(argv.video).forEach(key => {
-      if (args.videoProfile[key] === undefined) {
-        exitWithErrorMessage(
-          `Error: unsupported argument override - key '${key}' does not exist on video profile!` +
-            `\n\nAvailable keys:\n ${JSON.stringify(
-              Object.keys(defaultProfiles.videoProfile),
-              undefined,
-              2
-            )}`
-        );
-      }
-
-      if (
-        key === 'interframeDelayThresholds' ||
-        key === 'minFrameRate' ||
-        key === 'maxFrameRate'
-      ) {
-        Object.keys(argv.video[key]).forEach((index) => {
-          if (args.videoProfile[key][index]) {
-            _.merge(args.videoProfile[key][index], argv.video[key][index]);
-          } else {
-            args.videoProfile[key].push(parseJsonIfPossible(argv.video[key][index]));
-          }
-        });
-      } else {
-        args.videoProfile[key] = parseJsonIfPossible(argv.video[key]);
-      }
-    });
-  }
-
-  if (argv.audio) {
-    Object.keys(argv.audio).forEach((key) => {
-      if (args.audioProfile[key] === undefined) {
-        exitWithErrorMessage(
-          `Error: unsupported argument override - key [${key}] does not exist on audio profile!` +
-          `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.audioProfile), undefined, 2)}`
-        );
-      }
-
-      if (key === 'audioDelayThresholds') {
-        Object.keys(argv.audio[key]).forEach((index) => {
-          if (args.audioProfile[key][index]) {
-            _.merge(args.audioProfile[key][index], argv.audio[key][index]);
-          } else {
-            args.audioProfile[key].push(parseJsonIfPossible(argv.audio[key][index]));
-          }
-        });
-      } else {
-        args.audioProfile[key] = parseJsonIfPossible(argv.audio[key]);
-      }
-    });
-  }
-
-  if (argv.chat) {
-    Object.keys(argv.chat).forEach((key) => {
-      if (args.chatProfile[key] === undefined) {
-        exitWithErrorMessage(
-          `Error: unsupported argument override - key [${key}] does not exist on chat profile!` +
-          `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(defaultProfiles.chatProfile), undefined, 2)}`
-        );
-      }
-
-      if (argv.mode !== key){
-        exitWithErrorMessage(
-          `Error: unsupported argument override - key [${key}] does not match given mode [${argv.mode}]!`
-        );
-      }
-
-      const chatObject = argv.mode === 'receive' ? argv.chat.receive : argv.chat.send;
-      const chatProfileObject = argv.mode === 'receive' ? args.chatProfile.receive : args.chatProfile.send;
-      const chatProfileKeys = argv.mode === 'receive' ? defaultProfiles.chatProfile.receive : defaultProfiles.chatProfile.send;
-
-      Object.keys(chatObject).forEach((key) => {
-        if (chatProfileObject[key] === undefined) {
-          exitWithErrorMessage(
-            `Error: unsupported argument override - key [${key}] does not exist on chat [${argv.mode}] profile!` +
-            `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(chatProfileKeys), undefined, 2)}`
-          );
-        }
-
-        chatProfileObject[key] = parseJsonIfPossible(chatObject[key]);
-      });
-    });
-  }
+  prepareProfiles(path.join(__dirname, '../'), argv, args);
 
   return args;
 }
@@ -488,7 +385,7 @@ function validateMessageSizeArgument() {
   }));
 
   if (argv.messageSize < minSize){
-    console.error(chalk.yellow(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}] instead.`));
+    console.error(logWarning(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}] instead.`));
     argv.messageSize = minSize;
 
     return;
@@ -504,14 +401,14 @@ function validateMessageSizeArgument() {
     }
 
     if (minGivenValue < minSize && maxGivenValue < minSize) {
-      console.error(chalk.yellow(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}-${minSize}] instead.`));
+      console.error(logWarning(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}-${minSize}] instead.`));
       argv.messageSize = minSize;
 
       return;
     }
 
     if (minGivenValue < minSize && maxGivenValue > minSize) {
-      console.error(chalk.yellow(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}-${maxGivenValue}] instead.`));
+      console.error(logWarning(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}-${maxGivenValue}] instead.`));
       argv.messageSize = `${minSize}-${maxGivenValue}`;
 
       return;
@@ -577,36 +474,10 @@ function validateRtmpSupport() {
   }
 }
 
-function validateProfile(type, defaultProfile, customProfile) {
-  const validKeys = Object.keys(defaultProfile).sort();
-  const customProfileKeys = Object.keys(customProfile).sort();
-  const invalidKeys = customProfileKeys.filter(x => !validKeys.includes(x));
-
-  if (invalidKeys.length > 0) {
-    exitWithErrorMessage(`Provided custom ${type} profile '${argv.profileFile}' contains invalid keys ${JSON.stringify(invalidKeys)}.\nSee 'test/profiles/default.js' for all valid keys.`);
-  }
-}
-
-function exitWithErrorMessage(msg) {
-  console.error(chalk.red(`${msg}\n`));
-  process.exit(1);
-}
-
 function parseToMilliseconds(time) {
   const timeAsDuration = moment.duration(time);
 
   return timeAsDuration.asMilliseconds();
-}
-
-function parseJsonIfPossible(value) {
-  let json = value;
-  try {
-    json = JSON.parse(value);
-  } catch {
-    return value;
-  }
-
-  return json;
 }
 
 module.exports = test();

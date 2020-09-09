@@ -15,10 +15,18 @@
  */
 
 const videoProfile = {
+  inherits: 'test/profiles/default.js',
   minBitrateMeanKbps: 830,
   minFrameRateMean: 30,
   frameWidth: 854,
   frameHeight: 480
 };
+const audioProfile = {inherits: 'test/profiles/default.js'};
 
-module.exports = {videoProfile: videoProfile};
+const chatProfile = {inherits: 'test/profiles/default.js'};
+
+module.exports = {
+  videoProfile: videoProfile,
+  audioProfile: audioProfile,
+  chatProfile: chatProfile
+};

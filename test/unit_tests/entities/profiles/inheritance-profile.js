@@ -15,30 +15,8 @@
  */
 
 const videoProfile = {
-  inherits: 'test/profiles/default.js',
-  minBitrateMeanKbps: 3000,
-  minFrameRateMean: 24,
-  minFrameRate: [
-    {
-      allowed: 19,
-      timesPerMinute: 0
-    }
-  ],
-  maxFrameRate: [
-    {
-      allowed: 29,
-      timesPerMinute: 0
-    }
-  ],
-  frameWidth: 1920,
-  frameHeight: 1080
+  inherits: 'entities/profiles/no-inheritance-profile.js',
+  overridableValue: 99
 };
-const audioProfile = {inherits: 'test/profiles/default.js'};
 
-const chatProfile = {inherits: 'test/profiles/default.js'};
-
-module.exports = {
-  videoProfile: videoProfile,
-  audioProfile: audioProfile,
-  chatProfile: chatProfile
-};
+module.exports = {videoProfile: videoProfile};

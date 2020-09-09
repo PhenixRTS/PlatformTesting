@@ -15,6 +15,7 @@
  */
 
 const videoProfile = {
+  inherits: null,
   minBitrateMeanKbps: 1600,
   maxBitrateMeanKps: 2000,
   maxDelay: 'PT0.5S',
@@ -64,6 +65,7 @@ const videoProfile = {
   maxSingleSync: 70
 };
 const audioProfile = {
+  inherits: null,
   minBitrateMeanKbps: 60,
   maxJitter: 30,
   minAudioOutputLevel: 100,
@@ -85,6 +87,7 @@ const audioProfile = {
   ]
 };
 const chatProfile = {
+  inherits: null,
   send: {},
   receive: {
     senderToReceiverLag: 'PT0.4S',

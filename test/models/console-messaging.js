@@ -14,31 +14,23 @@
  * limitations under the License.
  */
 
-const videoProfile = {
-  inherits: 'test/profiles/default.js',
-  minBitrateMeanKbps: 3000,
-  minFrameRateMean: 24,
-  minFrameRate: [
-    {
-      allowed: 19,
-      timesPerMinute: 0
-    }
-  ],
-  maxFrameRate: [
-    {
-      allowed: 29,
-      timesPerMinute: 0
-    }
-  ],
-  frameWidth: 1920,
-  frameHeight: 1080
-};
-const audioProfile = {inherits: 'test/profiles/default.js'};
+const chalk = require('chalk');
 
-const chatProfile = {inherits: 'test/profiles/default.js'};
+function logSuccess(msg) {
+  console.log(chalk.green(`${msg}\n`));
+}
+
+function logWarning(msg) {
+  console.log(chalk.yellow(`${msg}\n`));
+}
+
+function exitWithErrorMessage(msg) {
+  console.error(chalk.red(`${msg}\n`));
+  process.exit(1);
+}
 
 module.exports = {
-  videoProfile: videoProfile,
-  audioProfile: audioProfile,
-  chatProfile: chatProfile
+  exitWithErrorMessage,
+  logWarning,
+  logSuccess
 };

@@ -18,7 +18,7 @@ const request = require('request');
 const fs = require('fs');
 const path = require('path');
 const archiver = require('archiver');
-const chalk = require('chalk');
+const {logSuccess, logWarning, exitWithErrorMessage} = require('../test/models/console-messaging.js');
 const argv = require('yargs')
   .help()
   .strict()
@@ -41,9 +41,9 @@ async function postResults() {
 
   sendSlackMessage().then(response => {
     if (response.ok) {
-      console.log(chalk.green(`Successfuly posted results\n`));
+      logSuccess(`Successfuly posted results\n`);
     } else {
-      console.log(chalk.yellow(`There was a problem posting results! Response body [`, response.body, `]\n`));
+      logWarning(`There was a problem posting results! Response body [`, response.body, `]\n`);
     }
 
     const zipFilename = 'reports.zip';
@@ -68,9 +68,9 @@ async function postResults() {
       }, {'content-type': 'multipart/form-data'})
         .then(response => {
           if (response.ok) {
-            console.log(chalk.green(`Successfuly uploaded file [${zipFilename}]\n`));
+            logSuccess(`Successfuly uploaded file [${zipFilename}]\n`);
           } else {
-            console.log(chalk.yellow(`There was a problem uploading [${zipFilename}]! Response body [`, response.body, `]\n`));
+            logWarning(`There was a problem uploading [${zipFilename}]! Response body [`, response.body, `]\n`);
           }
         });
     });
@@ -100,9 +100,9 @@ function sendSlackMessage() {
       content: fs.readFileSync(path.join('.', 'test', 'reports', assertsSummaryFilename))
     }).then(response => {
       if (response.ok) {
-        console.log(chalk.green(`Successfuly uploaded [${assertsSummaryFilename}]\n`));
+        logSuccess(`Successfuly uploaded [${assertsSummaryFilename}]\n`);
       } else {
-        console.log(chalk.yellow(`There was a problem uploading report.json! Response body [`, response.body, `]\n`));
+        logWarning(`There was a problem uploading report.json! Response body [`, response.body, `]\n`);
       }
 
       resolve(response);
@@ -118,7 +118,7 @@ function uploadFile(formData, headers) {
       formData: formData
     }, (error, response) => {
       if (error) {
-        console.error(chalk.red(error), '\n', error);
+        exitWithErrorMessage(error);
       }
 
       const responseJson = JSON.parse(response.body);
@@ -139,7 +139,7 @@ function createZipArchive(zipFilename) {
     });
 
     archive.on('error', (error) => {
-      console.error(chalk.red(error));
+      exitWithErrorMessage(error);
     });
 
     archive.pipe(output);
@@ -154,11 +154,6 @@ function validateArguments() {
       exitWithErrorMessage(`--slack-channel and --slack-token is required to post results to [${argv.destination}]`);
     }
   }
-}
-
-function exitWithErrorMessage(msg) {
-  console.error(chalk.red(`${msg}\n`));
-  process.exit(1);
 }
 
 module.exports = postResults();

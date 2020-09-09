@@ -15,6 +15,7 @@
  */
 
 const videoProfile = {
+  inherits: 'test/profiles/default.js',
   minBitrateMeanKbps: 1600,
   frameWidth: 1280,
   frameHeight: 720,
@@ -24,6 +25,7 @@ const videoProfile = {
   maxNacksSentPerMinute: 7
 };
 const audioProfile = {
+  inherits: 'test/profiles/default.js',
   minBitrateMeanKbps: 60,
   maxJitter: 30,
   minAudioOutputLevel: 100,
@@ -31,7 +33,10 @@ const audioProfile = {
   totalSamplesDurationPerc: 0.8
 };
 
+const chatProfile = {inherits: 'test/profiles/default.js'};
+
 module.exports = {
   videoProfile: videoProfile,
-  audioProfile: audioProfile
+  audioProfile: audioProfile,
+  chatProfile: chatProfile
 };
