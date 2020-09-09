@@ -333,3 +333,15 @@ async function getAuthToken(applicationId, secret) {
       });
   });
 }
+
+function startFpsStatsLogging(subscriberStream, getStatsCallback) {
+  setInterval(() => {
+    if (subscriberStream === undefined) {
+      error('Error: There is no subscriber stream! Is the channel online?');
+
+      return;
+    }
+
+    subscriberStream.getStats(getStatsCallback);
+  }, 1000);
+}

@@ -22,6 +22,7 @@ const videoProfile = {
   maxTargetDelayOvershoot: 50,
   maxAverageTargetDelay: 60,
   minFrameRateMean: 30,
+  maxFrameRateMean: 31,
   minFrameRate: [
     {
       allowed: 25,

@@ -38,6 +38,8 @@ async function CollectMediaChanges() {
     sessionId: undefined,
     averageSync: undefined,
     maxSync: undefined,
+    framerateMin: undefined,
+    framerateMax: undefined,
     video: [],
     audio: []
   };
@@ -60,6 +62,9 @@ async function CollectMediaChanges() {
 
       return;
     }
+
+    collectedStats.framerateMin = reporter.ExtractFramerate('min', collectedStats.framerateMin, el);
+    collectedStats.framerateMax = reporter.ExtractFramerate('max', collectedStats.framerateMax, el);
 
     if (el.startsWith(sessionIdTitle)) {
       const sessionId = el.replace(sessionIdTitle, '');
@@ -158,7 +163,7 @@ async function CreateTestReport(testController, page, channel = {}) {
       audioStats: page.stats.audio
     };
 
-    if (channel.channelId) {
+    if (channel && channel.channelId) {
       const {applicationId, channelId, streamKey, created} = channel;
 
       additionalInfo = {
@@ -177,7 +182,7 @@ async function CreateTestReport(testController, page, channel = {}) {
     content = `\n\nVideo Stats:\n` + JSON.stringify(page.stats.video, undefined, 2) +
     `\n\nAudio Stats:\n` + JSON.stringify(page.stats.audio, undefined, 2);
 
-    if (channel.channelId) {
+    if (channel && channel.channelId) {
       const {applicationId, channelId, streamKey, created} = channel;
 
       additionalInfo = `\n\nApplication ID: ${applicationId}\nChannel ID: ${channelId}\nStream Key: ${streamKey}\nCreated: ${created}\n`;

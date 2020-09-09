@@ -278,7 +278,7 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
     reportFileName = `${reportFileName}-rtmp`;
   }
 
-  if (createdChannel.channelId !== undefined) {
+  if (createdChannel && createdChannel.channelId !== undefined) {
     const {channelId} = createdChannel;
     const deleteResponse = await pcastApi.deleteChannel(channelId);
 

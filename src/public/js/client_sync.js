@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global canvasWidth, canvasHeight, publish, audioSampleRate, beepFrequency, fps, oneUnit, log, error, joinChannel, rejoinChannel, getUrlParams, startListeningToSubscriberAudioChanges, showChannelStatus */
+/* global canvasWidth, canvasHeight, publish, audioSampleRate, beepFrequency, fps, oneUnit, log, error, joinChannel, rejoinChannel, getUrlParams, startListeningToSubscriberAudioChanges, showChannelStatus, startFpsStatsLogging */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelName = 'Sync test';
@@ -151,12 +151,24 @@ function subscriberCallback(receivedError, response) {
   subscriberStream = response.mediaStream;
 
   drawVideoToCanvas();
+  startFpsStatsLogging(subscriberStream, getStatsCallback);
 
   if (subscriberStream === undefined) {
     error('subscriberStream is undefined');
   } else {
     prepareAudioAnalyzer(subscriberStream.Zo);
   }
+}
+
+function getStatsCallback(stats) {
+  stats.forEach(stat => {
+    if (stat.framerateMean) {
+      log(`[Stream Framerate Mean] ${JSON.stringify({
+        timestamp: Date.now(),
+        framerate: stat.framerateMean
+      })}`);
+    }
+  });
 }
 
 function prepareAudioAnalyzer(audioStream) {

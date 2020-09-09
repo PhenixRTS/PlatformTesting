@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, error, joinChannel, rejoinChannel, getUrlParams, rgbToHex, startListeningToSubscriberAudioChanges, constants, jsQR, moment, showChannelStatus, publish */
+/* global log, error, joinChannel, rejoinChannel, getUrlParams, rgbToHex, startListeningToSubscriberAudioChanges, constants, jsQR, moment, showChannelStatus, publish, startFpsStatsLogging */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelName = 'Lag test';
@@ -245,7 +245,19 @@ function subscriberCallback(receivedError, response) {
   }
 
   prepareAudioAnalyzer(subscriberStream.Zo);
+  startFpsStatsLogging(subscriberStream, getStatsCallback);
   drawAudioVisualisations();
+}
+
+function getStatsCallback(stats) {
+  stats.forEach(stat => {
+    if (stat.framerateMean) {
+      log(`[Stream Framerate Mean] ${JSON.stringify({
+        timestamp: Date.now(),
+        framerate: stat.framerateMean
+      })}`);
+    }
+  });
 }
 
 function drawToCanvas() {

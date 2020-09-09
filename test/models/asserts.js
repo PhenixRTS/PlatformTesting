@@ -523,6 +523,20 @@ module.exports = class Asserts {
 
   async assertVideoLag(rtmpPush) {
     videoLag(this.page, rtmpPush, this.assert.bind(this));
+
+    this.assert(
+      'Video max framerate',
+      this.page.stats.framerateMax,
+      config.videoAssertProfile.maxFrameRateMean,
+      'lte'
+    );
+
+    this.assert(
+      'Video min framerate',
+      this.page.stats.framerateMin,
+      config.videoAssertProfile.minFrameRateMean,
+      'gte'
+    );
   }
 
   async assertSync() {
@@ -552,6 +566,20 @@ module.exports = class Asserts {
       this.page.stats.video.length > 0 ? this.page.stats.maxSync : 'null',
       config.videoAssertProfile.maxSingleSync,
       'lte'
+    );
+
+    this.assert(
+      'Video max framerate',
+      this.page.stats.framerateMax,
+      config.videoAssertProfile.maxFrameRateMean,
+      'lte'
+    );
+
+    this.assert(
+      'Video min framerate',
+      this.page.stats.framerateMin,
+      config.videoAssertProfile.minFrameRateMean,
+      'gte'
     );
 
     await this.finishTest();

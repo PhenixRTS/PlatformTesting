@@ -406,5 +406,23 @@ module.exports = {
       toolVersion: packageJSON.version,
       runtime: moment.duration(config.args.testRuntimeMs).asSeconds()
     };
+  },
+
+  ExtractFramerate: function(type, currentValue, logElement) {
+    const streamFramerateMeanTitle = '[Acceptance Testing] [Stream Framerate Mean] ';
+
+    if (logElement.startsWith(streamFramerateMeanTitle)) {
+      const framerateMean = JSON.parse(logElement.replace(streamFramerateMeanTitle, '')).framerate;
+
+      if (type === 'max' && (currentValue === undefined || currentValue < framerateMean)) {
+        return framerateMean;
+      }
+
+      if (type === 'min' && (currentValue === undefined || currentValue > framerateMean)) {
+        return framerateMean;
+      }
+    }
+
+    return currentValue;
   }
 };
