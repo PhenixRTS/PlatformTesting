@@ -290,4 +290,12 @@ Example:
 npm run test -- --tests=test/fixtures/room-chat-test.js --numMessages=500 --roomAlias=MyAwesomeRoomAlias --mode=send 
 ```
 
+Also by setting `--chatAPI=REST` you can switch to sending messages using REST API instead of the default method - using ChatService (sdk).
+(When using REST API you must also pass your secret and applicationId)
+
+Example:
+```
+npm run test -- --tests=test/fixtures/room-chat-test.js --numMessages=10 --roomAlias=MyAwesomeRoomAlias --mode=send --chatAPI=REST --secret=<your-secret> --applicationId=<your-application-id>
+```
+
 To be able to synchronize time in between send and receive client in different regions you need to configure your network settings to use `time.google.com` as your NTP server. See more information here: https://developers.google.com/time/ and https://developers.google.com/time/guides. 

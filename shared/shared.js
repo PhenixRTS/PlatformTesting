@@ -16,7 +16,6 @@
 
 const chalk = require('chalk');
 const fs = require('fs');
-const Blob = require('cross-blob');
 
 (function(exports){
   exports.getMemberScreenNameFromID = id => {
@@ -62,8 +61,4 @@ const Blob = require('cross-blob');
         return 'txt';
     }
   };
-
-  exports.byteSize = str => {
-    return new Blob([str]).size;
-  };
-}(typeof exports === 'undefined' ? this['shared'] = {} : exports));
+})(typeof exports === 'undefined' ? this['shared'] = {} : exports);

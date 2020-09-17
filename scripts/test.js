@@ -26,7 +26,8 @@ const logger = new Logger('Test script');
 const _ = require('lodash');
 const moment = require('moment');
 const path = require('path');
-const {getFileExtensionBasedOnTestcafeReporterType, getFileNameFromTestsConfigArgument, byteSize} = require('../shared/shared');
+const {getFileExtensionBasedOnTestcafeReporterType, getFileNameFromTestsConfigArgument} = require('../shared/shared');
+const {byteSize} = require('../src/public/js/chat/publisher');
 const {parseColor} = require('../test/models/format.js');
 const {reportsPath} = config;
 const argv = require('yargs')
@@ -81,6 +82,7 @@ const argv = require('yargs')
   .describe('disableSDKConsoleLogging', 'Toggle console logs from websdk')
   .describe('messageSize', 'Byte size of a message that gets sent. Can also be a range of numbers from which a random number gets chosen each time a message is sent, example "100-500"')
   .describe('submitTelemetry', 'When present, submits telemetry records')
+  .describe('chatAPI', 'Send message using chosen API [REST, ChatService]')
   .describe('telemetryURI', 'Uri where to submit telemetry records')
   .describe('telemetrySource', 'Source of telemetry')
   .default({
@@ -134,6 +136,7 @@ const argv = require('yargs')
     numMessages: 1,
     disableSDKConsoleLogging: false,
     messageSize: 100,
+    chatAPI: 'ChatService',
     telemetryURI: 'https://telemetry.phenixrts.com',
     telemetrySource: undefined
   })
@@ -173,7 +176,8 @@ async function test() {
     `&numMessages=${config.args.numMessages}` +
     `&disableConsoleLogging=${config.args.disableSDKConsoleLogging}` +
     `&messageSize=${config.args.messageSize}` +
-    `&dateFormat=${config.args.dateFormat}`;
+    `&dateFormat=${config.args.dateFormat}` +
+    `&chatAPI=${config.args.chatAPI}`;
   config.videoAssertProfile = config.args.videoProfile;
   config.audioAssertProfile = config.args.audioProfile;
   config.chatAssertProfile = config.args.chatProfile;
@@ -324,6 +328,7 @@ function parseTestArgs() {
     numMessages: argv.numMessages,
     disableSDKConsoleLogging: argv.disableSDKConsoleLogging,
     messageSize: argv.messageSize,
+    chatAPI: argv.chatAPI,
     submitTelemetry: argv.submitTelemetry,
     telemetryURI: argv.telemetryURI,
     telemetrySource: argv.telemetrySource === undefined ? argv.profileFile : argv.telemetrySource
@@ -475,6 +480,12 @@ function validateTestTypeArguments() {
 
     if (argv.mode === '' || argv.mode !== 'send' && argv.mode !== 'receive'){
       exitWithErrorMessage(`Error: --mode=send or --mode=receive is required for room chat test`);
+    }
+
+    if (argv.chatAPI === 'REST') {
+      if (argv.secret === '' || argv.applicationId === '') {
+        exitWithErrorMessage(`Error: --secret and --applicationId are required for room chat test`);
+      }
     }
 
     validateMessageSizeArgument();

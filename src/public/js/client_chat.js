@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-/* global getUrlParams, getChannelUri, log, sdk, moment */
+/* global getUrlParams, getChannelUri, log, sdk, chat, moment */
 
 let roomExpress = null;
 let messageCount = 0;
+let roomAlias;
+
 const dateFormat = getUrlParams('dateFormat');
-const byteSize = str => new Blob([str]).size;
+const applicationId = getUrlParams('applicationId');
+const secret = getUrlParams('secret');
+const mode = getUrlParams('mode');
+const publisherBackendUri = getUrlParams('publisherBackendUri');
 
 document.addEventListener('DOMContentLoaded', () => {
   log(`[Url loaded] ${Date.now()}`);
 
-  const roomAlias = getUrlParams('roomAlias');
+  roomAlias = getUrlParams('roomAlias');
 
   roomExpress = initRoom(roomAlias);
 
@@ -75,7 +80,7 @@ function joinRoom(roomAlias) {
   );
 }
 
-function joinRoomCallback(err, response) {
+async function joinRoomCallback(err, response) {
   if (err) {
     errorMsg(`Error: Unable to join the room! [${err}]`);
 
@@ -96,10 +101,13 @@ function joinRoomCallback(err, response) {
 
   log('Successfully joined the room');
 
-  const mode = getUrlParams('mode');
+  const chatAPI = getUrlParams('chatAPI');
+  const messageSize = getUrlParams('messageSize');
+  const interval = getUrlParams('messageInterval');
   const numMessages = parseInt(getUrlParams('numMessages'));
 
   log('Getting and starting ChatService');
+
   let chatService = response.roomService.getChatService();
   chatService.start();
 
@@ -108,7 +116,14 @@ function joinRoomCallback(err, response) {
   }
 
   if (mode === 'send'){
-    startSendingMessages(chatService, numMessages);
+    if (chatAPI === 'ChatService'){
+      startSendingMessages(chatService, numMessages, interval, messageSize);
+    }
+
+    if (chatAPI === 'REST'){
+      const roomId = await getRoomId();
+      sendRestAPIMessages(roomId, numMessages, interval, messageSize);
+    }
   }
 }
 
@@ -126,8 +141,8 @@ function startReceivingMessages(chatService, numMessages){
 
     const jsonMessage = JSON.stringify({
       messageId: message.messageId,
-      serverTimestamp: moment().utc(message.timestamp).format(dateFormat),
-      receivedTimestamp: moment().utc().format(dateFormat),
+      serverTimestamp: moment(message.timestamp).utc().format(dateFormat),
+      receivedTimestamp: moment.utc().format(dateFormat),
       body: message.message
     });
 
@@ -137,13 +152,12 @@ function startReceivingMessages(chatService, numMessages){
     }
 
     if (messageCount >= numMessages){
-      roomExpress.dispose();
-      showMessageLimitReach('Message limit reached!');
+      endTest();
     }
   });
 }
 
-function startSendingMessages(chatService, numMessages){
+function startSendingMessages(chatService, numMessages, messageSize){
   const interval = getUrlParams('messageInterval');
   const messageInterval = setInterval(function sendMessage() {
     if (!chatService.getObservableChatEnabled().getValue()) {
@@ -158,13 +172,8 @@ function startSendingMessages(chatService, numMessages){
       return;
     }
 
-    const messageObject = {
-      sentTimestamp: moment().utc().format(dateFormat),
-      payload: ''
-    };
-
-    messageObject.payload = getMessagePayload(messageObject);
-    messageObject.sentTimestamp = moment().utc().format(dateFormat);
+    const messageObject = chat.createMessageToSend(messageSize, moment().format(dateFormat));
+    messageObject.sentTimestamp = moment.utc().format(dateFormat);
 
     const message = JSON.stringify(messageObject);
 
@@ -184,25 +193,89 @@ function startSendingMessages(chatService, numMessages){
 
         if (response.status === 'ok') {
           messageCount++;
-
-          const messageSize = byteSize(message);
-          log(`[Message Sent] ${JSON.stringify({
-            message: message,
-            size: messageSize
-          })}`);
-          showSentMessages(`Message Size: ${messageSize} | Sent message: '${message}\n`);
+          showSentMessageResult(message);
         }
       });
     }
 
     if (messageCount >= numMessages) {
-      clearInterval(messageInterval);
-      roomExpress.dispose();
-      showMessageLimitReach('Message limit reached!');
+      endTest(messageInterval);
     }
 
     return sendMessage;
   }(), interval);
+}
+
+function sendRestAPIMessages(roomId, numMessages, interval, messageSize){
+  const messageInterval = setInterval(async() => {
+    if (messageCount <= numMessages) {
+      const messageObject = chat.createMessageToSend(messageSize, moment().format(dateFormat));
+      messageObject.sentTimestamp = moment.utc().format(dateFormat);
+
+      const sentMessageResponse = await chat.sendRestApiMessage(applicationId, secret, publisherBackendUri, roomId, JSON.stringify(messageObject));
+
+      if (sentMessageResponse.error || sentMessageResponse.status !== 'ok'){
+        showMessageSentError(`Error: Unable to send message, got status [${sentMessageResponse.status}]`, sentMessageResponse);
+
+        return;
+      }
+
+      if (sentMessageResponse.status === 'ok'){
+        messageCount++;
+        showSentMessageResult(sentMessageResponse.message.message);
+      }
+    }
+
+    if (messageCount >= numMessages) {
+      endTest(messageInterval);
+    }
+  }, interval);
+}
+
+function showSentMessageResult(message){
+  const messageSize = chat.byteSize(message);
+  log(`[Message Sent] ${JSON.stringify({
+    message: message,
+    size: messageSize
+  })}`);
+  showSentMessages(`Message Size: ${messageSize} | Sent message: ${message}\n`);
+}
+
+function endTest(messageInterval = undefined){
+  if (mode === 'send'){
+    clearInterval(messageInterval);
+  }
+
+  roomExpress.dispose();
+  showMessageLimitReach('Message limit reached!');
+}
+
+async function getRoomId(){
+  let roomId;
+
+  const roomList = await chat.getRooms(applicationId, secret, publisherBackendUri);
+
+  if (roomList.error || roomList.status !== 'ok'){
+    showMessageSentError(`Error: Could not get room list, got status [${roomList.status}]`, roomList);
+
+    return;
+  }
+
+  if (roomList.status === 'ok'){
+    roomList.rooms.forEach(room => {
+      if (room.alias === roomAlias) {
+        roomId = room.roomId;
+      }
+    });
+
+    if (roomId === undefined){
+      showMessageSentError(`Error: Could not find room [${roomAlias}] in room list!`);
+
+      return;
+    }
+  }
+
+  return roomId;
 }
 
 function membersChangedCallback(members) {
@@ -215,32 +288,6 @@ function membersChangedCallback(members) {
       log(`[Session ID] ${member.getSessionId()}`);
     });
   }
-}
-
-function getMessagePayload(message){
-  const messageSize = getUrlParams('messageSize');
-  let messageByteSize;
-
-  if (messageSize.includes('-')){
-    const messageByteSizeValues = messageSize.split('-');
-    messageByteSize = randomNumberFromInterval(parseInt(messageByteSizeValues[0]), parseInt(messageByteSizeValues[1]));
-  } else {
-    messageByteSize = parseInt(messageSize);
-  }
-
-  const currentMessageByteSize = byteSize(JSON.stringify(message));
-
-  if (messageByteSize >= currentMessageByteSize){
-    const tempMessage = '0';
-
-    return tempMessage.repeat(messageByteSize - currentMessageByteSize);
-  }
-
-  return '';
-}
-
-function randomNumberFromInterval(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function setClientMessage(message) {

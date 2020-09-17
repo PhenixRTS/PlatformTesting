@@ -29,11 +29,13 @@ global
   );
 
 test(`Monitor room for ${config.args.testRuntime} with multiple members and assert chat quality`, async t => {
+  const statsArray = [];
+
   await t
     .expect(Selector('#roomError').innerText)
     .notContains('Error', 'Error: Unable to join the room!', {timeout: 5 * 1000});
 
-  await common.monitorRoomChat(t);
+  await common.monitorRoomChat(t, statsArray);
 
   page.stats = await reporter.CollectChatStats();
 

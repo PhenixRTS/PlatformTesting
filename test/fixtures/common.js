@@ -161,6 +161,7 @@ const monitorRoomStreams = async(testController) => {
 const monitorRoomChat = async(testController) => {
   const logger = new Logger('Monitor Test');
   logger.log('Monitoring chat test');
+
   const {testRuntimeMs} = config.args;
 
   let i = Math.floor(testRuntimeMs / 1000);

@@ -31,7 +31,6 @@
   "dependencies": {
     "archiver": "5.0.0",
     "chalk": "3.0.0",
-    "cross-blob": "2.0.0",
     "express": "4.17.1",
     "jsqr": "1.2.0",
     "mathjs": "7.1.0",
