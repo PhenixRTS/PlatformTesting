@@ -98,6 +98,8 @@ function joinRoomCallback(err, response) {
 
   const mode = getUrlParams('mode');
   const numMessages = parseInt(getUrlParams('numMessages'));
+
+  log('Getting and starting ChatService');
   let chatService = response.roomService.getChatService();
   chatService.start();
 
@@ -143,7 +145,7 @@ function startReceivingMessages(chatService, numMessages){
 
 function startSendingMessages(chatService, numMessages){
   const interval = getUrlParams('messageInterval');
-  const messageInterval = setInterval(() => {
+  const messageInterval = setInterval(function sendMessage() {
     if (!chatService.getObservableChatEnabled().getValue()) {
       showSenderChatError('Error: Sender chat is DISABLED');
 
@@ -198,7 +200,9 @@ function startSendingMessages(chatService, numMessages){
       roomExpress.dispose();
       showMessageLimitReach('Message limit reached!');
     }
-  }, interval);
+
+    return sendMessage;
+  }(), interval);
 }
 
 function membersChangedCallback(members) {
