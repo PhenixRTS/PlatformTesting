@@ -22,7 +22,6 @@ const channelAlias = getUrlParams('channelAlias');
 let channelJoinRetries = getUrlParams('channelJoinRetries');
 const publisherBackendUri = getUrlParams('publisherBackendUri');
 const publisherPcastUri = getUrlParams('publisherPcastUri');
-let channelExpress = null;
 const audioFFTSize = 512;
 const mediaListenInterval = 10;
 
@@ -70,7 +69,7 @@ function logSubscriberAudioBeep(timestamp) {
 // MARK: - Subscriber
 // eslint-disable-next-line no-unused-vars
 function subscribe() {
-  channelExpress = joinChannel(
+  joinChannel(
     subscriberVideoEl,
     channelAlias,
     joinChannelCallback,
@@ -118,7 +117,6 @@ function subscriberCallback(receivedError, response) {
 
       setTimeout(
         rejoinChannel(
-          channelExpress,
           subscriberVideoEl,
           channelAlias,
           joinChannelCallback,

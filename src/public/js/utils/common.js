@@ -19,6 +19,9 @@
 
 const sdk = window['phenix-web-sdk'];
 
+let adminApiProxyClient;
+let channelExpress;
+
 function log(msg) {
   console.info(`\n[Acceptance Testing] ${msg}`);
 }
@@ -69,26 +72,11 @@ function getChannelUri(backendUri, isBackendPcastUri, alias, edgeToken = '') {
 
 function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriberCallback) {
   const backendUri = getUrlParams('backendUri');
-  const pcastUri = getUrlParams('pcastUri');
-
   const edgeToken = getUrlParams('edgeToken');
   const authToken = getUrlParams('authToken');
   const streamToken = getUrlParams('streamToken');
 
-  const featuresParam = getUrlParams('features');
-  const features = featuresParam === undefined ? [] : featuresParam.split(',');
   const isBackendPcastUri = backendUri.substring(backendUri.lastIndexOf('/') + 1) === 'pcast';
-  const backendUriWithPcast = isBackendPcastUri ? backendUri : `${backendUri}/pcast`;
-
-  const adminApiProxyClient = new sdk.net.AdminApiProxyClient();
-  adminApiProxyClient.setBackendUri(backendUriWithPcast);
-
-  let channelOptions = {
-    adminApiProxyClient,
-    features,
-    disableConsoleLogging: getUrlParams('disableConsoleLogging') === 'true',
-    uri: pcastUri
-  };
 
   let joinOptions = {
     videoElement,
@@ -96,22 +84,38 @@ function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriber
   };
 
   if (authToken && streamToken || edgeToken) {
-    channelOptions.authToken = edgeToken || authToken;
     joinOptions.streamToken = edgeToken || streamToken;
   }
 
-  log(`Subscriber backend uri: ${backendUriWithPcast}`);
-  log(`Subscriber PCast uri: ${pcastUri}`);
+  if (channelExpress === undefined) {
+    const pcastUri = getUrlParams('pcastUri');
+    const featuresParam = getUrlParams('features');
+    const features = featuresParam === undefined ? [] : featuresParam.split(',');
+
+    initialiseAdminProxyClient(backendUri, isBackendPcastUri);
+
+    let channelOptions = {
+      adminApiProxyClient,
+      features,
+      disableConsoleLogging: getUrlParams('disableConsoleLogging') === 'true',
+      uri: pcastUri
+    };
+
+    if (authToken && streamToken || edgeToken) {
+      channelOptions.authToken = edgeToken || authToken;
+    }
+
+    channelExpress = new sdk.express.ChannelExpress(channelOptions);
+    log(`Subscriber PCast uri: ${pcastUri}`);
+  }
 
   log(`Joining channel ${getChannelUri(backendUri, isBackendPcastUri, channelAlias, edgeToken)}`);
-
-  const channelExpress = new sdk.express.ChannelExpress(channelOptions);
   channelExpress.joinChannel(joinOptions, joinChannelCallback, subscriberCallback);
 
   return channelExpress;
 }
 
-function rejoinChannel(channelExpress, videoElement, alias, joinChannelCallback, subscriberCallback) {
+function rejoinChannel(videoElement, alias, joinChannelCallback, subscriberCallback) {
   const options = {
     alias,
     videoElement
@@ -121,6 +125,16 @@ function rejoinChannel(channelExpress, videoElement, alias, joinChannelCallback,
   channelExpress.joinChannel(options, joinChannelCallback, subscriberCallback);
 }
 
+function initialiseAdminProxyClient(backendUri, isBackendPcastUri) {
+  if (adminApiProxyClient === undefined) {
+    const backendUriWithPcast = isBackendPcastUri ? backendUri : `${backendUri}/pcast`;
+    log(`Subscriber backend uri: ${backendUriWithPcast}`);
+
+    adminApiProxyClient = new sdk.net.AdminApiProxyClient();
+    adminApiProxyClient.setBackendUri(backendUriWithPcast);
+  }
+}
+
 async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName, publishCallback, createChannel) {
   log(`Publisher backend uri: ${backendUri}`);
   log(`Publisher PCast uri: ${pcastUri}`);
@@ -128,11 +142,11 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
   const authToken = getUrlParams('authToken');
   const applicationId = getUrlParams('applicationId');
   const secret = getUrlParams('secret');
-  const publisherAdminApiProxyClient = new sdk.net.AdminApiProxyClient();
-  publisherAdminApiProxyClient.setBackendUri(backendUri);
+
+  initialiseAdminProxyClient(backendUri, true);
 
   var channelExpressOptions = {
-    adminApiProxyClient: publisherAdminApiProxyClient,
+    adminApiProxyClient: adminApiProxyClient,
     disableConsoleLogging: getUrlParams('disableConsoleLogging') === 'true',
     uri: pcastUri
   };
@@ -149,11 +163,11 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
     }
   }
 
-  var publishChannelExpress = new sdk.express.ChannelExpress(channelExpressOptions);
+  channelExpress = new sdk.express.ChannelExpress(channelExpressOptions);
   log(`Created channel express with options: ${JSON.stringify(channelExpressOptions)}`);
 
   if (createChannel) {
-    await publishChannelExpress.createChannel({
+    await channelExpress.createChannel({
       channel: {
         name: channelName,
         alias: channelAlias
@@ -189,15 +203,15 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
 
   const successCallback = () => {
     log(`Successfully validated that no other stream is playing`);
-    publishChannelExpress.publishToChannel(publishOptions, publishCallback);
+    channelExpress.publishToChannel(publishOptions, publishCallback);
 
-    return publishChannelExpress;
+    return channelExpress;
   };
 
-  return await validateThatNoOtherStreamIsPlaying(publishChannelExpress, channelAlias, successCallback);
+  return await validateThatNoOtherStreamIsPlaying(channelAlias, successCallback);
 }
 
-async function validateThatNoOtherStreamIsPlaying(channelExpress, channelAlias, successCallback) {
+async function validateThatNoOtherStreamIsPlaying(channelAlias, successCallback) {
   channelExpress.joinChannel({alias: channelAlias}, (error, response) => {
     if (error) {
       showPublisherErrorMessage(`Error: Got error in join channel callback (while trying to validate that no other stream is playing before publishing): ${error}`);

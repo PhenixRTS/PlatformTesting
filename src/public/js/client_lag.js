@@ -20,7 +20,6 @@ const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelName = 'Lag test';
 const channelAlias = getUrlParams('channelAlias');
 let channelJoinRetries = getUrlParams('channelJoinRetries');
-let channelExpress = null;
 
 var publisherBackendUri = getUrlParams('publisherBackendUri');
 var publisherPcastUri = getUrlParams('publisherPcastUri');
@@ -146,7 +145,7 @@ function listenToSubscriberVideoChanges() {
 // MARK: - Subscriber
 // eslint-disable-next-line no-unused-vars
 function subscribe() {
-  channelExpress = joinChannel(
+  joinChannel(
     subscriberVideoEl,
     channelAlias,
     joinChannelCallback,
@@ -193,7 +192,6 @@ function subscriberCallback(receivedError, response) {
 
       setTimeout(
         rejoinChannel(
-          channelExpress,
           subscriberVideoEl,
           channelAlias,
           joinChannelCallback,
