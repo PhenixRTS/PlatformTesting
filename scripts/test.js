@@ -30,6 +30,7 @@ const {parseColor} = require('../test/models/format.js');
 const {prepareProfiles} = require('../test/models/profiles.js');
 const {exitWithErrorMessage, logWarning} = require('../test/models/console-messaging.js');
 const {reportsPath} = config;
+const TokenBuilder = require('phenix-edge-auth');
 const argv = require('yargs')
   .help()
   .strict()
@@ -148,6 +149,7 @@ async function test() {
   config.args = parseTestArgs();
   config.publisherArgs = parsePublisherArgs();
   config.rtmpPushArgs = parseRtmpPushArgs();
+  CreateEdgeTokenIfNecessary();
   config.testPageUrlAttributes =
     `?features=${config.args.features}` +
     `&channelAlias=${config.channelAlias}` +
@@ -220,6 +222,29 @@ async function test() {
       process.exit(1);
     }
   });
+}
+
+function CreateEdgeTokenIfNecessary() {
+  if (config.args.edgeToken !== '') {
+    return;
+  }
+
+  if (config.args.applicationId === '' || config.args.secret === '') {
+    logger.log('Will not create edgeToken with TokenBuilder because secret and/or applicationId is undefined');
+
+    return;
+  }
+
+  const edgeTokenForPublish = new TokenBuilder()
+    .withApplicationId(config.args.applicationId)
+    .withSecret(config.args.secret)
+    .expiresInSeconds(config.args.testRuntimeMs)
+    .forChannelAlias(config.channelAlias)
+    .forPublishingOnly()
+    .build();
+
+  config.args.edgeToken = edgeTokenForPublish;
+  logger.log('Edge Token for publishing created using TokenBuilder');
 }
 
 function parseBrowsers(browsers) {

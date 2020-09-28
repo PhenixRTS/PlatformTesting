@@ -141,6 +141,7 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
   log(`Publisher PCast uri: ${pcastUri}`);
 
   const authToken = getUrlParams('authToken');
+  const edgeToken = getUrlParams('edgeToken');
   const applicationId = getUrlParams('applicationId');
   const secret = getUrlParams('secret');
 
@@ -153,8 +154,10 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
   };
 
   if (authToken !== '') {
+    log('Will use authToken that was passed through arguments');
     channelExpressOptions.authToken = authToken;
   } else if (applicationId !== '' && secret !== '') {
+    log('Will get authToken from api using applicationId and secret');
     channelExpressOptions.authToken = await getAuthToken(applicationId, secret);
 
     if (channelExpressOptions.authToken === undefined) {
@@ -199,6 +202,7 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
       alias: channelAlias,
       name: channelName
     },
+    streamToken: edgeToken,
     userMediaStream: stream
   };
 
@@ -250,7 +254,9 @@ async function validateThatNoOtherStreamIsPlaying(channelAlias, successCallback)
 }
 
 function stopPublisher(publisherChannelExpress) {
-  publisherChannelExpress.dispose();
+  if (publisherChannelExpress) {
+    publisherChannelExpress.dispose();
+  }
 
   /* eslint-disable no-undef */
   if (publisher) {

@@ -35,12 +35,13 @@
     "jsqr": "1.2.0",
     "mathjs": "7.1.0",
     "moment": "2.24.0",
-    "node-fetch": "2.6.0",
+    "node-fetch": "2.6.1",
+    "phenix-edge-auth": "1.2.4",
     "ps-node": "0.1.6",
     "qrcode": "1.4.4",
     "testcafe": "1.9.0",
     "testcafe-browser-provider-browserstack": "1.13.0",
-    "yargs": "14.0.0"
+    "yargs": "16.0.3"
   },
   "devDependencies": {
     "babel-eslint": "10.0.3",
