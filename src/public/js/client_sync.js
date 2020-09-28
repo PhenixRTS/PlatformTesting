@@ -231,5 +231,5 @@ function isCenterPixelColorWhite() {
       (imgData[2] - 255) * (imgData[2] - 255)
   );
 
-  return diff <= 65;
+  return diff <= 150;
 }

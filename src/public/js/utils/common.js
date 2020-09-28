@@ -21,6 +21,7 @@ const sdk = window['phenix-web-sdk'];
 
 let adminApiProxyClient;
 let channelExpress;
+let didValidateThatThereIsNoOtherStream = false;
 
 function log(msg) {
   console.info(`\n[Acceptance Testing] ${msg}`);
@@ -224,6 +225,12 @@ async function validateThatNoOtherStreamIsPlaying(channelAlias, successCallback)
       showPublisherErrorMessage(`Error: Got response status [${response.status}] (while trying to validate that no other stream is playing before publishing)`);
     }
   }, (error, response) => {
+    if (didValidateThatThereIsNoOtherStream) {
+      log('Join channel callback has been triggered again. The tool already did validate that there is no other stream - skipping it this time');
+
+      return;
+    }
+
     if (error) {
       showPublisherErrorMessage(`Error: Got error in subscriber callback (while trying to validate that no other stream is playing before publishing): ${error}`);
 
@@ -231,11 +238,12 @@ async function validateThatNoOtherStreamIsPlaying(channelAlias, successCallback)
     }
 
     if (response.status !== 'no-stream-playing') {
-      showPublisherErrorMessage('Error: Will not publish - there is other stream already playing!');
+      showPublisherErrorMessage(`Error: Will not publish - looks like there is other stream already playing! Expected status [no-stream-playing] but got [${response.status}] instead`);
 
       return;
     }
 
+    didValidateThatThereIsNoOtherStream = true;
     log('Validation succesful - no other stream is playing before publishing');
     successCallback();
   });
