@@ -24,6 +24,7 @@ const publisherBackendUri = getUrlParams('publisherBackendUri');
 const publisherPcastUri = getUrlParams('publisherPcastUri');
 const audioFFTSize = 512;
 const mediaListenInterval = 10;
+const maxColorDifferenceFromPureWhite = 150;
 
 var subscriberCanvas;
 var subscriberCanvasCtx;
@@ -231,5 +232,5 @@ function isCenterPixelColorWhite() {
       (imgData[2] - 255) * (imgData[2] - 255)
   );
 
-  return diff <= 150;
+  return diff <= maxColorDifferenceFromPureWhite;
 }
