@@ -25,6 +25,10 @@ const applicationId = getUrlParams('applicationId');
 const secret = getUrlParams('secret');
 const mode = getUrlParams('mode');
 const publisherBackendUri = getUrlParams('publisherBackendUri');
+const messageInterval = getUrlParams('messageInterval');
+const numMessages = parseInt(getUrlParams('numMessages'));
+const messageSize = getUrlParams('messageSize');
+const chatAPI = getUrlParams('chatAPI');
 
 document.addEventListener('DOMContentLoaded', () => {
   log(`[Url loaded] ${Date.now()}`);
@@ -93,41 +97,35 @@ async function joinRoomCallback(err, response) {
     return;
   }
 
-  if (!response.roomService){
+  if (!response.roomService) {
     errorMsg('Error: There is no room service in response!', response);
 
     return;
   }
 
   log('Successfully joined the room');
-
-  const chatAPI = getUrlParams('chatAPI');
-  const messageSize = getUrlParams('messageSize');
-  const interval = getUrlParams('messageInterval');
-  const numMessages = parseInt(getUrlParams('numMessages'));
-
   log('Getting and starting ChatService');
 
   let chatService = response.roomService.getChatService();
   chatService.start();
 
-  if (mode === 'receive'){
-    startReceivingMessages(chatService, numMessages);
+  if (mode === 'receive') {
+    startReceivingMessages(chatService);
   }
 
-  if (mode === 'send'){
-    if (chatAPI === 'ChatService'){
-      startSendingMessages(chatService, numMessages, interval, messageSize);
+  if (mode === 'send') {
+    if (chatAPI === 'ChatService') {
+      startSendingMessages(chatService);
     }
 
-    if (chatAPI === 'REST'){
+    if (chatAPI === 'REST') {
       const roomId = await getRoomId();
-      sendRestAPIMessages(roomId, numMessages, interval, messageSize);
+      sendRestAPIMessages(roomId);
     }
   }
 }
 
-function startReceivingMessages(chatService, numMessages){
+function startReceivingMessages(chatService) {
   chatService.getObservableChatEnabled().subscribe((enabled) => {
     if (enabled) {
       showChatStatus('Chat is ENABLED');
@@ -151,15 +149,14 @@ function startReceivingMessages(chatService, numMessages){
       showReceivedMessages(`Received message [${message.messageId}]/[${jsonMessage.receivedTimestamp}]: ${message.message}\n`);
     }
 
-    if (messageCount >= numMessages){
+    if (messageCount >= numMessages) {
       endTest();
     }
   });
 }
 
-function startSendingMessages(chatService, numMessages, messageSize){
-  const interval = getUrlParams('messageInterval');
-  const messageInterval = setInterval(function sendMessage() {
+function startSendingMessages(chatService) {
+  const sendingInterval = setInterval(function sendMessage() {
     if (!chatService.getObservableChatEnabled().getValue()) {
       showSenderChatError('Error: Sender chat is DISABLED');
 
@@ -199,76 +196,76 @@ function startSendingMessages(chatService, numMessages, messageSize){
     }
 
     if (messageCount >= numMessages) {
-      endTest(messageInterval);
+      endTest(sendingInterval);
     }
 
     return sendMessage;
-  }(), interval);
+  }(), messageInterval);
 }
 
-function sendRestAPIMessages(roomId, numMessages, interval, messageSize){
-  const messageInterval = setInterval(async() => {
+function sendRestAPIMessages(roomId) {
+  const sendingInterval = setInterval(async() => {
     if (messageCount <= numMessages) {
       const messageObject = chat.createMessageToSend(messageSize, moment().format(dateFormat));
       messageObject.sentTimestamp = moment.utc().format(dateFormat);
 
       const sentMessageResponse = await chat.sendRestApiMessage(applicationId, secret, publisherBackendUri, roomId, JSON.stringify(messageObject));
 
-      if (sentMessageResponse.error || sentMessageResponse.status !== 'ok'){
+      if (sentMessageResponse.error || sentMessageResponse.status !== 'ok') {
         showMessageSentError(`Error: Unable to send message, got status [${sentMessageResponse.status}]`, sentMessageResponse);
 
         return;
       }
 
-      if (sentMessageResponse.status === 'ok'){
+      if (sentMessageResponse.status === 'ok') {
         messageCount++;
         showSentMessageResult(sentMessageResponse.message.message);
       }
     }
 
     if (messageCount >= numMessages) {
-      endTest(messageInterval);
+      endTest(sendingInterval);
     }
-  }, interval);
+  }, messageInterval);
 }
 
-function showSentMessageResult(message){
-  const messageSize = chat.byteSize(message);
+function showSentMessageResult(message) {
+  const sentMessageSize = chat.byteSize(message);
   log(`[Message Sent] ${JSON.stringify({
     message: message,
-    size: messageSize
+    size: sentMessageSize
   })}`);
   showSentMessages(`Message Size: ${messageSize} | Sent message: ${message}\n`);
 }
 
-function endTest(messageInterval = undefined){
-  if (mode === 'send'){
-    clearInterval(messageInterval);
+function endTest(sendingInterval = undefined) {
+  if (mode === 'send') {
+    clearInterval(sendingInterval);
   }
 
   roomExpress.dispose();
   showMessageLimitReach('Message limit reached!');
 }
 
-async function getRoomId(){
+async function getRoomId() {
   let roomId;
 
   const roomList = await chat.getRooms(applicationId, secret, publisherBackendUri);
 
-  if (roomList.error || roomList.status !== 'ok'){
+  if (roomList.error || roomList.status !== 'ok') {
     showMessageSentError(`Error: Could not get room list, got status [${roomList.status}]`, roomList);
 
     return;
   }
 
-  if (roomList.status === 'ok'){
+  if (roomList.status === 'ok') {
     roomList.rooms.forEach(room => {
       if (room.alias === roomAlias) {
         roomId = room.roomId;
       }
     });
 
-    if (roomId === undefined){
+    if (roomId === undefined) {
       showMessageSentError(`Error: Could not find room [${roomAlias}] in room list!`);
 
       return;
@@ -296,8 +293,8 @@ function setClientMessage(message) {
   clientMessageElement.innerHTML = message;
 }
 
-function errorMsg(message, response = ''){
-  if (response !== ''){
+function errorMsg(message, response = '') {
+  if (response !== '') {
     console.error(`[Acceptance Testing Error] ${message}`, response);
   } else {
     console.error(`[Acceptance Testing Error] ${message}`);
@@ -306,34 +303,34 @@ function errorMsg(message, response = ''){
   document.getElementById('roomError').innerHTML += `<br />${message}`;
 }
 
-function showChatStatus(message){
+function showChatStatus(message) {
   log(message);
   document.getElementById('chatStatus').innerHTML = message;
 }
 
-function showReceivedMessages(message){
+function showReceivedMessages(message) {
   document.getElementById('receivedMessages').innerHTML += message;
 }
 
-function showMessageSentError(message, response = ''){
+function showMessageSentError(message, response = '') {
   console.error(`[Acceptance Testing Error] ${message}`, response);
   document.getElementById('messageSentError').innerHTML += `<br />${message}`;
 }
 
-function showSentMessages(message){
+function showSentMessages(message) {
   document.getElementById('senderMessage').innerText += message;
 }
 
-function showChatError(message){
+function showChatError(message) {
   console.error(`[Acceptance Testing Error] ${message}`);
   document.getElementById('chatStatusError').innerHTML += `<br />${message}`;
 }
 
-function showSenderChatError(message){
+function showSenderChatError(message) {
   console.error(`[Acceptance Testing Error] ${message}`);
   document.getElementById('senderChatError').innerHTML += `<br />${message}`;
 }
 
-function showMessageLimitReach(message){
+function showMessageLimitReach(message) {
   document.getElementById('messageLimitReach').innerHTML = message;
 }
