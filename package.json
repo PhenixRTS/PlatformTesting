@@ -39,7 +39,7 @@
     "phenix-edge-auth": "1.2.4",
     "ps-node": "0.1.6",
     "qrcode": "1.4.4",
-    "testcafe": "1.9.0",
+    "testcafe": "1.9.3",
     "testcafe-browser-provider-browserstack": "1.13.0",
     "yargs": "16.0.3"
   },
