@@ -150,6 +150,7 @@ async function test() {
   config.publisherArgs = parsePublisherArgs();
   config.rtmpPushArgs = parseRtmpPushArgs();
   CreateEdgeTokenIfNecessary();
+  CreateAuthTokenIfNecessary();
   config.testPageUrlAttributes =
     `?features=${config.args.features}` +
     `&channelAlias=${config.channelAlias}` +
@@ -222,6 +223,29 @@ async function test() {
       process.exit(1);
     }
   });
+}
+
+function CreateAuthTokenIfNecessary() {
+  if (config.args.authToken !== '') {
+    return;
+  }
+
+  if (config.args.applicationId === '' || config.args.secret === '') {
+    logger.log('Will not create authToken with TokenBuilder because secret and/or applicationId is undefined');
+
+    return;
+  }
+
+  const authToken = new TokenBuilder()
+    .withApplicationId(config.args.applicationId)
+    .withSecret(config.args.secret)
+    .expiresInSeconds(config.args.testRuntimeMs)
+    .forChannelAlias(config.channelAlias)
+    .forAuthenticateOnly()
+    .build();
+
+  config.args.authToken = authToken;
+  logger.log('Auth Token created using TokenBuilder');
 }
 
 function CreateEdgeTokenIfNecessary() {

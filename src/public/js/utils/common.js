@@ -150,22 +150,9 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
   var channelExpressOptions = {
     adminApiProxyClient: adminApiProxyClient,
     disableConsoleLogging: getUrlParams('disableConsoleLogging') === 'true',
-    uri: pcastUri
+    uri: pcastUri,
+    authToken: authToken
   };
-
-  if (authToken !== '') {
-    log('Will use authToken that was passed through arguments');
-    channelExpressOptions.authToken = authToken;
-  } else if (applicationId !== '' && secret !== '') {
-    log('Will get authToken from api using applicationId and secret');
-    channelExpressOptions.authToken = await getAuthToken(applicationId, secret);
-
-    if (channelExpressOptions.authToken === undefined) {
-      showPublisherErrorMessage(`Error: Will not publish - got undefined authToken [${channelExpressOptions.authToken}]`);
-
-      return;
-    }
-  }
 
   channelExpress = new sdk.express.ChannelExpress(channelExpressOptions);
   log(`Created channel express with options: ${JSON.stringify(channelExpressOptions)}`);
@@ -332,34 +319,6 @@ async function startMultimediaRecordingFor(timeMs, stream) {
       });
     });
   }, timeMs);
-}
-
-async function getAuthToken(applicationId, secret) {
-  const authUrl = getUrlParams('publisherBackendUri') + '/auth';
-
-  return new Promise(resolve => {
-    fetch(authUrl, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        'Content-Length': '68',
-        Authorization: 'Basic ' + btoa(applicationId + ':' + unescape(encodeURIComponent(secret)))
-      }
-    })
-      .then(response => response.json())
-      .then(result => {
-        if (result.error || result.status !== 'ok') {
-          document.getElementById('publisherAuthError').innerHTML = `
-            Error: Could not get auth token with provided applicationId (${applicationId}) and secret (${secret}).
-            Response status: ${result.status}
-            Response error: ${result.error}
-          `;
-        }
-
-        resolve(result.authenticationToken);
-      });
-  });
 }
 
 function startFpsStatsLogging(subscriberStream, getStatsCallback) {
