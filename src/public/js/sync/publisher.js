@@ -193,7 +193,7 @@ function drawHorizontalMarkers() {
     publisherCanvasCtx.beginPath();
     publisherCanvasCtx.moveTo(i, publisherCanvas.height / 2);
     publisherCanvasCtx.lineTo(i, publisherCanvas.height / 2 + 20);
-    publisherCanvasCtx.strokeStyle = '#e79ba5';
+    publisherCanvasCtx.strokeStyle = '#205D16';
     publisherCanvasCtx.stroke();
   }
 }
