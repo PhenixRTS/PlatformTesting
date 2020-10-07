@@ -22,6 +22,7 @@ const secret = config.publisherArgs.secret;
 const base64authData = Buffer.from(`${applicationId}:${secret}`).toString('base64');
 const Logger = require('../../scripts/logger.js');
 const logger = new Logger('REST API');
+const math = require('./math.js');
 
 async function request(method, endpoint, body = null) {
   const requestConf = {
@@ -98,26 +99,40 @@ async function terminateStream(streamId, reason) {
   await request('DELETE', '/stream', body);
 }
 
-async function postToTelemetry(body) {
+async function postToTelemetry(records) {
   return new Promise(resolve => {
     const uri = `${config.args.telemetryURI}/telemetry/metrics`;
     const requestConf = {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(body)
+      body: ''
     };
 
-    return fetch(uri, requestConf)
-      .then(logger.log(`Submitted telemetry request [${JSON.stringify(requestConf)}]`))
-      .then(response => {
-        if (response.status === 200) {
-          logger.log(`Successfully posted to telemetry [${uri}]. Response status [${response.status}]`);
-          resolve(response);
-        } else {
-          console.error(`Got response status [${response.status}] when posting to telemetry [${uri}].`, response);
-          resolve(null);
-        }
-      });
+    const oneCharacterSizeInBits = 8;
+    const maxBitsSizeForOneTemelemetryPostRequestBody = 1024 * oneCharacterSizeInBits;
+    let recordChunkSize = records.length;
+    let chunkedRecords = [records];
+
+    // 1. Split all records in chunks ([[...], [...]]) until each chunk is less than max supported one POST request body size
+    while (JSON.stringify(chunkedRecords[0]).length > maxBitsSizeForOneTemelemetryPostRequestBody) {
+      recordChunkSize -= 1;
+      chunkedRecords = math.chunk(records, recordChunkSize);
+    }
+
+    // 2. Post each record chunk (which is now less than max supported size) to telemetry
+    chunkedRecords.forEach(async(chunk) => {
+      requestConf.body = JSON.stringify({records: chunk});
+      await fetch(uri, requestConf)
+        .then(response => {
+          if (response.status === 200) {
+            logger.log(`Successfully posted [${chunk.length}] records to telemetry [${uri}]. Response status [${response.status}]`);
+          } else {
+            console.error(`Got response status [${response.status}] when posting to telemetry [${uri}].`, response);
+          }
+        });
+    });
+
+    resolve();
   });
 }
 

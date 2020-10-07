@@ -27,8 +27,8 @@ async function CollectChatStats() {
   logger.log('Collecting chat stats...');
 
   const sessionIdTitle = '[Acceptance Testing] [Session ID] ';
-  const messageReceived = '[Acceptance Testing] [Message received] ';
-  const messageSent = '[Acceptance Testing] [Message Sent] ';
+  const messageReceivedTitle = '[Acceptance Testing] [Message received] ';
+  const messageSentTitle = '[Acceptance Testing] [Message Sent] ';
   const logs = await t.getBrowserConsoleMessages();
   let chatStats = {};
 
@@ -54,27 +54,40 @@ async function CollectChatStats() {
         chatStats.sessionId = sessionId;
       }
 
-      if (infoLogElement.startsWith(messageReceived)) {
-        const receivedMessage = JSON.parse(infoLogElement.replace(messageReceived, ''));
-        logger.log(`Received message: ${JSON.stringify(receivedMessage)}`);
+      if (infoLogElement.startsWith(messageReceivedTitle)) {
+        const receivedMessage = JSON.parse(infoLogElement.replace(messageReceivedTitle, ''));
+        logger.log(`Received message: [${JSON.stringify(receivedMessage)}]`);
         receivedMessage.sentTimestamp = moment(JSON.parse(receivedMessage.body).sentTimestamp);
-        logger.log(`receivedTimestamp - sentTimestamp: [${moment(receivedMessage.receivedTimestamp).diff(moment(receivedMessage.sentTimestamp))}]`);
-        logger.log(`serverTimestamp - sentTimestamp: [${moment(receivedMessage.serverTimestamp).diff(moment(receivedMessage.sentTimestamp))}]`);
-        logger.log(`receivedTimestamp - serverTimestamp: [${moment(receivedMessage.receivedTimestamp).diff(moment(receivedMessage.serverTimestamp))}]`);
+
+        const senderToReceiverLag = moment(receivedMessage.receivedTimestamp).diff(moment(receivedMessage.sentTimestamp));
+        logger.log(`receivedTimestamp - sentTimestamp: [${senderToReceiverLag}]`);
+        chatStats.senderToReceiverLags.push({
+          messageId: receivedMessage.messageId,
+          lag: senderToReceiverLag
+        });
+
+        const senderToPlatformLags = moment(receivedMessage.serverTimestamp).diff(moment(receivedMessage.sentTimestamp));
+        logger.log(`serverTimestamp - sentTimestamp: [${senderToPlatformLags}]`);
+        chatStats.senderToPlatformLags.push({
+          messageId: receivedMessage.messageId,
+          lag: senderToPlatformLags
+        });
+
+        const platformToReceiverLag = moment(receivedMessage.receivedTimestamp).diff(moment(receivedMessage.serverTimestamp));
+        logger.log(`receivedTimestamp - serverTimestamp: [${platformToReceiverLag}]`);
+        chatStats.platformToReceiverLags.push({
+          messageId: receivedMessage.messageId,
+          lag: platformToReceiverLag
+        });
+
         chatStats.received.push(receivedMessage);
       }
     });
 
-    chatStats.received.forEach(stat => {
-      chatStats.senderToReceiverLags.push(moment(stat.receivedTimestamp).diff(moment(stat.sentTimestamp)));
-      chatStats.senderToPlatformLags.push(moment(stat.serverTimestamp).diff(moment(stat.sentTimestamp)));
-      chatStats.platformToReceiverLags.push(moment(stat.receivedTimestamp).diff(moment(stat.serverTimestamp)));
-    });
-
-    chatStats.maxSenderToReceiverLag = chatStats.senderToReceiverLags.length > 0 ? Math.max.apply(this, chatStats.senderToReceiverLags) : undefined;
-    chatStats.maxSenderToPlatformLag = chatStats.senderToPlatformLags.length > 0 ? Math.max.apply(this, chatStats.senderToPlatformLags) : undefined;
-    chatStats.maxPlatformToReceiverLag = chatStats.platformToReceiverLags.length > 0 ? Math.max.apply(this, chatStats.platformToReceiverLags) : undefined;
-    chatStats.stdDevSenderToReceiverLag = chatStats.senderToReceiverLags.length > 0 ? math.std(chatStats.senderToReceiverLags) : undefined;
+    chatStats.maxSenderToReceiverLag = chatStats.senderToReceiverLags.length > 0 ? Math.max.apply(this, chatStats.senderToReceiverLags.map(stat => stat.lag)) : undefined;
+    chatStats.maxSenderToPlatformLag = chatStats.senderToPlatformLags.length > 0 ? Math.max.apply(this, chatStats.senderToPlatformLags.map(stat => stat.lag)) : undefined;
+    chatStats.maxPlatformToReceiverLag = chatStats.platformToReceiverLags.length > 0 ? Math.max.apply(this, chatStats.platformToReceiverLags.map(stat => stat.lag)) : undefined;
+    chatStats.stdDevSenderToReceiverLag = chatStats.senderToReceiverLags.length > 0 ? math.std(chatStats.senderToReceiverLags.map(stat => stat.lag)) : undefined;
   }
 
   if (config.args.mode === 'send') {
@@ -92,9 +105,9 @@ async function CollectChatStats() {
         chatStats.sessionId = sessionId;
       }
 
-      if (infoLogElement.startsWith(messageSent)) {
-        const sentMessage = JSON.parse(infoLogElement.replace(messageSent, ''));
-        logger.log(`Sent message: ${sentMessage.message}, Size: ${sentMessage.size}`);
+      if (infoLogElement.startsWith(messageSentTitle)) {
+        const sentMessage = JSON.parse(infoLogElement.replace(messageSentTitle, ''));
+        logger.log(`Sent message: [${sentMessage.message}], Size: [${sentMessage.size}]`);
         chatStats.sent.push(sentMessage);
       }
     });
@@ -129,16 +142,39 @@ async function CreateTestReport(testController, page) {
 }
 
 function GenerateTelemetryRecords(page) {
+  let telemetry = [];
+
   if (config.args.mode === 'receive') {
-    return [
-      reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'SenderToReceiver', page.stats.maxSenderToReceiverLag),
-      reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'SenderToPlatform', page.stats.maxSenderToPlatformLag),
-      reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'PlatformToReceiver', page.stats.maxPlatformToReceiverLag),
-      reporter.CreateTelemetryRecord(page, 'Count', 'messaging', 'Received', page.stats.received.length)
-    ];
+    telemetry.push(
+      reporter.CreateTelemetryRecord(page, 'Count', 'messaging', 'Received', page.stats.received.length, null)
+    );
+
+    page.stats.senderToReceiverLags.forEach(lagStat => {
+      telemetry.push(
+        reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'SenderToReceiver', lagStat.lag, lagStat.messageId)
+      );
+    });
+
+    page.stats.senderToPlatformLags.forEach(lagStat => {
+      telemetry.push(
+        reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'SenderToPlatform', lagStat.lag, lagStat.messageId)
+      );
+    });
+
+    page.stats.platformToReceiverLags.forEach(lagStat => {
+      telemetry.push(
+        reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'PlatformToReceiver', lagStat.lag, lagStat.messageId)
+      );
+    });
   } else if (config.args.mode === 'send') {
-    return [reporter.CreateTelemetryRecord(page, 'Count', 'messaging', 'Sent', page.stats.sent.length)];
+    telemetry.push(
+      reporter.CreateTelemetryRecord(page, 'Count', 'messaging', 'Sent', page.stats.sent.length, null)
+    );
   }
+
+  logger.log(`Generated [${telemetry.length}] telemetry records`);
+
+  return telemetry;
 }
 
 export default {

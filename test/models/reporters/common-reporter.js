@@ -386,12 +386,12 @@ module.exports = {
     }
   },
 
-  CreateTelemetryRecord: function(page, metric, resource, valueTitle, value) {
+  CreateTelemetryRecord: function(page, metric, resource, valueTitle, value, streamId) {
     return {
       timestamp: moment().format(config.args.dateFormat),
       tenancy: config.args.applicationId,
       sessionId: page.stats.sessionId === undefined ? null : page.stats.sessionId,
-      streamId: null,
+      streamId: streamId,
       source: config.args.telemetrySource,
       resource: resource,
       kind: 'Room',
