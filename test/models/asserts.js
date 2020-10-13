@@ -591,51 +591,71 @@ module.exports = class Asserts {
     await this.finishTest();
   }
 
-  async assertReceiverChat(stats) {
+  async assertReceiverChat() {
     const chatReceiveProfile = config.chatAssertProfile.receive;
+    const requestedHistoryStart = this.page.stats.requestedHistoryStart;
+    const requestedHistoryEnd = this.page.stats.requestedHistoryEnd;
 
     this.assert(
       'Max sender-to-receiver lag',
-      stats.maxSenderToReceiverLag,
+      this.page.stats.maxSenderToReceiverLag,
       chatReceiveProfile.senderToReceiverLag,
       'lte'
     );
 
     this.assert(
       'Max sender-to-platform lag',
-      stats.maxSenderToPlatformLag,
+      this.page.stats.maxSenderToPlatformLag,
       chatReceiveProfile.senderToPlatformLag,
       'lte'
     );
 
     this.assert(
       'Max platform-to-receiver lag',
-      stats.maxPlatformToReceiverLag,
+      this.page.stats.maxPlatformToReceiverLag,
       chatReceiveProfile.platformToReceiverLag,
       'lte'
     );
 
     this.assert(
       'Standard deviation of sender-to-receiver lag',
-      stats.stdDevSenderToReceiverLag,
+      this.page.stats.stdDevSenderToReceiverLag,
       chatReceiveProfile.stdDevSenderToReceiverLag,
       'lte'
     );
 
     this.assert(
       'Received message count',
-      stats.received.length,
+      this.page.stats.received.length,
       config.args.numMessages,
       'gte'
     );
 
+    requestedHistoryStart.forEach(requestedHistory => {
+      this.assert(
+        `History lag at the start with [${requestedHistory.messageCount}] messages`,
+        requestedHistory.lag,
+        chatReceiveProfile.historyRequestLag,
+        'lte'
+      );
+    });
+
+    requestedHistoryEnd.forEach(requestedHistory => {
+      this.assert(
+        `History lag at the end with [${requestedHistory.messageCount}] messages`,
+        requestedHistory.lag,
+        chatReceiveProfile.historyRequestLag,
+        'lte'
+      );
+    });
+
     await this.finishTest();
   }
 
-  async assertSenderChat(stats) {
+  async assertSenderChat() {
     this.assert(
       'Messages sent',
-      stats.sent.length,
+      this.page.stats.sent.length,
       config.args.numMessages,
       'eql'
     );

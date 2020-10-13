@@ -18,7 +18,13 @@
 
 let roomExpress = null;
 let messageCount = 0;
+let requestHistoryTime = undefined;
+let isLastMessage = false;
 let roomAlias;
+let chatService;
+let historyRequestCount = 0;
+let historyRequestTitle = '';
+let beforeMessageIds = [];
 
 const dateFormat = getUrlParams('dateFormat');
 const applicationId = getUrlParams('applicationId');
@@ -29,6 +35,9 @@ const messageInterval = getUrlParams('messageInterval');
 const numMessages = parseInt(getUrlParams('numMessages'));
 const messageSize = getUrlParams('messageSize');
 const chatAPI = getUrlParams('chatAPI');
+const maxHistoryBatchSize = 128;
+const maxHistoryRequestCount = 3;
+const advisableDelayBeforeGettingChatService = 3000;
 
 document.addEventListener('DOMContentLoaded', () => {
   log(`[Url loaded] ${Date.now()}`);
@@ -84,7 +93,7 @@ function joinRoom(roomAlias) {
   );
 }
 
-async function joinRoomCallback(err, response) {
+function joinRoomCallback(err, response) {
   if (err) {
     errorMsg(`Error: Unable to join the room! [${err}]`);
 
@@ -106,23 +115,25 @@ async function joinRoomCallback(err, response) {
   log('Successfully joined the room');
   log('Getting and starting ChatService');
 
-  let chatService = response.roomService.getChatService();
-  chatService.start();
+  setTimeout(async() => {
+    chatService = response.roomService.getChatService();
+    chatService.start();
 
-  if (mode === 'receive') {
-    startReceivingMessages(chatService);
-  }
-
-  if (mode === 'send') {
-    if (chatAPI === 'ChatService') {
-      startSendingMessages(chatService);
+    if (mode === 'receive') {
+      startReceivingMessages(chatService);
     }
 
-    if (chatAPI === 'REST') {
-      const roomId = await getRoomId();
-      sendRestAPIMessages(roomId);
+    if (mode === 'send') {
+      if (chatAPI === 'ChatService') {
+        startSendingMessages(chatService);
+      }
+
+      if (chatAPI === 'REST') {
+        const roomId = await getRoomId();
+        sendRestAPIMessages(roomId);
+      }
     }
-  }
+  }, advisableDelayBeforeGettingChatService);
 }
 
 function startReceivingMessages(chatService) {
@@ -134,23 +145,30 @@ function startReceivingMessages(chatService) {
     }
   }, {initial: 'notify'});
 
+  historyRequestTitle = '[Chat history start]';
+  getMessageHistory(null, null, true);
+
   chatService.getObservableLastChatMessage().subscribe((message) => {
+    const messageReceived = moment().utc().format(dateFormat);
+
     messageCount++;
 
     const jsonMessage = JSON.stringify({
       messageId: message.messageId,
       serverTimestamp: moment(message.timestamp).utc().format(dateFormat),
-      receivedTimestamp: moment.utc().format(dateFormat),
+      receivedTimestamp: messageReceived,
       body: message.message
     });
 
     if (messageCount <= numMessages) {
       log(`[Message received] ${jsonMessage}`);
-      showReceivedMessages(`Received message [${message.messageId}]/[${jsonMessage.receivedTimestamp}]: ${message.message}\n`);
+      showReceivedMessages(`Received message [${message.messageId}]/[${messageReceived}]: ${message.message}\n`);
     }
 
-    if (messageCount >= numMessages) {
-      endTest();
+    if (messageCount === numMessages) {
+      isLastMessage = true;
+      historyRequestTitle = '[Chat history end]';
+      getMessageHistory(null, null, true);
     }
   });
 }
@@ -229,22 +247,105 @@ function sendRestAPIMessages(roomId) {
   }, messageInterval);
 }
 
-function showSentMessageResult(message) {
-  const sentMessageSize = chat.byteSize(message);
-  log(`[Message Sent] ${JSON.stringify({
-    message: message,
-    size: sentMessageSize
-  })}`);
-  showSentMessages(`Message Size: ${messageSize} | Sent message: ${message}\n`);
+function getMessageHistory(afterMessageId, beforeMessageId, isFirstRequest) {
+  if (isFirstRequest) {
+    historyRequestCount = 0;
+    beforeMessageIds = [];
+  }
+
+  if (historyRequestCount < maxHistoryRequestCount) {
+    requestHistoryTime = moment.utc().format(dateFormat);
+    chatService.getMessages(maxHistoryBatchSize, afterMessageId, beforeMessageId, getMessagesHistoryCallback);
+    log(`Chat history requested: [${requestHistoryTime}]`);
+  }
 }
 
-function endTest(sendingInterval = undefined) {
+function getMessagesHistoryCallback(error, response) {
+  if (error) {
+    showChatHistoryError('Error: Failed to get messages from history', error);
+
+    return;
+  }
+
+  if (response.status !== 'ok') {
+    showChatHistoryError(`Error: Unable to get messages from history, got status [${response.status}]`, response);
+
+    return;
+  }
+
+  if (response.status === 'ok') {
+    if (!response.chatMessages) {
+      showChatHistoryError('Error: There is no array with messages inside message history response!', response);
+
+      return;
+    }
+
+    historyRequestCount += 1;
+
+    if (beforeMessageIds.length !== 0) {
+      beforeMessageIds.forEach(beforeMessageId => {
+        if (beforeMessageId === response.chatMessages[0].messageId) {
+          showChatHistoryError('Error: beforeMessageId matches a beforeMessageId that was gotten in history before!');
+        }
+      });
+    }
+
+    beforeMessageIds.push(response.chatMessages[0].messageId);
+
+    const receivedHistoryTime = moment.utc().format(dateFormat);
+    log(`Chat history received : [${receivedHistoryTime}]`);
+
+    const getHistoryLag = moment(receivedHistoryTime).diff(moment(requestHistoryTime));
+    log(`Chat history lag: ${getHistoryLag}`);
+
+    showMessageHistory(`Received chat history: ${response.chatMessages.length} messages\n `);
+
+    log(`Chat history : ${JSON.stringify(response.chatMessages)}`);
+    log(`${historyRequestTitle} ${JSON.stringify({
+      lag: getHistoryLag,
+      messageCount: response.chatMessages.length,
+      beforeMessageId: response.chatMessages[0].messageId
+    })}`);
+
+    if (response.chatMessages.length === maxHistoryBatchSize) {
+      log(`Will get chat history before message id [${response.chatMessages[0].messageId}]`);
+      getMessageHistory(null, response.chatMessages[0].messageId, false);
+    }
+
+    if (isLastMessage && historyRequestCount === maxHistoryRequestCount) {
+      endTest();
+    }
+  }
+}
+
+function endTest(sendingInterval = '') {
   if (mode === 'send') {
     clearInterval(sendingInterval);
   }
 
   roomExpress.dispose();
   showMessageLimitReach('Message limit reached!');
+}
+
+function membersChangedCallback(members) {
+  if (members.length === 0) {
+    setClientMessage('Waiting for members to join');
+  } else {
+    setClientMessage(`Room contains ${members.length} members`);
+
+    members.forEach(member => {
+      log(`[Session ID] ${member.getSessionId()}`);
+    });
+  }
+}
+
+function showSentMessageResult(message) {
+  const sentMessageSize = chat.byteSize(message);
+  log(`[Message Sent] ${JSON.stringify({
+    message: message,
+    size: sentMessageSize
+  })}`);
+  showSentMessages(`Message Size: ${sentMessageSize} | Sent message: ${message}\n`);
 }
 
 async function getRoomId() {
@@ -273,18 +374,6 @@ async function getRoomId() {
   }
 
   return roomId;
-}
-
-function membersChangedCallback(members) {
-  if (members.length === 0) {
-    setClientMessage('Waiting for members to join');
-  } else {
-    setClientMessage(`Room contains ${members.length} members`);
-
-    members.forEach(member => {
-      log(`[Session ID] ${member.getSessionId()}`);
-    });
-  }
 }
 
 function setClientMessage(message) {
@@ -331,6 +420,15 @@ function showSenderChatError(message) {
   document.getElementById('senderChatError').innerHTML += `<br />${message}`;
 }
 
+function showChatHistoryError(message, response = '') {
+  console.error(`[Acceptance Testing Error] ${message}`, response);
+  document.getElementById('chatHistoryError').innerHTML += `<br />${message}`;
+}
+
 function showMessageLimitReach(message) {
   document.getElementById('messageLimitReach').innerHTML = message;
+}
+
+function showMessageHistory(message) {
+  document.getElementById('receivedMessageHistory').innerText += message;
 }

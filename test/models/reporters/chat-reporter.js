@@ -29,6 +29,8 @@ async function CollectChatStats() {
   const sessionIdTitle = '[Acceptance Testing] [Session ID] ';
   const messageReceivedTitle = '[Acceptance Testing] [Message received] ';
   const messageSentTitle = '[Acceptance Testing] [Message Sent] ';
+  const requestedHistoryStart = '[Acceptance Testing] [Chat history start] ';
+  const requestedHistoryEnd = '[Acceptance Testing] [Chat history end] ';
   const logs = await t.getBrowserConsoleMessages();
   let chatStats = {};
 
@@ -42,7 +44,9 @@ async function CollectChatStats() {
       maxSenderToReceiverLag: undefined,
       maxSenderToPlatformLag: undefined,
       maxPlatformToReceiverLag: undefined,
-      stdDevSenderToReceiverLag: undefined
+      stdDevSenderToReceiverLag: undefined,
+      requestedHistoryStart: [],
+      requestedHistoryEnd: []
     };
 
     logs.info.forEach(infoLogElement => {
@@ -81,6 +85,16 @@ async function CollectChatStats() {
         });
 
         chatStats.received.push(receivedMessage);
+      }
+
+      if (infoLogElement.startsWith(requestedHistoryStart)){
+        const requestedHistory = infoLogElement.replace(requestedHistoryStart, '');
+        chatStats.requestedHistoryStart.push(JSON.parse(requestedHistory));
+      }
+
+      if (infoLogElement.startsWith(requestedHistoryEnd)){
+        const requestedHistory = infoLogElement.replace(requestedHistoryEnd, '');
+        chatStats.requestedHistoryEnd.push(JSON.parse(requestedHistory));
       }
     });
 
@@ -164,6 +178,18 @@ function GenerateTelemetryRecords(page) {
     page.stats.platformToReceiverLags.forEach(lagStat => {
       telemetry.push(
         reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'PlatformToReceiver', lagStat.lag, lagStat.messageId)
+      );
+    });
+
+    page.stats.requestedHistoryStart.forEach(historyRequest => {
+      telemetry.push(
+        reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', `GetHistory`, historyRequest.lag, historyRequest.beforeMessageId)
+      );
+    });
+
+    page.stats.requestedHistoryEnd.forEach(historyRequest => {
+      telemetry.push(
+        reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', `GetHistory`, historyRequest.lag, historyRequest.beforeMessageId)
       );
     });
   } else if (config.args.mode === 'send') {

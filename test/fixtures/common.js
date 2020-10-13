@@ -174,12 +174,14 @@ const monitorRoomChat = async(testController) => {
     const senderChatError = Selector('#senderChatError');
     const messageSentError = Selector('#messageSentError');
     const chatStatusError = Selector('#chatStatusError');
+    const chatHistoryError = Selector('#chatHistoryError');
 
     await testController
       .expect(roomError().innerText).notContains('Error', 'Error: Unable to join the room')
       .expect(senderChatError().innerText).notContains('Error', 'Error: Sender chat is DISABLED')
       .expect(messageSentError().innerText).notContains('Error', 'Error: Failed to send message')
-      .expect(chatStatusError().innerText).notContains('Error', 'Error: Chat is DISABLED');
+      .expect(chatStatusError().innerText).notContains('Error', 'Error: Chat is DISABLED')
+      .expect(chatHistoryError().innerText).notContains('Error', 'Error: Unable to get message history');
 
     const messageLimitElement = Selector(`#messageLimitReach`).innerText;
     if ((await messageLimitElement).includes('Message limit reached!')){

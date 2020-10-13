@@ -29,22 +29,20 @@ global
   );
 
 test(`Monitor room for ${config.args.testRuntime} with multiple members and assert chat quality`, async t => {
-  const statsArray = [];
-
   await t
     .expect(Selector('#roomError').innerText)
     .notContains('Error', 'Error: Unable to join the room!', {timeout: 5 * 1000});
 
-  await common.monitorRoomChat(t, statsArray);
+  await common.monitorRoomChat(t);
 
   page.stats = await reporter.CollectChatStats();
 
   if (config.args.mode === 'send'){
-    await page.asserts.assertSenderChat(page.stats);
+    await page.asserts.assertSenderChat();
   }
 
   if (config.args.mode === 'receive'){
-    await page.asserts.assertReceiverChat(page.stats);
+    await page.asserts.assertReceiverChat();
   }
 
   await page.asserts.reportAssertionResults();

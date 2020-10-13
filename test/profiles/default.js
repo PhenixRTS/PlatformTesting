@@ -93,7 +93,8 @@ const chatProfile = {
     senderToReceiverLag: 'PT0.4S',
     senderToPlatformLag: 'PT0.2S',
     platformToReceiverLag: 'PT0.2S',
-    stdDevSenderToReceiverLag: 'PT0.015S'
+    stdDevSenderToReceiverLag: 'PT0.015S',
+    historyRequestLag: 'PT1S'
   }
 };
 
