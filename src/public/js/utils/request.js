@@ -34,4 +34,23 @@
 
     return await response;
   };
+
+  exports.fetchWithNoAuthorization = async function(method, url, body = null, contentLength = '68') {
+    const requestConf = {
+      method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Content-Length': contentLength
+      }
+    };
+
+    if (body !== null) {
+      requestConf.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(url, requestConf);
+
+    return await response;
+  };
 })(typeof exports === 'undefined' ? this['request'] = {} : exports);

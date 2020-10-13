@@ -15,12 +15,13 @@
  */
 
 /* eslint-disable no-unused-vars */
-/* global MRecordRTC */
+/* global MRecordRTC, request */
 
 const sdk = window['phenix-web-sdk'];
 
 let adminApiProxyClient;
 let channelExpress;
+let channelId;
 let didValidateThatThereIsNoOtherStream = false;
 
 function log(msg) {
@@ -157,6 +158,26 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
   channelExpress = new sdk.express.ChannelExpress(channelExpressOptions);
   log(`Created channel express with options: ${JSON.stringify(channelExpressOptions)}`);
 
+  var publishOptions = {
+    capabilities: [
+      'hd',
+      'multi-bitrate'
+    ],
+    channel: {
+      alias: channelAlias,
+      name: channelName
+    },
+    streamToken: edgeToken,
+    userMediaStream: stream
+  };
+
+  const successCallback = () => {
+    log(`Successfully validated that it is safe to publish`);
+    channelExpress.publishToChannel(publishOptions, publishCallback);
+
+    return channelExpress;
+  };
+
   if (createChannel) {
     await channelExpress.createChannel({
       channel: {
@@ -177,66 +198,33 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
       } else if (response.status !== 'ok') {
         showPublisherMessage(`Got response status [${response.status}] in createChannel callback`);
       }
+
+      channelId = response.channel.getChannelId();
+
+      return validateThatThereIsNoOtherPublishers(channelAlias, backendUri, successCallback);
     });
+  } else {
+    return await validateThatThereIsNoOtherPublishers(channelAlias, backendUri, successCallback);
   }
-
-  var publishOptions = {
-    capabilities: [
-      'hd',
-      'multi-bitrate'
-    ],
-    channel: {
-      alias: channelAlias,
-      name: channelName
-    },
-    streamToken: edgeToken,
-    userMediaStream: stream
-  };
-
-  const successCallback = () => {
-    log(`Successfully validated that no other stream is playing`);
-    channelExpress.publishToChannel(publishOptions, publishCallback);
-
-    return channelExpress;
-  };
-
-  return await validateThatNoOtherStreamIsPlaying(channelAlias, successCallback);
 }
 
-async function validateThatNoOtherStreamIsPlaying(channelAlias, successCallback) {
-  channelExpress.joinChannel({alias: channelAlias}, (error, response) => {
-    if (error) {
-      showPublisherErrorMessage(`Error: Got error in join channel callback (while trying to validate that no other stream is playing before publishing): ${error}`);
-    }
+async function validateThatThereIsNoOtherPublishers(channelAlias, backendUri, successCallback) {
+  const urlEncodedChannelId = encodeURIComponent(channelId);
+  const requestUrl = `${backendUri}/channel/${urlEncodedChannelId}/publishers/count`;
 
-    if (response.status === 'room-not-found') {
-      log(`Room was not found with channel alias [${channelAlias}] while validating that no other stream is playing before publishing`);
-      successCallback();
-    } else if (response.status !== 'ok') {
-      showPublisherErrorMessage(`Error: Got response status [${response.status}] (while trying to validate that no other stream is playing before publishing)`);
-    }
-  }, (error, response) => {
-    if (didValidateThatThereIsNoOtherStream) {
-      log('Join channel callback has been triggered again. The tool already did validate that there is no other stream - skipping it this time');
-
-      return;
-    }
-
-    if (error) {
-      showPublisherErrorMessage(`Error: Got error in subscriber callback (while trying to validate that no other stream is playing before publishing): ${error}`);
-
-      return;
-    }
-
-    if (response.status !== 'no-stream-playing') {
-      showPublisherErrorMessage(`Error: Will not publish - looks like there is other stream already playing! Expected status [no-stream-playing] but got [${response.status}] instead`);
-
-      return;
-    }
-
-    didValidateThatThereIsNoOtherStream = true;
-    log('Validation succesful - no other stream is playing before publishing');
-    successCallback();
+  return new Promise(resolve => {
+    request.fetchWithNoAuthorization('GET', requestUrl)
+      .then(response => response.json())
+      .then(result => {
+        if (Number.isInteger(result) && result === 0) {
+          didValidateThatThereIsNoOtherStream = true;
+          log('Validation successful - no other publisher in the room before publishing');
+          successCallback();
+          resolve(result);
+        } else {
+          showPublisherErrorMessage(`Error: Got response status [${result.status}] while trying to validate that there is no other publishers in the room (channel id [${channelId}])`);
+        }
+      });
   });
 }
 
