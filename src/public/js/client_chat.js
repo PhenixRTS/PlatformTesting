@@ -165,7 +165,7 @@ function startReceivingMessages(chatService) {
       showReceivedMessages(`Received message [${message.messageId}]/[${messageReceived}]: ${message.message}\n`);
     }
 
-    if (messageCount === numMessages) {
+    if (messageCount >= numMessages) {
       isLastMessage = true;
       historyRequestTitle = '[Chat history end]';
       getMessageHistory(null, null, true);
