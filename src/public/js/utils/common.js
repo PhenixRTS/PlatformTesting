@@ -200,15 +200,16 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
       }
 
       channelId = response.channel.getChannelId();
+      log(`[Channel ID] ${channelId}`);
 
-      return validateThatThereIsNoOtherPublishers(channelAlias, backendUri, successCallback);
+      return validateThatThereIsNoOtherPublishers(backendUri, successCallback);
     });
   } else {
-    return await validateThatThereIsNoOtherPublishers(channelAlias, backendUri, successCallback);
+    return await validateThatThereIsNoOtherPublishers(backendUri, successCallback);
   }
 }
 
-async function validateThatThereIsNoOtherPublishers(channelAlias, backendUri, successCallback) {
+async function validateThatThereIsNoOtherPublishers(backendUri, successCallback) {
   const urlEncodedChannelId = encodeURIComponent(channelId);
   const requestUrl = `${backendUri}/channel/${urlEncodedChannelId}/publishers/count`;
 

@@ -19,7 +19,9 @@ import Logger from '../../../scripts/logger.js';
 import reporter from './common-reporter.js';
 import math from '../math.js';
 import config from '../../../config.js';
+import moment from 'moment';
 
+const packageJSON = require('../../../package.json');
 const logger = new Logger('Quality Test');
 
 let pageLoaded = Date.now();
@@ -31,6 +33,7 @@ async function CollectMediaStreamStats() {
   const urlLoadedTitle = '[Acceptance Testing] [Url loaded] ';
   const streamReceivedTitle = '[Acceptance Testing] [Stream received] ';
   const streamIdTitle = '[Acceptance Testing] [Stream ID] ';
+  const channelIdTitle = '[Acceptance Testing] [Channel ID] ';
   const sessionIdTitle = '[Acceptance Testing] [Session ID] ';
   const logs = await t.getBrowserConsoleMessages();
 
@@ -38,6 +41,7 @@ async function CollectMediaStreamStats() {
     loadedAt: undefined,
     streamId: undefined,
     sessionId: undefined,
+    channelId: undefined,
     streamReceivedAt: undefined,
     audio: {},
     video: {}
@@ -67,6 +71,14 @@ async function CollectMediaStreamStats() {
       const sessionId = infoLogElement.replace(sessionIdTitle, '');
       logger.log(`For session [${sessionId}]`);
       streamStats.sessionId = sessionId;
+
+      return;
+    }
+
+    if (!streamStats.channelId && infoLogElement.startsWith(channelIdTitle)) {
+      const channelId = infoLogElement.replace(channelIdTitle, '');
+      logger.log(`For channel with id [${channelId}]`);
+      streamStats.channelId = channelId;
 
       return;
     }
@@ -374,10 +386,34 @@ async function CreateTestReport(testController, page) {
   return reporter.CreateTestReport(testController, page, header, content, additionalInfo);
 }
 
-// eslint-disable-next-line no-unused-vars
+function CreateTelemetryRecord(page) {
+  return {
+    timestamp: moment().format(config.args.dateFormat),
+    tenancy: page.stats.default ? page.stats.default.channelId : null,
+    sessionId: page.stats.default ? page.stats.default.sessionId : null,
+    streamId: page.stats.default ? page.stats.default.streamId : null,
+    source: config.args.telemetrySource,
+    resource: 'quality',
+    kind: 'Channel/Room',
+    metric: page.testFailed ? 'Unhealthy' : 'Healthy',
+    elapsed: moment.duration(config.args.testRuntimeMs).asSeconds(),
+    fullQualifiedName: `${config.backendUri}/channel/#${config.channelAlias}`,
+    tool: 'PlatformTesting',
+    toolVersion: packageJSON.version,
+    runtime: new Date() - config.args.startTimestamp
+  };
+}
+
 function GenerateTelemetryRecords(page) {
-  // TODO: - Implement this
-  return [];
+  logger.log('Generating telemetry records...');
+
+  let telemetry = [
+    CreateTelemetryRecord(page)
+  ];
+
+  logger.log(`Generated [${telemetry.length}] telemetry records`);
+
+  return telemetry;
 }
 
 export default {

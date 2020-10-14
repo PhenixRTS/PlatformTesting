@@ -20,6 +20,7 @@ import moment from 'moment';
 import config from '../../../config';
 import reporter from './common-reporter';
 
+const packageJSON = require('../../../package.json');
 const logger = new Logger('Chat Test');
 const math = require('mathjs');
 
@@ -155,46 +156,67 @@ async function CreateTestReport(testController, page) {
   return reporter.CreateTestReport(testController, page, header, content, additionalInfo);
 }
 
+function CreateTelemetryRecord(page, metric, resource, valueTitle, value, streamId) {
+  return {
+    timestamp: moment().format(config.args.dateFormat),
+    sessionId: page.stats.sessionId === undefined ? null : page.stats.sessionId,
+    streamId: streamId,
+    source: config.args.telemetrySource,
+    resource: resource,
+    kind: 'Room',
+    metric: metric,
+    value: {
+      int64: value,
+      string: valueTitle
+    },
+    elapsed: new Date() - config.args.startTimestamp,
+    fullQualifiedName: null,
+    tool: 'PlatformTesting',
+    toolVersion: packageJSON.version,
+    runtime: moment.duration(config.args.testRuntimeMs).asSeconds()
+  };
+}
+
 function GenerateTelemetryRecords(page) {
   let telemetry = [];
 
   if (config.args.mode === 'receive') {
     telemetry.push(
-      reporter.CreateTelemetryRecord(page, 'Count', 'messaging', 'Received', page.stats.received.length, null)
+      CreateTelemetryRecord(page, 'Count', 'messaging', 'Received', page.stats.received.length, null)
     );
 
     page.stats.senderToReceiverLags.forEach(lagStat => {
       telemetry.push(
-        reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'SenderToReceiver', lagStat.lag, lagStat.messageId)
+        CreateTelemetryRecord(page, 'Lag', 'messaging', 'SenderToReceiver', lagStat.lag, lagStat.messageId)
       );
     });
 
     page.stats.senderToPlatformLags.forEach(lagStat => {
       telemetry.push(
-        reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'SenderToPlatform', lagStat.lag, lagStat.messageId)
+        CreateTelemetryRecord(page, 'Lag', 'messaging', 'SenderToPlatform', lagStat.lag, lagStat.messageId)
       );
     });
 
     page.stats.platformToReceiverLags.forEach(lagStat => {
       telemetry.push(
-        reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', 'PlatformToReceiver', lagStat.lag, lagStat.messageId)
+        CreateTelemetryRecord(page, 'Lag', 'messaging', 'PlatformToReceiver', lagStat.lag, lagStat.messageId)
       );
     });
 
     page.stats.requestedHistoryStart.forEach(historyRequest => {
       telemetry.push(
-        reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', `GetHistory`, historyRequest.lag, historyRequest.beforeMessageId)
+        CreateTelemetryRecord(page, 'Lag', 'messaging', `GetHistory`, historyRequest.lag, historyRequest.beforeMessageId)
       );
     });
 
     page.stats.requestedHistoryEnd.forEach(historyRequest => {
       telemetry.push(
-        reporter.CreateTelemetryRecord(page, 'Lag', 'messaging', `GetHistory`, historyRequest.lag, historyRequest.beforeMessageId)
+        CreateTelemetryRecord(page, 'Lag', 'messaging', `GetHistory`, historyRequest.lag, historyRequest.beforeMessageId)
       );
     });
   } else if (config.args.mode === 'send') {
     telemetry.push(
-      reporter.CreateTelemetryRecord(page, 'Count', 'messaging', 'Sent', page.stats.sent.length, null)
+      CreateTelemetryRecord(page, 'Count', 'messaging', 'Sent', page.stats.sent.length, null)
     );
   }
 

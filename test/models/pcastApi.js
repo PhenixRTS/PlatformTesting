@@ -100,6 +100,8 @@ async function terminateStream(streamId, reason) {
 }
 
 async function postToTelemetry(records) {
+  logger.log('Posting telemetry records...');
+
   return new Promise(resolve => {
     const uri = `${config.args.telemetryURI}/telemetry/metrics`;
     const requestConf = {

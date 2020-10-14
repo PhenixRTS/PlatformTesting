@@ -20,8 +20,6 @@ const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
 const XMLWriter = require('xml-writer');
-
-const packageJSON = require('../../../package.json');
 const persistence = require('../persistence.js');
 const shared = require('../../../shared/shared');
 const config = require('../../../config.js');
@@ -384,28 +382,6 @@ module.exports = {
 
       xmlContent.endElement();
     }
-  },
-
-  CreateTelemetryRecord: function(page, metric, resource, valueTitle, value, streamId) {
-    return {
-      timestamp: moment().format(config.args.dateFormat),
-      tenancy: config.args.applicationId,
-      sessionId: page.stats.sessionId === undefined ? null : page.stats.sessionId,
-      streamId: streamId,
-      source: config.args.telemetrySource,
-      resource: resource,
-      kind: 'Room',
-      metric: metric,
-      value: {
-        int64: value,
-        string: valueTitle
-      },
-      elapsed: new Date() - config.args.startTimestamp,
-      fullQualifiedName: null,
-      tool: 'PlatformTesting',
-      toolVersion: packageJSON.version,
-      runtime: moment.duration(config.args.testRuntimeMs).asSeconds()
-    };
   },
 
   ExtractFramerate: function(type, currentValue, logElement) {

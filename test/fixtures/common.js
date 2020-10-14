@@ -326,6 +326,7 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   }
 
   const status = t.ctx.testFailed ? 'FAIL' : 'PASS';
+  page.testFailed = t.ctx.testFailed;
   const reportFormat = config.args.reportFormat === 'json' ? 'json' : 'txt';
   report += await reporter.CreateTestReport(t, page, createdChannel);
 
@@ -343,7 +344,6 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   }
 
   if (submitTelemetry === true) {
-    logger.log('Generating and submitting telemetry records.');
     let records = reporter.GenerateTelemetryRecords(page);
     await pcastApi.postToTelemetry(records);
   } else {
