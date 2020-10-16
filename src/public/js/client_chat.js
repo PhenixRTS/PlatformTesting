@@ -130,7 +130,7 @@ function joinRoomCallback(err, response) {
 
       if (chatAPI === 'REST') {
         const roomId = await getRoomId();
-        sendRestAPIMessages(roomId);
+        await sendRestAPIMessages(roomId);
       }
     }
   }, advisableDelayBeforeGettingChatService);
@@ -221,8 +221,8 @@ function startSendingMessages(chatService) {
   }(), messageInterval);
 }
 
-function sendRestAPIMessages(roomId) {
-  const sendingInterval = setInterval(async() => {
+async function sendRestAPIMessages(roomId) {
+  const sendingInterval = setInterval(await async function sendMessage() {
     if (messageCount <= numMessages) {
       const messageObject = chat.createMessageToSend(messageSize, moment().format(dateFormat));
       messageObject.sentTimestamp = moment.utc().format(dateFormat);
@@ -244,7 +244,9 @@ function sendRestAPIMessages(roomId) {
     if (messageCount >= numMessages) {
       endTest(sendingInterval);
     }
-  }, messageInterval);
+
+    return sendMessage;
+  }(), messageInterval);
 }
 
 function getMessageHistory(afterMessageId, beforeMessageId, isFirstRequest) {
