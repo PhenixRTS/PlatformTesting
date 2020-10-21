@@ -41,4 +41,28 @@ describe('When using the shared utility', function() {
       assert.deepStrictEqual(testToolShared.getMemberSessionIDFromID(fakeMemberId), null);
     });
   });
+
+  describe('Given an existing TestCafe reporter type', function() {
+    it('it returns xunit reporter file extension', function() {
+      assert.deepStrictEqual(testToolShared.getFileExtensionBasedOnTestcafeReporterType('xunit'), 'xml');
+    });
+
+    it('it returns json reporter file extension', function() {
+      assert.deepStrictEqual(testToolShared.getFileExtensionBasedOnTestcafeReporterType('json'), 'json');
+    });
+
+    it('it returns txt file extension for other reporter types', function() {
+      assert.deepStrictEqual(testToolShared.getFileExtensionBasedOnTestcafeReporterType('custom'), 'txt');
+    });
+  });
+
+  describe('Given a full path to file', function() {
+    it('it returns only filename', function() {
+      assert.deepStrictEqual(testToolShared.getFileNameFromTestsConfigArgument('test/fixtures/channel-quality-test.js'), 'channel-quality-test');
+    });
+
+    it('it returns only filename', function() {
+      assert.deepStrictEqual(testToolShared.getFileNameFromTestsConfigArgument('./shared/shared.js'), 'shared');
+    });
+  });
 });
