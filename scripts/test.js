@@ -28,7 +28,7 @@ const {getFileExtensionBasedOnTestcafeReporterType, getFileNameFromTestsConfigAr
 const {byteSize} = require('../src/public/js/chat/publisher');
 const {parseColor} = require('../test/models/format.js');
 const {prepareProfiles} = require('../test/models/profiles.js');
-const {exitWithErrorMessage, logWarning} = require('../test/models/console-messaging.js');
+const {exitWithErrorMessage} = require('../test/models/console-messaging.js');
 const {reportsPath} = config;
 const TokenBuilder = require('phenix-edge-auth');
 const argv = require('yargs')
@@ -424,7 +424,7 @@ function validateTestTypeArguments() {
       exitWithErrorMessage(`Error: --roomAlias is required for room chat test`);
     }
 
-    if (argv.mode === '' || argv.mode !== 'send' && argv.mode !== 'receive'){
+    if (argv.mode === '' || argv.mode !== 'send' && argv.mode !== 'receive') {
       exitWithErrorMessage(`Error: --mode=send or --mode=receive is required for room chat test`);
     }
 
@@ -439,14 +439,20 @@ function validateTestTypeArguments() {
 }
 
 function validateMessageSizeArgument() {
+  const maxSize = 1024;
   const minSize = byteSize(JSON.stringify({
     sentTimestamp: moment().format(argv.dateFormat),
     payload: ''
   }));
 
-  if (argv.messageSize < minSize){
-    console.error(logWarning(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}] instead.`));
-    argv.messageSize = minSize;
+  if (argv.messageSize < minSize) {
+    exitWithErrorMessage(`Error: --messageSize [${argv.messageSize}] is less than minSize [${minSize}].`);
+
+    return;
+  }
+
+  if (argv.messageSize > maxSize) {
+    exitWithErrorMessage(`Error: --messageSize [${argv.messageSize}] is greater than maxSize [${maxSize}].`);
 
     return;
   }
@@ -456,20 +462,20 @@ function validateMessageSizeArgument() {
     const minGivenValue = parseInt(messageByteSizeValues[0]);
     const maxGivenValue = parseInt(messageByteSizeValues[1]);
 
-    if (minGivenValue > maxGivenValue){
-      exitWithErrorMessage(`Error: --messageSize range [${argv.messageSize}] min value is bigger then max value.`);
-    }
-
-    if (minGivenValue < minSize && maxGivenValue < minSize) {
-      console.error(logWarning(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}-${minSize}] instead.`));
-      argv.messageSize = minSize;
+    if (minGivenValue > maxGivenValue) {
+      exitWithErrorMessage(`Error: --messageSize range [${argv.messageSize}] min value is greater then max value.`);
 
       return;
     }
 
-    if (minGivenValue < minSize && maxGivenValue > minSize) {
-      console.error(logWarning(`Warning: --messageSize [${argv.messageSize}] is less than minSize [${minSize}]. Using --messageSize [${minSize}-${maxGivenValue}] instead.`));
-      argv.messageSize = `${minSize}-${maxGivenValue}`;
+    if (minGivenValue < minSize || maxGivenValue < minSize){
+      exitWithErrorMessage(`Error: --messageSize range [${argv.messageSize}] includes numbers under allowed minSize [${minSize}].`);
+
+      return;
+    }
+
+    if (minGivenValue > maxSize || maxGivenValue > maxSize) {
+      exitWithErrorMessage(`Error: --messageSize range [${argv.messageSize}] includes numbers over allowed maxSize [${maxSize}].`);
 
       return;
     }

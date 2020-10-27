@@ -45,12 +45,12 @@ describe('When using the logger utility', function() {
       consoleError.restore();
     });
 
-    it('it logs no normal message to standard output', function() {
+    it('it logs no normal message to console.log', function() {
       testToolLogger.log(msg);
       assert(!consoleLog.calledWith(`[${testToolLogger.format(new Date())}] [${loggerPrefix}] ${msg}`));
     });
 
-    it('it logs error message to standard err', function() {
+    it('it logs error message to console.error', function() {
       testToolLogger.error(msg);
       assert(consoleError.calledWith(`[${testToolLogger.format(new Date())}] [${loggerPrefix} ERROR] ${msg}\n`));
     });
@@ -78,12 +78,12 @@ describe('When using the logger utility', function() {
       consoleError.restore();
     });
 
-    it('it logs normal message to standard output', function() {
+    it('it logs normal message to console.log', function() {
       testToolLogger.log(msg);
       assert(consoleLog.calledWith(`[${testToolLogger.format(new Date())}] [${loggerPrefix}] ${msg}`));
     });
 
-    it('it logs error message to standard err', function() {
+    it('it logs error message to console.error', function() {
       testToolLogger.error(msg);
       assert(consoleError.calledWith(`[${testToolLogger.format(new Date())}] [${loggerPrefix} ERROR] ${msg}\n`));
     });
