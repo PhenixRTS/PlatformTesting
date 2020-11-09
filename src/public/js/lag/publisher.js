@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherErrorMessage, showPublisherMessage, subscribe, stopPublisher, error */
+/* global log, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherErrorMessage, showPublisherMessage, subscribe, stopPublisher, error, shouldLogPublisherStats */
 
 var canvasColorArr = ['#ffff00', '#009900', '#ff0000', '#0000ff', '#000000'];
 var nextCanvasColor = canvasColorArr[0];
@@ -156,11 +156,14 @@ function updateCanvasColor() {
 
     var imgData = publisherCanvasCtx.getImageData(10, 10, 1, 1).data;
 
-    log(
-      `[Publisher Video] {"timestamp": ${Date.now()}, "color": {"r": ${
-        imgData[0]
-      }, "g": ${imgData[1]}, "b": ${imgData[2]}}}`
-    );
+    if (shouldLogPublisherStats) {
+      log(
+        `[Publisher Video] {"timestamp": ${Date.now()}, "color": {"r": ${
+          imgData[0]
+        }, "g": ${imgData[1]}, "b": ${imgData[2]}}}`
+      );
+    }
+
     setNextRandomCanvasColor();
   }, mediaChangeInterval);
 }
@@ -172,11 +175,14 @@ function changeAudioTone() {
       audioCtx.currentTime
     );
 
-    log(
-      `[Publisher Audio] {"timestamp": ${Date.now()}, "frequency": ${
-        audioFrequencies[nextFrequencyIndex]
-      }}`
-    );
+    if (shouldLogPublisherStats) {
+      log(
+        `[Publisher Audio] {"timestamp": ${Date.now()}, "frequency": ${
+          audioFrequencies[nextFrequencyIndex]
+        }}`
+      );
+    }
+
     setNextAudioFrequencyIndex();
   }, mediaChangeInterval);
 }

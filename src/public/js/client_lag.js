@@ -50,6 +50,9 @@ var audioFFTSize = 512;
 
 var colorListenInterval = 10;
 var mediaListenInterval = 60;
+
+var shouldLogPublisherStats = false; // eslint-disable-line no-unused-vars
+
 const timestampDecodeInterval = 1000;
 
 document.addEventListener('DOMContentLoaded', async() => {
@@ -245,6 +248,7 @@ function subscriberCallback(receivedError, response) {
   prepareAudioAnalyzer(subscriberStream.Zo);
   startFpsStatsLogging(subscriberStream, getStatsCallback);
   drawAudioVisualisations();
+  shouldLogPublisherStats = true;
 }
 
 function getStatsCallback(stats) {
