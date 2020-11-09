@@ -213,9 +213,7 @@ function subscriberCallback(receivedError, response) {
 
     response.renderer.on('autoMuted', () => {
       log(`[${Date.now()}] Stream was autoMuted`);
-
       subscriberVideoEl.muted = false;
-      subscriberVideoEl.play();
     });
 
     response.renderer.on('failedToPlay', reason => {

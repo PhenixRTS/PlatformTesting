@@ -135,12 +135,12 @@ function subscriberCallback(receivedError, response) {
     log(`[Stream ID] ${response.renderer.ji}`);
     log(`[Session ID] ${response.renderer.cr.Cr}`);
 
-    document.getElementById('subscriberVideoContainer').muted = false;
+    const subscriberVideoEl = document.getElementById('subscriberVideoContainer');
+    subscriberVideoEl.muted = false;
 
     response.renderer.on('autoMuted', () => {
       log(`[${Date.now()}] Stream was autoMuted`);
-      document.getElementById('subscriberVideoContainer').muted = false;
-      document.getElementById('subscriberVideoContainer').play();
+      subscriberVideoEl.muted = false;
     });
 
     response.renderer.on('failedToPlay', reason => {
