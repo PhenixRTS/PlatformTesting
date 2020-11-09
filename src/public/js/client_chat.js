@@ -257,6 +257,7 @@ function getMessageHistory(afterMessageId, beforeMessageId, isFirstRequest) {
 
   if (historyRequestCount < maxHistoryRequestCount) {
     requestHistoryTime = moment.utc().format(dateFormat);
+    historyRequestCount += 1;
     chatService.getMessages(maxHistoryBatchSize, afterMessageId, beforeMessageId, getMessagesHistoryCallback);
     log(`Chat history requested: [${requestHistoryTime}]`);
   }
@@ -281,8 +282,6 @@ function getMessagesHistoryCallback(error, response) {
 
       return;
     }
-
-    historyRequestCount += 1;
 
     if (beforeMessageIds.length !== 0) {
       beforeMessageIds.forEach(beforeMessageId => {
