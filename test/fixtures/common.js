@@ -344,7 +344,7 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   }
 
   if (submitTelemetry === true) {
-    let records = reporter.GenerateTelemetryRecords(page);
+    let records = reporter.GenerateTelemetryRecords(page, t.ctx.assertionResults);
     await pcastApi.postToTelemetry(records);
   } else {
     logger.log('Skipping telemetry.');

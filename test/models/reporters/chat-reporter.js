@@ -169,7 +169,7 @@ function CreateTelemetryRecord(page, metric, resource, valueTitle, value, stream
       int64: value,
       string: valueTitle
     },
-    elapsed: new Date() - config.args.startTimestamp,
+    elapsed: moment.duration(new Date() - config.args.startTimestamp).asMilliseconds(),
     fullQualifiedName: null,
     tool: 'PlatformTesting',
     toolVersion: packageJSON.version,

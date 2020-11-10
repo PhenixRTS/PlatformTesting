@@ -21,6 +21,7 @@ import math from '../math.js';
 import config from '../../../config.js';
 import moment from 'moment';
 
+const _ = require('lodash');
 const packageJSON = require('../../../package.json');
 const logger = new Logger('Quality Test');
 
@@ -35,10 +36,12 @@ async function CollectMediaStreamStats() {
   const streamIdTitle = '[Acceptance Testing] [Stream ID] ';
   const channelIdTitle = '[Acceptance Testing] [Channel ID] ';
   const sessionIdTitle = '[Acceptance Testing] [Session ID] ';
+  const channelTypeTitle = '[Acceptance Testing] [Channel Type] ';
   const logs = await t.getBrowserConsoleMessages();
 
   const streamStats = {
     loadedAt: undefined,
+    channelType: undefined,
     streamId: undefined,
     sessionId: undefined,
     channelId: undefined,
@@ -79,6 +82,14 @@ async function CollectMediaStreamStats() {
       const channelId = infoLogElement.replace(channelIdTitle, '');
       logger.log(`For channel with id [${channelId}]`);
       streamStats.channelId = channelId;
+
+      return;
+    }
+
+    if (!streamStats.channelType && infoLogElement.startsWith(channelTypeTitle)) {
+      const channelType = infoLogElement.replace(channelTypeTitle, '');
+      logger.log(`For channel type [${channelType}]`);
+      streamStats.channelType = channelType;
 
       return;
     }
@@ -386,30 +397,51 @@ async function CreateTestReport(testController, page) {
   return reporter.CreateTestReport(testController, page, header, content, additionalInfo);
 }
 
-function CreateTelemetryRecord(page) {
+function CreateTelemetryRecord(page, timeNow, metric, floatValue) {
   return {
     timestamp: moment().format(config.args.dateFormat),
-    tenancy: page.stats.default ? page.stats.default.channelId : null,
+    tenancy: page.stats.channelId,
     sessionId: page.stats.default ? page.stats.default.sessionId : null,
     streamId: page.stats.default ? page.stats.default.streamId : null,
     source: config.args.telemetrySource,
     resource: 'quality',
-    kind: 'Channel/Room',
-    metric: page.testFailed ? 'Unhealthy' : 'Healthy',
-    elapsed: moment.duration(config.args.testRuntimeMs).asSeconds(),
+    kind: page.stats.default ? page.stats.default.channelType : null,
+    metric: metric,
+    value: {
+      float: floatValue,
+      string: page.stats.default ? page.stats.default.channelId : null
+    },
+    elapsed: moment.duration(config.args.testRuntimeMs).asMilliseconds(),
     fullQualifiedName: `${config.backendUri}/channel/#${config.channelAlias}`,
     tool: 'PlatformTesting',
     toolVersion: packageJSON.version,
-    runtime: new Date() - config.args.startTimestamp
+    runtime: moment.duration(timeNow - config.args.startTimestamp).asSeconds()
   };
 }
 
-function GenerateTelemetryRecords(page) {
+function GenerateTelemetryRecords(page, assertions) {
   logger.log('Generating telemetry records...');
 
-  let telemetry = [
-    CreateTelemetryRecord(page)
-  ];
+  const timeNow = new Date();
+  let telemetry = [];
+
+  if (page.stats.default === undefined) {
+    // Case no stream/publisher
+    telemetry.push(CreateTelemetryRecord(page, timeNow, 'Downtime', null));
+    telemetry.push(CreateTelemetryRecord(page, timeNow, 'Healthy', null));
+  } else if (_.isNaN(page.stats.default.meanVideoStats.framerateMean)) {
+    // Case no video
+    telemetry.push(CreateTelemetryRecord(page, timeNow, 'Downtime', null));
+    telemetry.push(CreateTelemetryRecord(page, timeNow, 'Healthy', null));
+  } else if (assertions.default.failed.length === 0) {
+    telemetry.push(CreateTelemetryRecord(page, timeNow, 'Uptime', null));
+    telemetry.push(CreateTelemetryRecord(page, timeNow, 'Healthy', null));
+  } else if (assertions.default.passed.length >= 0) {
+    telemetry.push(CreateTelemetryRecord(page, timeNow, 'Uptime', null));
+
+    const percentageOfPassingAssertions = assertions.default.passed.length / (assertions.default.passed.length + assertions.default.failed.length);
+    telemetry.push(CreateTelemetryRecord(page, timeNow, 'Unhealthy', percentageOfPassingAssertions));
+  }
 
   logger.log(`Generated [${telemetry.length}] telemetry records`);
 

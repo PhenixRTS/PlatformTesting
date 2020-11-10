@@ -114,6 +114,7 @@ function joinRoomCallback(err, response) {
 
   log('Successfully joined the room');
   log('Getting and starting ChatService');
+  log(`[Channel Type] Room`);
 
   setTimeout(async() => {
     chatService = response.roomService.getChatService();

@@ -134,6 +134,7 @@ function subscriberCallback(receivedError, response) {
     log(`[${Date.now()}] Stream renderer received`);
     log(`[Stream ID] ${response.renderer.ji}`);
     log(`[Session ID] ${response.renderer.cr.Cr}`);
+    log(`[Channel Type] Channel`);
 
     const subscriberVideoEl = document.getElementById('subscriberVideoContainer');
     subscriberVideoEl.muted = false;

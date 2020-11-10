@@ -141,6 +141,7 @@ function membersChangedCallback(members) {
             log(`[Stream received] [memberID:${memberID}] ${Date.now()}`);
             log(`[Stream ID] ${streamId}`);
             log(`[Session ID] ${sessionID}`);
+            log(`[Channel Type] Room`);
             streams[memberID] = mediaStream;
           } else if (failIfMemberHasNoStream) {
             const msg = `Error: [${screenName}] (session ID: [${sessionID}]) has no media stream!`;

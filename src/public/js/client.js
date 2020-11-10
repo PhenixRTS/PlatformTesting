@@ -39,6 +39,8 @@ function joinChannelCallback(err, response) {
   }
 
   if (response.status === 'ok') {
+    log(`[Channel Type] Channel`);
+
     if (response.channelService) {
       log('Successfully joined the channel');
     } else {
