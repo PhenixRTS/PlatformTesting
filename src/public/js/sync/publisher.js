@@ -23,8 +23,10 @@ const oneUnit = 16;
 const dotRadius = oneUnit / 2;
 const canvasHeight = 512;
 const canvasWidth = 512;
-const beepFrequency = 200;
+const beepFrequencyOne = 440;
+const beepFrequencyTwo = 880;
 const beepDuration = 1000 / fps;
+const audioMode = getUrlParams('audioMode');
 
 var publisherCanvas;
 var publisherCanvasCtx;
@@ -48,6 +50,7 @@ var currentDotPosX = canvasWidth / 2;
 var currentDotPosY = dotRadius;
 var moveRight = false;
 var moveDown = false;
+var leftSpeaker = true;
 
 const initPublisher = () => {
   publisherVideoEl = document.getElementById('publisherVideoContainer');
@@ -77,6 +80,11 @@ const initPublisher = () => {
   testMediaStream.addTrack(audioTrack);
 
   publisherVideoEl.srcObject = testMediaStream;
+
+  let publishedAudioTrack = testMediaStream.getAudioTracks()[0];
+  log(`Published media stream audio tracks count [${testMediaStream.getAudioTracks().length}]`);
+  log(`Published media stream audio settings [${JSON.stringify(publishedAudioTrack.getSettings())}]`);
+  log(`Published media stream audio track constraints [${JSON.stringify(publishedAudioTrack.getConstraints())}]`);
 
   drawCanvas();
   move();
@@ -294,12 +302,24 @@ function move() {
 
 function playBeep() {
   oscillator = audioCtx.createOscillator();
-  oscillator.frequency.value = beepFrequency;
+  oscillator.frequency.value = leftSpeaker ? beepFrequencyOne : beepFrequencyTwo;
   oscillator.type = 'square';
-  oscillator.connect(streamDestination);
+
+  var panNode = audioCtx.createStereoPanner();
+
+  if (audioMode === 'stereo') {
+    panNode.pan.value = leftSpeaker ? -1 : 1;
+  } else {
+    panNode.pan.value = 0;
+  }
+
+  panNode.connect(streamDestination);
+
+  oscillator.connect(panNode);
   oscillator.start(audioCtx.currentTime);
 
   setTimeout(() => {
     oscillator.stop(audioCtx.currentTime);
+    leftSpeaker = !leftSpeaker;
   }, beepDuration);
 }
