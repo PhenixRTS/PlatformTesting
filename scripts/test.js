@@ -86,7 +86,6 @@ const argv = require('yargs')
   .describe('chatAPI', 'Send message using chosen API [REST, ChatService]')
   .describe('telemetryURI', 'Uri where to submit telemetry records')
   .describe('telemetrySource', 'Source of telemetry')
-  .describe('audioMode', 'Mode of published audio in sync and lag tests [mono, stereo]')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -140,8 +139,7 @@ const argv = require('yargs')
     messageSize: 100,
     chatAPI: 'ChatService',
     telemetryURI: 'https://telemetry.phenixrts.com',
-    telemetrySource: undefined,
-    audioMode: 'mono'
+    telemetrySource: undefined
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome, chrome:headless, firefox, firefox --headless, safari, ie, edge, opera')
@@ -182,8 +180,7 @@ async function test() {
     `&disableConsoleLogging=${config.args.disableSDKConsoleLogging}` +
     `&messageSize=${config.args.messageSize}` +
     `&dateFormat=${config.args.dateFormat}` +
-    `&chatAPI=${config.args.chatAPI}` +
-    `&audioMode=${config.args.audioMode}`;
+    `&chatAPI=${config.args.chatAPI}`;
   config.videoAssertProfile = config.args.videoProfile;
   config.audioAssertProfile = config.args.audioProfile;
   config.chatAssertProfile = config.args.chatProfile;
@@ -383,8 +380,7 @@ function parseTestArgs() {
     chatAPI: argv.chatAPI,
     submitTelemetry: argv.submitTelemetry,
     telemetryURI: argv.telemetryURI,
-    telemetrySource: argv.telemetrySource === undefined ? argv.profileFile : argv.telemetrySource,
-    audioMode: argv.audioMode
+    telemetrySource: argv.telemetrySource === undefined ? argv.profileFile : argv.telemetrySource
   };
 
   if (argv.channelAlias !== '') {

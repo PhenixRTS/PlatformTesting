@@ -42,13 +42,10 @@ var publisherChannelExpress;
 
 var testMediaStream;
 
-var panNode;
 var audioCtx;
 var oscillator;
 var audioSampleRate = 44100;
-var leftSpeaker = true;
 
-const audioMode = getUrlParams('audioMode');
 const mediaChangeInterval = 300;
 const initPublisher = () => {
   publisherVideoEl = document.getElementById('publisherVideoContainer');
@@ -67,15 +64,11 @@ const initPublisher = () => {
   oscillator.detune.value = 0;
   oscillator.start();
 
-  panNode = audioCtx.createStereoPanner();
-
   var streamDestination = audioCtx.createMediaStreamDestination();
   var sourceNode = audioCtx.createMediaElementSource(publisherVideoEl);
   var volume = audioCtx.createGain();
   volume.gain.value = 0.5;
-
-  panNode.connect(streamDestination);
-  volume.connect(panNode);
+  volume.connect(streamDestination);
   oscillator.connect(volume);
   sourceNode.connect(streamDestination);
   sourceNode.connect(audioCtx.destination);
@@ -182,21 +175,13 @@ function changeAudioTone() {
       audioCtx.currentTime
     );
 
-    if (audioMode === 'stereo') {
-      panNode.pan.setValueAtTime(
-        leftSpeaker ? -1 : 1,
-        audioCtx.currentTime
+    if (shouldLogPublisherStats) {
+      log(
+        `[Publisher Audio] {"timestamp": ${Date.now()}, "frequency": ${
+          audioFrequencies[nextFrequencyIndex]
+        }}`
       );
-      leftSpeaker = !leftSpeaker;
-    } else {
-      panNode.pan.setValueAtTime(0, audioCtx.currentTime);
     }
-
-    log(
-      `[Publisher Audio] {"timestamp": ${Date.now()}, "frequency": ${
-        audioFrequencies[nextFrequencyIndex]
-      }}`
-    );
 
     setNextAudioFrequencyIndex();
   }, mediaChangeInterval);
