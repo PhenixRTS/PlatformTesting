@@ -230,6 +230,14 @@ function subscriberCallback(receivedError, response) {
   log(`[Subscriber Stream received] ${Date.now()}`);
   subscriberStream = response.mediaStream;
 
+  subscriberStream.select((track, index) => {
+    if (track.kind === 'audio') {
+      log(`Subscriber media stream audio [${index}] settings [${JSON.stringify(track.getSettings())}]`);
+    }
+
+    return true;
+  });
+
   if (subscriberStream === undefined) {
     error('subscriberStream is undefined');
 

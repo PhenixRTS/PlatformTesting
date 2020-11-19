@@ -42,10 +42,13 @@ var publisherChannelExpress;
 
 var testMediaStream;
 
+var panNode;
 var audioCtx;
 var oscillator;
 var audioSampleRate = 44100;
+var leftSpeaker = true;
 
+const audioMode = getUrlParams('audioMode');
 const mediaChangeInterval = 300;
 const initPublisher = () => {
   publisherVideoEl = document.getElementById('publisherVideoContainer');
@@ -64,11 +67,16 @@ const initPublisher = () => {
   oscillator.detune.value = 0;
   oscillator.start();
 
+  panNode = audioCtx.createStereoPanner();
+
   var streamDestination = audioCtx.createMediaStreamDestination();
   var sourceNode = audioCtx.createMediaElementSource(publisherVideoEl);
   var volume = audioCtx.createGain();
   volume.gain.value = 0.5;
-  volume.connect(streamDestination);
+
+  panNode.connect(streamDestination);
+  volume.connect(panNode);
+
   oscillator.connect(volume);
   sourceNode.connect(streamDestination);
   sourceNode.connect(audioCtx.destination);
@@ -79,6 +87,10 @@ const initPublisher = () => {
   testMediaStream.addTrack(audioTrack);
 
   publisherVideoEl.srcObject = testMediaStream;
+
+  log(`Published media stream audio tracks count [${streamDestination.stream.getAudioTracks().length}]`);
+  log(`Published media stream audio settings [${JSON.stringify(audioTrack.getSettings())}]`);
+  log(`Published media stream audio track constraints [${JSON.stringify(audioTrack.getConstraints())}]`);
 
   updateCanvasColor();
   changeAudioTone();
@@ -175,13 +187,21 @@ function changeAudioTone() {
       audioCtx.currentTime
     );
 
-    if (shouldLogPublisherStats) {
-      log(
-        `[Publisher Audio] {"timestamp": ${Date.now()}, "frequency": ${
-          audioFrequencies[nextFrequencyIndex]
-        }}`
+    if (audioMode === 'stereo') {
+      panNode.pan.setValueAtTime(
+        leftSpeaker ? -1 : 1,
+        audioCtx.currentTime
       );
+      leftSpeaker = !leftSpeaker;
+    } else {
+      panNode.pan.setValueAtTime(0, audioCtx.currentTime);
     }
+
+    log(
+      `[Publisher Audio] {"timestamp": ${Date.now()}, "frequency": ${
+        audioFrequencies[nextFrequencyIndex]
+      }}`
+    );
 
     setNextAudioFrequencyIndex();
   }, mediaChangeInterval);
