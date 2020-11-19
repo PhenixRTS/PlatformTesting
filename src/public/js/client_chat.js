@@ -85,7 +85,7 @@ function joinRoom(roomAlias) {
   roomExpress.joinRoom(
     {
       alias: roomAlias,
-      role: 'Audience'
+      role: 'Participant'
     },
     joinRoomCallback,
     membersChangedCallback
@@ -112,6 +112,8 @@ function joinRoomCallback(err, response) {
   }
 
   log('Successfully joined the room');
+  log(`[Session ID] ${response.roomService.getSelf().getSessionId()}`);
+
   log('Getting and starting ChatService');
   log(`[Channel Type] Room`);
 
@@ -382,15 +384,7 @@ function endTestEarly(sendingInterval = '') {
 }
 
 function membersChangedCallback(members) {
-  if (members.length === 0) {
-    setClientMessage('Waiting for members to join');
-  } else {
-    setClientMessage(`Room contains ${members.length} members`);
-
-    members.forEach(member => {
-      log(`[Session ID] ${member.getSessionId()}`);
-    });
-  }
+  setClientMessage(`Room contains ${members.length} members`);
 }
 
 function showSentMessageResult(message) {

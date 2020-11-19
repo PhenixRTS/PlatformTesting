@@ -35,7 +35,7 @@
       message: {
         from: {
           screenName: 'Tester Bot',
-          role: 'Audience',
+          role: 'Participant',
           lastUpdate: 0
         },
         mimeType: 'text/plain',
