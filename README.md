@@ -298,4 +298,18 @@ Example:
 npm run test -- --tests=test/fixtures/room-chat-test.js --numMessages=10 --roomAlias=MyAwesomeRoomAlias --mode=send --chatAPI=REST --secret=<your-secret> --applicationId=<your-application-id>
 ```
 
+When sending a message with `--mode=send` and `chatAPI=REST` or `chatAPI=ChatService` you can set message byte size with argument `--messageSize`. The max byte size of message to send can be 1024 and the minimum is 57.
+
+Example:
+```
+npm run test -- --tests=test/fixtures/room-chat-test.js --roomAlias=MyAwesomeRoomAlias --mode=send --messageSize=70
+```
+
+Message byte size can also be a range of numbers from which a random number gets chosen each time a message is sent.
+
+Example:
+```
+npm run test -- --tests=test/fixtures/room-chat-test.js --roomAlias=MyAwesomeRoomAlias --mode=send --messageSize=70-150
+```
+
 To be able to synchronize time in between send and receive client in different regions you need to configure your network settings to use `time.google.com` as your NTP server. See more information here: https://developers.google.com/time/ and https://developers.google.com/time/guides. 
