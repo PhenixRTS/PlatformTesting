@@ -148,7 +148,7 @@ function startReceivingMessages(chatService) {
   }, {initial: 'notify'});
 
   historyRequestTitle = '[Chat history start]';
-  getMessageHistory(null, true);
+  fetchMessageHistory(null, true);
 
   chatService.getObservableLastChatMessage().subscribe((message) => {
     const messageReceived = moment().utc().format(dateFormat);
@@ -170,7 +170,7 @@ function startReceivingMessages(chatService) {
     if (messageCount >= numMessages) {
       isLastMessage = true;
       historyRequestTitle = '[Chat history end]';
-      getMessageHistory(null, true);
+      fetchMessageHistory(null, true);
     }
   });
 }
@@ -216,7 +216,7 @@ function startSendingMessages(chatService) {
     }
 
     if (messageCount >= numMessages) {
-      endTestEarly(sendingInterval);
+      endTest(sendingInterval);
     }
 
     return sendMessage;
@@ -244,20 +244,20 @@ async function sendRestAPIMessages(roomId) {
     }
 
     if (messageCount >= numMessages) {
-      endTestEarly(sendingInterval);
+      endTest(sendingInterval);
     }
 
     return sendMessage;
   }(), messageInterval);
 }
 
-function getMessageHistory(beforeMessageId, isMainRequest) {
+function fetchMessageHistory(beforeMessageId, isMainRequest) {
   if (isMainRequest) {
     historyRequestCount = 0;
   }
 
   if (historyRequestCount < maxHistoryRequestCount) {
-    const afterMessageId = getAfterMessageId(beforeMessageId);
+    const afterMessageId = calculateAfterMessageId(beforeMessageId);
 
     if (afterMessageId !== undefined) {
       log(`Will get chat history after message id [${afterMessageId}] and before message id [${beforeMessageId}]`);
@@ -276,7 +276,7 @@ function getMessageHistory(beforeMessageId, isMainRequest) {
 
   if (historyRequestCount === maxHistoryRequestCount) {
     if (isLastMessage) {
-      endTestEarly();
+      endTest();
     }
   }
 }
@@ -335,11 +335,11 @@ function getMessagesHistoryCallback(error, response) {
       historyRequestCount = maxHistoryRequestCount;
     }
 
-    getMessageHistory(beforeMessageId, false);
+    fetchMessageHistory(beforeMessageId, false);
   }
 }
 
-function getAfterMessageId(beforeMessageId) {
+function calculateAfterMessageId(beforeMessageId) {
   if (beforeMessageId === null) {
     return null;
   }
@@ -348,12 +348,11 @@ function getAfterMessageId(beforeMessageId) {
   const messageIdNumberLength = splitMessageId[2].length;
   const beforeMessageIdNumber = parseInt(splitMessageId[2], 10);
   const afterMessageIdNumber = beforeMessageIdNumber - (maxHistoryBatchSize + 1);
-  const zeroString = '0';
   let numberAsString;
 
   if (afterMessageIdNumber < 0) {
     if (beforeMessageIdNumber > 1) {
-      numberAsString = zeroString.repeat(messageIdNumberLength);
+      numberAsString = '0'.padStart(messageIdNumberLength, '0');
     }
 
     if (beforeMessageIdNumber === 0 || beforeMessageIdNumber === 1) {
@@ -363,7 +362,7 @@ function getAfterMessageId(beforeMessageId) {
 
   if (afterMessageIdNumber >= 0) {
     if (afterMessageIdNumber.toString().length !== messageIdNumberLength) {
-      numberAsString = `${zeroString.repeat(messageIdNumberLength - afterMessageIdNumber.toString().length)}${afterMessageIdNumber.toString()}`;
+      numberAsString = afterMessageIdNumber.toString().padStart(messageIdNumberLength, '0');
     } else {
       numberAsString = afterMessageIdNumber.toString();
     }
@@ -374,7 +373,7 @@ function getAfterMessageId(beforeMessageId) {
   return splitMessageId.join('|');
 }
 
-function endTestEarly(sendingInterval = '') {
+function endTest(sendingInterval = '') {
   if (mode === 'send') {
     clearInterval(sendingInterval);
   }
