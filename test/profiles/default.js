@@ -54,8 +54,8 @@ const videoProfile = {
       timesPerMinute: 2
     },
     {
-      maxAllowed: 900,
-      timesPerMinute: 1
+      maxAllowed: 150,
+      timesPerMinute: 0
     }
   ],
   maxLag: 'PT0.35S',
