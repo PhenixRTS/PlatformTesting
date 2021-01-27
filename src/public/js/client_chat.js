@@ -38,7 +38,7 @@ const maxHistoryBatchSize = 128;
 const maxHistoryRequestCount = 3;
 const advisableDelayBeforeGettingChatService = 3000;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('common_loaded', () => {
   log(`[Url loaded] ${Date.now()}`);
 
   roomAlias = getUrlParams('roomAlias');

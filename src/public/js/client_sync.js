@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global canvasWidth, canvasHeight, publish, audioSampleRate, beepFrequencyOne, beepFrequencyTwo, fps, oneUnit, log, error, joinChannel, rejoinChannel, getUrlParams, startListeningToSubscriberAudioChanges, showChannelStatus, startFpsStatsLogging */
+/* global canvasWidth, canvasHeight, publish, audioSampleRate, beepFrequencyOne, beepFrequencyTwo, fps, oneUnit, log, error, joinChannel, rejoinChannel, getUrlParams, startListeningToSubscriberAudioChanges, showChannelStatus, startFpsStatsLogging, logStreamAndSessionId */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelName = 'Sync test';
@@ -33,7 +33,7 @@ var subscriberStream;
 var subscriberStats;
 var lastTimeCentered = new Date();
 
-document.addEventListener('DOMContentLoaded', async() => {
+document.addEventListener('common_loaded', async() => {
   log(`[Url loaded] ${Date.now()}`);
   await prepare();
 });
@@ -131,9 +131,7 @@ function subscriberCallback(receivedError, response) {
   showChannelStatus(`${state}. Got response status: ${response.status}`);
 
   if (response.renderer) {
-    log(`[${Date.now()}] Stream renderer received`);
-    log(`[Stream ID] ${response.renderer.ji}`);
-    log(`[Session ID] ${response.renderer.cr.Cr}`);
+    logStreamAndSessionId(response.renderer);
     log(`[Channel Type] Channel`);
 
     const subscriberVideoEl = document.getElementById('subscriberVideoContainer');
@@ -161,16 +159,16 @@ function subscriberCallback(receivedError, response) {
   });
 
   drawVideoToCanvas();
-  startFpsStatsLogging(subscriberStream, getStatsCallback);
+  startFpsStatsLogging(subscriberStream, getFpsStatsCallback);
 
   if (subscriberStream === undefined) {
     error('subscriberStream is undefined');
   } else {
-    prepareAudioAnalyzer(subscriberStream.Zo);
+    prepareAudioAnalyzer(subscriberStream.Zr);
   }
 }
 
-function getStatsCallback(stats) {
+function getFpsStatsCallback(stats) {
   stats.forEach(stat => {
     if (stat.framerateMean) {
       log(`[Stream Framerate Mean] ${JSON.stringify({

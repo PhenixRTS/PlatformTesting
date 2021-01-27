@@ -343,7 +343,7 @@ module.exports = class Asserts {
 
     this.assert(
       'Video packet loss',
-      streamStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000),
+      streamStats.nativeReport ? streamStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000) : null,
       config.videoAssertProfile.maxPacketLossPerMinute,
       'lte'
     );
@@ -361,19 +361,19 @@ module.exports = class Asserts {
     );
     this.assert(
       'Video nacks sent',
-      streamStats.nativeReport.googNacksSent / (config.args.testRuntimeMs / 60000),
+      streamStats.nativeReport ? streamStats.nativeReport.googNacksSent / (config.args.testRuntimeMs / 60000) : null,
       config.videoAssertProfile.maxNacksSentPerMinute,
       'lte'
     );
     this.assert(
       'Video FIRs sent',
-      streamStats.nativeReport.googFirsSent,
+      streamStats.nativeReport ? streamStats.nativeReport.googFirsSent : null,
       config.videoAssertProfile.firsSent,
       'eql'
     );
     this.assert(
       'Video PLIs sent',
-      streamStats.nativeReport.googPlisSent / (config.args.testRuntimeMs / 60000),
+      streamStats.nativeReport ? streamStats.nativeReport.googPlisSent / (config.args.testRuntimeMs / 60000) : null,
       config.videoAssertProfile.maxPlisSentPerMinute,
       'lte'
     );
@@ -432,7 +432,7 @@ module.exports = class Asserts {
     );
     this.assert(
       'Audio packets loss',
-      audioStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000),
+      audioStats.nativeReport ? audioStats.nativeReport.packetsLost / (config.args.testRuntimeMs / 60000) : null,
       config.audioAssertProfile.maxPacketsLossPerMinute,
       'lt'
     );

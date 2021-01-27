@@ -23,7 +23,7 @@ let streams = {};
 const videoList = document.getElementById('videoList');
 const canvasList = document.getElementById('canvasList');
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('common_loaded', () => {
   log(`[Url loaded] ${Date.now()}`);
 
   const roomAlias = getUrlParams('roomAlias');
@@ -123,7 +123,7 @@ function membersChangedCallback(members) {
     }
 
     const memberStream = member.getObservableStreams().getValue()[0];
-    const streamId = memberStream.ji;
+    const streamId = memberStream.rt;
     const options = {videoElement: document.getElementById(memberID)};
 
     roomExpress.subscribeToMemberStream(
@@ -156,21 +156,21 @@ function membersChangedCallback(members) {
   });
 
   if (!statsCollectingInterval) {
-    startStatsLogging();
+    startMemberStatsLogging();
   }
 }
 
-function startStatsLogging() {
+function startMemberStatsLogging() {
   statsCollectingInterval = setInterval(() => {
     for (const memberID in streams) {
       streams[memberID].getStats(stats =>
-        getStatsCallback(stats, memberID)
+        getMemberStatsCallback(stats, memberID)
       );
     }
   }, 1000);
 }
 
-function getStatsCallback(stats, memberID) {
+function getMemberStatsCallback(stats, memberID) {
   stats.forEach(stat => {
     log(`[Media Stream Stats] [memberID:${memberID}] ${JSON.stringify({
       timestamp: Date.now(),

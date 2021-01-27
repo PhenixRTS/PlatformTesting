@@ -210,43 +210,69 @@ async function GetMeanVideoStats(stats) {
       targetDelays.push(stat.targetDelay);
       currentDelays.push(stat.currentDelay);
       meanBitrates.push(stat.bitrateMean);
-      frameWidths.push(parseInt(stat.nativeReport.googFrameWidthReceived));
-      frameHeights.push(parseInt(stat.nativeReport.googFrameHeightReceived));
-      frameRateDecodes.push(parseInt(stat.nativeReport.googFrameRateDecoded));
-      frameRateOutputs.push(parseInt(stat.nativeReport.googFrameRateOutput));
+
+      if (stat.nativeReport) {
+        // SDK v1
+        frameWidths.push(parseInt(stat.nativeReport.googFrameWidthReceived));
+        frameHeights.push(parseInt(stat.nativeReport.googFrameHeightReceived));
+        frameRateDecodes.push(parseInt(stat.nativeReport.googFrameRateDecoded));
+        frameRateOutputs.push(parseInt(stat.nativeReport.googFrameRateOutput));
+
+        meanVideoStats.interframeDelayMax = parseFloat(stat.nativeReport.googInterframeDelayMax > meanVideoStats.interframeDelayMax ? stat.nativeReport.googInterframeDelayMax : meanVideoStats.interframeDelayMax);
+        meanVideoStats.freezesDetected += bytesReceived.includes(stat.nativeReport.bytesReceived) ? 1 : 0;
+        bytesReceived.push(stat.nativeReport.bytesReceived);
+        allInterframeDelayMaxs.push({
+          delay: stat.nativeReport.googInterframeDelayMax,
+          timestamp
+        });
+      } else {
+        // SDK v2
+        frameWidths.push(parseInt(stat.frameWidth));
+        frameHeights.push(parseInt(stat.frameHeight));
+        frameRateDecodes.push(parseInt(stat.framesDecoded));
+        frameRateOutputs.push(parseInt(stat.framesPerSecond));
+
+        meanVideoStats.interframeDelayMax = parseFloat(stat.totalInterFrameDelay > meanVideoStats.totalInterFrameDelay ? stat.totalInterFrameDelay : meanVideoStats.interframeDelayMax);
+        meanVideoStats.freezesDetected += bytesReceived.includes(stat.bytesReceived) ? 1 : 0;
+        bytesReceived.push(stat.bytesReceived);
+        allInterframeDelayMaxs.push({
+          delay: stat.totalInterFrameDelay,
+          timestamp
+        });
+      }
 
       if (meanVideoStats.mediaType === null) {
         meanVideoStats.mediaType = stat.mediaType;
         meanVideoStats.ssrc = stat.ssrc;
         meanVideoStats.direction = stat.direction;
-        meanVideoStats.codecName = stat.nativeReport.googCodecName;
+        meanVideoStats.codecName = stat.nativeReport ? stat.nativeReport.googCodecName : stat.codecId;
       }
 
       meanVideoStats.maxBitrate = parseFloat(((stat.bitrateMean > meanVideoStats.maxBitrate ? stat.bitrateMean : meanVideoStats.maxBitrate) / 1024).toFixed(2));
       meanVideoStats.maxDelay = stat.currentDelay > meanVideoStats.maxDelay ? stat.currentDelay : meanVideoStats.maxDelay;
-      meanVideoStats.interframeDelayMax = parseFloat(stat.nativeReport.googInterframeDelayMax > meanVideoStats.interframeDelayMax ? stat.nativeReport.googInterframeDelayMax : meanVideoStats.interframeDelayMax);
       meanVideoStats.downloadRate = stat.downloadRate;
       meanVideoStats.droppedFrames += stat.droppedFrames;
       meanVideoStats.nativeReport = stat.nativeReport;
-      meanVideoStats.freezesDetected += bytesReceived.includes(stat.nativeReport.bytesReceived) ? 1 : 0;
-      bytesReceived.push(stat.nativeReport.bytesReceived);
-      allInterframeDelayMaxs.push({
-        delay: stat.nativeReport.googInterframeDelayMax,
-        timestamp
-      });
 
       if (stat.framerateMean === 0 && index === 0) {
         return;
       }
 
       framerateMeans.push({
-        framerate: Number(stat.framerateMean.toFixed(0)),
+        framerate: Number(stat.framerateMean ? stat.framerateMean.toFixed(0) : stat.framesPerSecond),
         timestamp
       });
     });
 
-    meanVideoStats.statsCaptureDuration =
-      videoStats[videoStats.length - 1].stat.nativeReport.timestamp - videoStats[0].stat.nativeReport.timestamp;
+    if (videoStats[0].stat.nativeReport) {
+      // SDK v1
+      meanVideoStats.statsCaptureDuration =
+        videoStats[videoStats.length - 1].stat.nativeReport.timestamp - videoStats[0].stat.nativeReport.timestamp;
+    } else {
+      // SDK v2
+      meanVideoStats.statsCaptureDuration =
+        videoStats[videoStats.length - 1].stat.timestamp - videoStats[0].stat.timestamp;
+    }
   });
 
   meanVideoStats.targetDelay = parseFloat(math.average(targetDelays).toFixed(2));
@@ -318,7 +344,7 @@ async function GetMeanAudioStats(stats) {
         meanAudioStats.mediaType = stat.mediaType;
         meanAudioStats.ssrc = stat.ssrc;
         meanAudioStats.direction = stat.direction;
-        meanAudioStats.codecName = stat.nativeReport.googCodecName;
+        meanAudioStats.codecName = stat.nativeReport ? stat.nativeReport.googCodecName : stat.codecId;
       }
 
       meanAudioStats.downloadRate = stat.downloadRate;
@@ -330,8 +356,15 @@ async function GetMeanAudioStats(stats) {
       });
     });
 
-    meanAudioStats.statsCaptureDuration =
-      audioStats[audioStats.length - 1].stat.nativeReport.timestamp - audioStats[0].stat.nativeReport.timestamp;
+    if (audioStats[0].stat.nativeReport) {
+      // SDK v1
+      meanAudioStats.statsCaptureDuration =
+        audioStats[audioStats.length - 1].stat.nativeReport.timestamp - audioStats[0].stat.nativeReport.timestamp;
+    } else {
+      // SDK v2
+      meanAudioStats.statsCaptureDuration =
+        audioStats[audioStats.length - 1].stat.timestamp - audioStats[0].stat.timestamp;
+    }
   });
 
   meanAudioStats.currentDelay = math.average(currentDelays);

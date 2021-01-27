@@ -42,9 +42,16 @@ class App {
     app.get('/sync', (req, res) => {
       res.sendFile(path.join(__dirname, 'public', 'sync.html')); // eslint-disable-line no-undef
     });
-
     app.get('/chat', (req, res) => {
       res.sendFile(path.join(__dirname, 'public', 'chat.html')); // eslint-disable-line no-undef
+    });
+
+    // Scripts
+    app.get('/common_v1.js', (req, res) => {
+      res.sendFile(path.join(__dirname, 'public', 'js', 'utils', 'common_v1.js')); // eslint-disable-line no-undef
+    });
+    app.get('/common_v2.js', (req, res) => {
+      res.sendFile(path.join(__dirname, 'public', 'js', 'utils', 'common_v2.js')); // eslint-disable-line no-undef
     });
 
     app.get('*', (req, res) => res.status(404).send(

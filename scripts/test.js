@@ -24,6 +24,7 @@ const app = new App();
 const logger = new Logger('Test script');
 const moment = require('moment');
 const path = require('path');
+const fetch = require('node-fetch');
 const {getFileExtensionBasedOnTestcafeReporterType, getFileNameFromTestsConfigArgument} = require('../shared/shared');
 const {byteSize} = require('../src/public/js/chat/publisher');
 const {parseColor} = require('../test/models/format.js');
@@ -87,6 +88,7 @@ const argv = require('yargs')
   .describe('telemetryURI', 'Uri where to submit telemetry records')
   .describe('telemetrySource', 'Source of telemetry')
   .describe('audioMode', 'Mode of published audio in sync and lag tests [mono, stereo]')
+  .describe('webSdkSource', 'Phenix Web SDK source url')
   .default({
     localServerPort: 3333,
     channelAlias: '',
@@ -141,7 +143,8 @@ const argv = require('yargs')
     chatAPI: 'ChatService',
     telemetryURI: 'https://telemetry.phenixrts.com',
     telemetrySource: undefined,
-    audioMode: 'mono'
+    audioMode: 'mono',
+    webSdkSource: 'https://dl.phenixrts.com/WebSDK/2020.2.25/phenix-web-sdk.min.js'
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome, chrome:headless, firefox, firefox --headless, safari, ie, edge, opera')
@@ -190,7 +193,7 @@ async function test() {
 
   let testcafe = null;
 
-  return createTestCafe(null, '8000', '8001').then(tc => {
+  return createTestCafe(null, '8000', '8001').then(async tc => {
     app.startServer(config.args.localServerPort);
 
     const runner = tc.createRunner();
@@ -209,6 +212,16 @@ async function test() {
     if (argv.verbose === true) {
       // Also log the report to stdout. Note: "output" defaults to stdout.
       reporters.push({name: config.args.testcafeReporterType});
+    }
+
+    try {
+      await fetch(config.args.webSdkSource)
+        .then(response => response.text())
+        .then(body => {
+          runner.clientScripts({content: body});
+        });
+    } catch (error) {
+      exitWithErrorMessage(error);
     }
 
     return runner
@@ -384,7 +397,8 @@ function parseTestArgs() {
     submitTelemetry: argv.submitTelemetry,
     telemetryURI: argv.telemetryURI,
     telemetrySource: argv.telemetrySource === undefined ? argv.profileFile : argv.telemetrySource,
-    audioMode: argv.audioMode
+    audioMode: argv.audioMode,
+    webSdkSource: argv.webSdkSource
   };
 
   if (argv.channelAlias !== '') {

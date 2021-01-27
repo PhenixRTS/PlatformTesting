@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, error, joinChannel, rejoinChannel, getUrlParams, rgbToHex, startListeningToSubscriberAudioChanges, constants, jsQR, moment, showChannelStatus, publish, startFpsStatsLogging */
+/* global log, error, joinChannel, rejoinChannel, getUrlParams, rgbToHex, startListeningToSubscriberAudioChanges, constants, jsQR, moment, showChannelStatus, publish, startFpsStatsLogging, logStreamAndSessionId */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelName = 'Lag test';
@@ -55,7 +55,7 @@ var shouldLogPublisherStats = false; // eslint-disable-line no-unused-vars
 
 const timestampDecodeInterval = 1000;
 
-document.addEventListener('DOMContentLoaded', async() => {
+document.addEventListener('common_loaded', async() => {
   log(`[Url loaded] ${Date.now()}`);
   await prepare();
 });
@@ -208,9 +208,7 @@ function subscriberCallback(receivedError, response) {
   showChannelStatus(`${state}. Got response status: ${response.status}`);
 
   if (response.renderer) {
-    log(`[${Date.now()}] Stream renderer received`);
-    log(`[Stream ID] ${response.renderer.ji}`);
-    log(`[Session ID] ${response.renderer.cr.Cr}`);
+    logStreamAndSessionId(response.renderer);
     log(`[Channel Type] Channel`);
 
     subscriberVideoEl.muted = false;
@@ -254,13 +252,22 @@ function subscriberCallback(receivedError, response) {
     logDecodedTimestamp();
   }
 
-  prepareAudioAnalyzer(subscriberStream.Zo);
-  startFpsStatsLogging(subscriberStream, getStatsCallback);
+  // Find origin MediaStream not sdk wrapped one
+  let originMediaStream = undefined;
+  // eslint-disable-next-line no-unused-vars
+  for (const [key, value] of Object.entries(subscriberStream)) {
+    if (value instanceof MediaStream) {
+      originMediaStream = value;
+    }
+  }
+
+  prepareAudioAnalyzer(originMediaStream);
+  startFpsStatsLogging(subscriberStream, getFpsStatsCallback);
   drawAudioVisualisations();
   shouldLogPublisherStats = true;
 }
 
-function getStatsCallback(stats) {
+function getFpsStatsCallback(stats) {
   stats.forEach(stat => {
     if (stat.framerateMean) {
       log(`[Stream Framerate Mean] ${JSON.stringify({
