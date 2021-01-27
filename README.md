@@ -1,6 +1,6 @@
-# Phenix Channel DevOps Tool
+# Phenix Platform Testing Tool
 
-The Phenix channel devops tool provides a way to monitor and test channels for uptime and other operational parameters.
+The Phenix platform testing tool provides a way to monitor and test channels and rooms for uptime and other operational parameters.
 
 ## Setup
 
