@@ -15,7 +15,7 @@
  */
 
 /* eslint-disable no-unused-vars */
-/* global MRecordRTC, request, getUrlParams, log, error, getChannelUri, showPublisherMessage, showPublisherErrorMessage */
+/* global MRecordRTC, request, getUrlParams, log, error, getChannelUri, showPublisherMessage, showPublisherErrorMessage, validateThatThereIsNoOtherPublishers */
 
 const commonLoadedEvent = new Event('common_loaded');
 const sdk = window['phenix-web-sdk'];
@@ -164,7 +164,7 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
         name: channelName,
         alias: channelAlias
       }
-    }, (error, response) => {
+    }, async(error, response) => {
       if (error) {
         showPublisherErrorMessage(`Error: Got error in createChannel callback [${error}]`);
       }
@@ -182,31 +182,19 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
       channelId = response.channel.getChannelId();
       log(`[Channel ID] ${channelId}`);
 
-      return validateThatThereIsNoOtherPublishers(backendUri, successCallback);
+      await validateThatThereIsNoOtherPublishers(backendUri, channelId).then((thereIsNoPublisher) => {
+        successCallback();
+
+        return thereIsNoPublisher;
+      });
     });
   } else {
-    return await validateThatThereIsNoOtherPublishers(backendUri, successCallback);
+    await validateThatThereIsNoOtherPublishers(backendUri, channelId).then((thereIsNoPublisher) => {
+      successCallback();
+
+      return thereIsNoPublisher;
+    });
   }
-}
-
-async function validateThatThereIsNoOtherPublishers(backendUri, successCallback) {
-  const urlEncodedChannelId = encodeURIComponent(channelId);
-  const requestUrl = `${backendUri}/channel/${urlEncodedChannelId}/publishers/count`;
-
-  return new Promise(resolve => {
-    request.fetchWithNoAuthorization('GET', requestUrl)
-      .then(response => response.json())
-      .then(result => {
-        if (Number.isInteger(result) && result === 0) {
-          didValidateThatThereIsNoOtherStream = true;
-          log('Validation successful - no other publisher in the room before publishing');
-          successCallback();
-          resolve(result);
-        } else {
-          showPublisherErrorMessage(`Error: Got response status [${result.status}] while trying to validate that there is no other publishers in the room (channel id [${channelId}])`);
-        }
-      });
-  });
 }
 
 function stopPublisher(publisherChannelExpress) {

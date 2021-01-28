@@ -23,7 +23,7 @@ let channel;
 
 document.dispatchEvent(commonLoadedEvent);
 
-function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriberCallback) {
+function joinChannel(videoElement, channelAlias, joinChannelCallback, channelJoinedCallback) {
   const edgeToken = new URLSearchParams(location.search).get('edgeToken');
 
   channel = phenix.Channels.createChannel({
@@ -32,7 +32,7 @@ function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriber
   });
 
   subscribeToChannelEvents();
-  subscriberCallback(null, undefined);
+  channelJoinedCallback();
 }
 
 function subscribeToChannelEvents() {
@@ -148,11 +148,6 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
   log(`Publisher backend uri: ${backendUri}`);
   log(`Publisher PCast uri: ${pcastUri}`);
 
-  // TODO: - Implement this
-}
-
-// eslint-disable-next-line no-unused-vars
-async function validateThatThereIsNoOtherPublishers(backendUri, successCallback) {
   // TODO: - Implement this
 }
 

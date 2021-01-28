@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, getUrlParams, joinChannel, RecordRTC, error, startMultimediaRecordingFor, startStatsLogging, logStreamAndSessionId */
+/* global log, getUrlParams, joinChannel, RecordRTC, error, startMultimediaRecordingFor, startStatsLogging, logStreamAndSessionId, getWebSDKVersion */
 
 let stream = undefined;
 let channelInformation;
@@ -22,11 +22,19 @@ let channelInformation;
 document.addEventListener('common_loaded', () => {
   channelInformation = `ChannelAlias [${getUrlParams('channelAlias')}], applicationId [${getUrlParams('applicationId')}], backendUri [${getUrlParams('backendUri')}]`;
   log(`[Url loaded] ${Date.now()}`);
+
+  let sdkVersion = getWebSDKVersion();
+  let callback = channelJoinedCallback;
+
+  if (sdkVersion === 1) {
+    callback = subscriberCallback;
+  }
+
   joinChannel(
     document.getElementById('videoEl'),
     getUrlParams('channelAlias'),
     joinChannelCallback,
-    subscriberCallback
+    callback
   );
 });
 
@@ -50,38 +58,41 @@ function joinChannelCallback(err, response) {
   }
 }
 
+// SDK v2 callback
+function channelJoinedCallback() {
+  startStatsLogging(stream);
+  startRecordings();
+  startScreenshots();
+}
+
+// SDK v1 callback
 function subscriberCallback(err, response) {
   if (err) {
     error(`Error in subscriber callback! ${channelInformation}. Error: [${err}]`);
   }
 
-  // If there is no response - callback has been called from SDK v2
-  if (response) {
-    // SDK v1
-
-    if (response.status !== 'ok') {
-      error(`Subscriber callback response status: [${response.status}]. ${channelInformation}. Error: [${err}]`);
-    }
-
-    if (response.renderer) {
-      logStreamAndSessionId(response.renderer);
-
-      const subscriberVideoEl = document.getElementById('videoEl');
-      subscriberVideoEl.muted = false;
-
-      response.renderer.on('autoMuted', () => {
-        log(`[${Date.now()}] Stream was autoMuted`);
-        subscriberVideoEl.muted = false;
-      });
-
-      response.renderer.on('failedToPlay', reason => {
-        error(`Error: Failed to play stream. Reason: ${reason}`);
-      });
-    }
-
-    log(`[Stream received] ${Date.now()}`);
-    stream = response.mediaStream;
+  if (response.status !== 'ok') {
+    error(`Subscriber callback response status: [${response.status}]. ${channelInformation}. Error: [${err}]`);
   }
+
+  if (response.renderer) {
+    logStreamAndSessionId(response.renderer);
+
+    const subscriberVideoEl = document.getElementById('videoEl');
+    subscriberVideoEl.muted = false;
+
+    response.renderer.on('autoMuted', () => {
+      log(`[${Date.now()}] Stream was autoMuted`);
+      subscriberVideoEl.muted = false;
+    });
+
+    response.renderer.on('failedToPlay', reason => {
+      error(`Error: Failed to play stream. Reason: ${reason}`);
+    });
+  }
+
+  log(`[Stream received] ${Date.now()}`);
+  stream = response.mediaStream;
 
   startStatsLogging(stream);
   startRecordings();

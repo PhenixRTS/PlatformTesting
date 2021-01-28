@@ -15,7 +15,17 @@
  */
 
 /* eslint-disable no-unused-vars */
-/* global MRecordRTC */
+/* global request, MRecordRTC */
+
+function getWebSDKVersion() {
+  if (window['phenix-web-sdk']) {
+    return 1;
+  } else if (window['phenix']) {
+    return 2;
+  }
+
+  error('Phenix web sdk not found!');
+}
 
 insertCommonScript();
 
@@ -23,14 +33,14 @@ function insertCommonScript() {
   let script = document.createElement('script');
   script.type = 'text/javascript';
 
-  if (window['phenix-web-sdk']) {
+  let sdkVersion = getWebSDKVersion();
+
+  if (sdkVersion === 1) {
     console.log('Using SDK v1');
     script.src = '/common_v1.js';
-  } else if (window['phenix']) {
+  } else if (sdkVersion === 2) {
     console.log('Using SDK v2');
     script.src = '/common_v2.js';
-  } else {
-    error('Phenix web sdk not found!');
   }
 
   let firstPageScript = document.getElementsByTagName('script').item(0);
@@ -175,4 +185,28 @@ function logStreamAndSessionId(renderer) {
   // 2020.2.25
   log(`[Stream ID] ${renderer.rt}`);
   log(`[Session ID] ${renderer.j.Be}`);
+}
+
+async function validateThatThereIsNoOtherPublishers(backendUri, channelId) {
+  const urlEncodedChannelId = encodeURIComponent(channelId);
+  const requestUrl = `${backendUri}/channel/${urlEncodedChannelId}/publishers/count`;
+
+  return new Promise(resolve => {
+    request.fetchWithNoAuthorization('GET', requestUrl)
+      .then(response => response.json())
+      .then(result => {
+        if (Number.isInteger(result)) {
+          if (result === 0) {
+            log('Validation successful - no other publisher in the room before publishing');
+            resolve(true);
+          } else {
+            log(`There are other publishers [${result}] in the room before publishing`);
+            resolve(false);
+          }
+        } else {
+          showPublisherErrorMessage(`Error: Got response status [${result.status}] while trying to validate that there is no other publishers in the room (channel id [${channelId}])`);
+          resolve(false);
+        }
+      });
+  });
 }
