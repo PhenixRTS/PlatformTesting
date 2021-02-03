@@ -312,4 +312,24 @@ Example:
 npm run test -- --tests=test/fixtures/room-chat-test.js --roomAlias=MyAwesomeRoomAlias --mode=send --messageSize=70-150
 ```
 
-To be able to synchronize time in between send and receive client in different regions you need to configure your network settings to use `time.google.com` as your NTP server. See more information here: https://developers.google.com/time/ and https://developers.google.com/time/guides. 
+To be able to synchronize time in between send and receive client in different regions you need to configure your network settings to use `time.google.com` as your NTP server. See more information here: https://developers.google.com/time/ and https://developers.google.com/time/guides.
+
+## Web SDK v2 support
+
+It is possible to give a path to web SDK source using `--webSdkSource=<path-to-source>`.
+
+Right now only channel quality tests are supported.
+
+Example usage webSDK **v1**:
+```sh
+npm run test -- --tests='test/fixtures/channel-quality-test.js' \
+--channelAlias='phenixWebsiteDemo' \
+--webSdkSource='https://dl.phenixrts.com/WebSDK/2020.2.25/phenix-web-sdk.min.js'
+```
+
+Example usage webSDK **v2**:
+```sh
+npm run test -- --tests='test/fixtures/channel-quality-test.js' \
+--webSdkSource='https://dl.phenixrts.com/JsSDK/2021.0.latest/min/full.js' \
+--edgeToken='DIGEST:<your-edge-token>'
+```
