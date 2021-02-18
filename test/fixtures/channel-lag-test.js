@@ -30,19 +30,19 @@ global.fixture(`Channel lag test${config.rtmpPushArgs.rtmpPushFile === '' ? '' :
 test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/audio`, async t => {
   const isRtmpPush = config.rtmpPushArgs.rtmpPushFile !== '';
 
+  createdChannel = await common.createOrGetChannel(t);
+
   if (isRtmpPush) {
-    createdChannel = await common.initRtmpPush('lag_test');
-
-    const publisherCount = await common.waitForPublisher(createdChannel.channelId);
-
-    await t
-      .expect(publisherCount)
-      .eql(1, 'Failed to join the channel: publisher not ready');
-
-    await common.subscribeFromClient(createdChannel.channelId);
-  } else {
-    createdChannel = await common.createChannel(t);
+    await common.initRtmpPush('lag_test', createdChannel);
   }
+
+  const publisherCount = await common.waitForPublisher(createdChannel.channelId);
+
+  await t
+    .expect(publisherCount)
+    .eql(1, 'Failed to join the channel: publisher not ready');
+
+  await common.subscribeFromClient(createdChannel.channelId);
 
   await t
     .expect(Selector('video').withAttribute('id', 'publisherVideoContainer').exists).ok()

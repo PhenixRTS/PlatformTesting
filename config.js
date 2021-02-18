@@ -27,6 +27,10 @@ const videoAssertProfile = {};
 const audioAssertProfile = {};
 const chatAssertProfile = {};
 const projectDir = __dirname;
+const createdChannel = {
+  channelId: undefined,
+  status: undefined
+};
 
 module.exports = {
   backendUri,
@@ -40,5 +44,6 @@ module.exports = {
   videoAssertProfile,
   audioAssertProfile,
   chatAssertProfile,
-  projectDir
+  projectDir,
+  createdChannel
 };

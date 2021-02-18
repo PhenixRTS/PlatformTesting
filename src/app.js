@@ -54,6 +54,11 @@ class App {
       res.sendFile(path.join(__dirname, 'public', 'js', 'utils', 'common_v2.js')); // eslint-disable-line no-undef
     });
 
+    app.get('/channelId', (req, res) => {
+      res.send(config.createdChannel.channelId);
+      res.end();
+    });
+
     app.get('*', (req, res) => res.status(404).send(
       {message: '404, not found'}
     ));

@@ -42,7 +42,7 @@ async function request(method, endpoint, body = null) {
   return await response;
 }
 
-async function createChannel(name, description = '', options = []) {
+async function createOrGetChannel(name, description = '', options = []) {
   const body = {
     channel: {
       alias: name,
@@ -56,8 +56,15 @@ async function createChannel(name, description = '', options = []) {
     request('PUT', '/channel', body)
       .then(response => response.json())
       .then(result => {
+        config.createdChannel.channelStatus = result.status;
+
         if (result.status === 'ok') {
           console.log(`Created channel with alias [${name}]`);
+          config.createdChannel.channelId = result.channel.channelId;
+          resolve(result.channel);
+        } else if (result.status === 'already-exists') {
+          console.log(`Using already-existing channel with alias [${name}]`);
+          config.createdChannel.channelId = result.channel.channelId;
           resolve(result.channel);
         } else {
           console.error(`Got response status [${result.status}] when tried to create channel:`);
@@ -139,7 +146,7 @@ async function postToTelemetry(records) {
 }
 
 module.exports = {
-  createChannel,
+  createOrGetChannel,
   deleteChannel,
   getChannelState,
   terminateStream,

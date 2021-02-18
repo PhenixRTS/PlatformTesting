@@ -15,10 +15,11 @@
  */
 
 /* eslint-disable no-unused-vars */
-/* global MRecordRTC, request, getUrlParams, log, error, getChannelUri, showPublisherMessage, showPublisherErrorMessage, validateThatThereIsNoOtherPublishers */
+/* global MRecordRTC, request, getUrlParams, log, error, getChannelUri, showPublisherMessage, showPublisherErrorMessage, validateThatThereIsNoOtherPublishers, getChannelId */
 
 const commonLoadedEvent = new Event('common_loaded');
 const sdk = window['phenix-web-sdk'];
+const maxRequestChannelIdCount = 10;
 
 let adminApiProxyClient;
 let channelExpress;
@@ -113,7 +114,7 @@ function getStatsCallback(stats) {
   });
 }
 
-async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName, publishCallback, createChannel) {
+async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName, publishCallback) {
   log(`Publisher backend uri: ${backendUri}`);
   log(`Publisher PCast uri: ${pcastUri}`);
 
@@ -158,37 +159,9 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
     return channelExpress;
   };
 
-  if (createChannel) {
-    await channelExpress.createChannel({
-      channel: {
-        name: channelName,
-        alias: channelAlias
-      }
-    }, async(error, response) => {
-      if (error) {
-        showPublisherErrorMessage(`Error: Got error in createChannel callback [${error}]`);
-      }
+  channelId = await getChannelId(maxRequestChannelIdCount);
 
-      if (response.status === 'already-exists') {
-        showPublisherMessage('Channel already exists');
-      }
-
-      if (response.channelService) {
-        showPublisherMessage('Successfully created channel');
-      } else if (response.status !== 'ok') {
-        showPublisherMessage(`Got response status [${response.status}] in createChannel callback`);
-      }
-
-      channelId = response.channel.getChannelId();
-      log(`[Channel ID] ${channelId}`);
-
-      await validateThatThereIsNoOtherPublishers(backendUri, channelId).then((thereIsNoPublisher) => {
-        successCallback();
-
-        return thereIsNoPublisher;
-      });
-    });
-  } else {
+  if (channelId !== undefined) {
     await validateThatThereIsNoOtherPublishers(backendUri, channelId).then((thereIsNoPublisher) => {
       successCallback();
 

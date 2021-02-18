@@ -36,6 +36,7 @@ import chatReporter from '../models/reporters/chat-reporter';
 const pcastApi = require('../models/pcastApi.js');
 const rtmpPush = require('../models/rtmp-push.js');
 const Logger = require('../../scripts/logger.js');
+const maxWaitForPublisherCount = 30;
 const subscribeFromClient = ClientFunction(() => window.subscribe());
 
 const getRoomMembers = ClientFunction(() => {
@@ -220,9 +221,11 @@ const monitorStream = async(testController, canvasID, videoID = '') => {
 
 const waitForPublisher = channelId =>
   new Promise(resolve => {
+    let waitForPublisherCount = 0;
     const statusInterval = setInterval(() => {
+      waitForPublisherCount += 1;
       pcastApi.getChannelState(channelId).then(publisherCount => {
-        if (publisherCount === 0) {
+        if (publisherCount === 0 && waitForPublisherCount < maxWaitForPublisherCount) {
           return;
         }
 
@@ -237,12 +240,9 @@ const waitForPublisher = channelId =>
     }, 1000);
   });
 
-const initRtmpPush = async(testType) => {
-  const {channelAlias} = config;
+const initRtmpPush = async(testType, channel) => {
   const {capabilities, region} = config.publisherArgs;
   const {rtmpPushFile, rtmpLinkProtocol, rtmpPort} = config.rtmpPushArgs;
-  const channel = await createChannel(channelAlias);
-  ok(channel !== undefined, 'Could not create channel for RTMP Push');
 
   rtmpPush.startRtmpPush(
     testType,
@@ -253,17 +253,15 @@ const initRtmpPush = async(testType) => {
     channel,
     capabilities
   );
-
-  return channel;
 };
 
-const createChannel = async(testcafe) => {
+const createOrGetChannel = async(testcafe) => {
   const {channelAlias} = config;
-  const channel = await pcastApi.createChannel(channelAlias);
+  const channel = await pcastApi.createOrGetChannel(channelAlias);
 
-  ok(channel !== undefined, `Could not create channel with alias [${channelAlias}]`);
+  ok(channel !== null, `Could not create or get channel with alias [${channelAlias}]`);
 
-  if (channel === undefined) {
+  if (channel === null) {
     testcafe.ctx.testFailed = true;
     return;
   }
@@ -281,7 +279,7 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
     reportFileName = `${reportFileName}-rtmp`;
   }
 
-  if (createdChannel && createdChannel.channelId !== undefined) {
+  if (config.createdChannel.status === 'ok') {
     const {channelId} = createdChannel;
     const deleteResponse = await pcastApi.deleteChannel(channelId);
 
@@ -359,5 +357,5 @@ module.exports = {
   monitorRoomChat,
   subscribeFromClient,
   waitForPublisher,
-  createChannel
+  createOrGetChannel
 };

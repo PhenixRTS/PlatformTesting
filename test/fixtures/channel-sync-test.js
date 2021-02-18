@@ -31,19 +31,19 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync of video
   const {rtmpPushFile} = config.rtmpPushArgs;
   const isRtmpPush = rtmpPushFile !== '';
 
+  createdChannel = await common.createOrGetChannel(t);
+
   if (isRtmpPush) {
-    createdChannel = await common.initRtmpPush('sync_test');
-
-    const publisherCount = await common.waitForPublisher(createdChannel.channelId);
-
-    await t
-      .expect(publisherCount)
-      .eql(1, 'Failed to join the channel: publisher not ready');
-
-    await common.subscribeFromClient(createdChannel.channelId);
-  } else {
-    createdChannel = await common.createChannel(t);
+    await common.initRtmpPush('sync_test', createdChannel);
   }
+
+  const publisherCount = await common.waitForPublisher(createdChannel.channelId);
+
+  await t
+    .expect(publisherCount)
+    .eql(1, 'Failed to join the channel: publisher not ready');
+
+  await common.subscribeFromClient(createdChannel.channelId);
 
   await t
     .expect(Selector('video').withAttribute('id', 'publisherVideoContainer').exists).ok()

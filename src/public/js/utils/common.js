@@ -210,3 +210,35 @@ async function validateThatThereIsNoOtherPublishers(backendUri, channelId) {
       });
   });
 }
+
+async function getChannelId(maxRequestChannelIdCount) {
+  let channelId = undefined;
+  let requestChannelIdCount = 0;
+  while (channelId === undefined && requestChannelIdCount < maxRequestChannelIdCount) {
+    channelId = await new Promise(resolve => {
+      fetch('/channelId')
+        .then(response => response.text())
+        .then(text => {
+          requestChannelIdCount += 1;
+
+          if (text === '') {
+            resolve(undefined);
+          }
+
+          resolve(text);
+        });
+    });
+
+    if (channelId !== undefined) {
+      return channelId;
+    }
+
+    if (requestChannelIdCount === maxRequestChannelIdCount) {
+      showPublisherErrorMessage(`Error: Client was not able to retrieve channelId from server side`);
+
+      return;
+    }
+
+    await new Promise(r => setTimeout(r, 1000));
+  }
+}

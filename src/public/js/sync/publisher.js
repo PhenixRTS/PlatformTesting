@@ -119,8 +119,7 @@ async function publish(
     publisherBackendUri,
     publisherPcastUri,
     channelName,
-    publishCallback,
-    true
+    publishCallback
   );
 }
 
@@ -150,7 +149,6 @@ function publishCallback(error, response) {
 
   if (response.status === 'ok') {
     publisher = response.publisher;
-    subscribe();
     showPublisherMessage('\nPublished successfully!\n');
   }
 }
