@@ -51,9 +51,9 @@ function log(msg) {
   console.info(`\n[Acceptance Testing] ${msg}`);
 }
 
-function error(msg) {
+function error(msg, elementId = 'subscriberError') {
   console.error(`[Acceptance Testing Error] ${msg}`);
-  showSubscriberError(msg);
+  showSubscriberError(msg, elementId);
 }
 
 function rgbToHex(color) {
@@ -86,12 +86,12 @@ function showPublisherMessage(message) {
   document.getElementById('publisherMessage').innerHTML += message;
 }
 
-function showSubscriberError(message) {
-  document.getElementById('subscriberError').innerHTML += `<br />${message}`;
+function showSubscriberError(message, elementId) {
+  document.getElementById(elementId).innerHTML += `<br />${message}`;
 }
 
-function showChannelStatus(message) {
-  document.getElementById('channelStatus').innerHTML += `<br />${message}`;
+function showChannelStatus(message, id = 'channelStatus') {
+  document.getElementById(id).innerHTML += `<br />${message}`;
 }
 
 function getChannelUri(backendUri, isBackendPcastUri, alias, edgeToken = '') {
@@ -175,16 +175,16 @@ function startFpsStatsLogging(subscriberStream, getFpsStatsCallback) {
   }, 1000);
 }
 
-function logStreamAndSessionId(renderer) {
+function logStreamAndSessionId(renderer, streamIdKey = 'Stream ID', sessionIdKey = 'Session ID') {
   log(`[${Date.now()}] Stream renderer received`);
 
   // 2020.1.1
-  // log(`[Stream ID] ${renderer.ji}`);
-  // log(`[Session ID] ${renderer.cr.Cr}`);
+  // log(`[${streamIdKey}] ${renderer.ji}`);
+  // log(`[${sessionIdKey}] ${renderer.cr.Cr}`);
 
   // 2020.2.25
-  log(`[Stream ID] ${renderer.rt}`);
-  log(`[Session ID] ${renderer.j.Be}`);
+  log(`[${streamIdKey}] ${renderer.rt}`);
+  log(`[${sessionIdKey}] ${renderer.j.Be}`);
 }
 
 async function validateThatThereIsNoOtherPublishers(backendUri, channelId) {

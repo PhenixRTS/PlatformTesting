@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
+
+  <script src="js/utils/common.js"></script>
+  <script src="js/utils/request.js"></script>
+  <script src="js/sync/publisher.js"></script>
+  <script src="js/client_sync_watch.js"></script>
+
+  <title>Phenix Video Test</title>
+</head>
+
+<body>
+  <div style="border-bottom: 1px solid black; padding: 20px 0;">
+    <h2>Publisher</h2>
+    <div>
+      <p id="publisherStats"></p>
+    </div>
+    <div id="publisher">
+      <div style="display: inline-block;">
+        <p id="publishedForSeconds"></p>
+        <p id="publishFramerate"></p>
+        <div id="publisherCanvasTitle" style="font-weight: bold;">Canvas:</div>
+        <canvas id="publisherCanvas" style="background-color: black;"></canvas>
+      </div>
+      <div style="display: inline-block;">
+        <div id="publisherVideoContainerTitle" style="font-weight: bold;">Video Container:</div>
+        <video id="publisherVideoContainer" style="background-color: black;" autoplay muted controls></video>
+      </div>
+      <div style="padding: 10px 10;" id="publisherError"></div>
+      <div style="padding: 10px 0;" id="publisherAuthError"></div>
+      <div style="padding: 10px 0;" id="publisherMessage"></div>
+    </div>
+  </div>
+
+  <div style="padding: 20px 5;">
+    <h2>Subscriber #1</h2>
+    <div style="padding: 10px 0;" id="subscriberOneError"></div>
+    <div style="display: inline-block;">
+      <div style="font-weight: bold;">Video Container:</div>
+      <video id="subscriberOneVideoContainer" autoplay muted controls></video>
+    </div>
+    <div style="display: inline-block;">
+      <div style="font-weight: bold;">Canvas:</div>
+      <canvas id="subscriberOneCanvas"></canvas>
+    </div>
+    <div style="padding: 10px 0;" id="subscriberOneChannelStatus"></div>
+  </div>
+
+  <div style="padding: 20px 5;">
+    <h2>Subscriber #2</h2>
+    <div style="padding: 10px 0;" id="subscriberTwoError"></div>
+    <div style="display: inline-block;">
+      <div style="font-weight: bold;">Video Container:</div>
+      <video id="subscriberTwoVideoContainer" autoplay muted controls></video>
+    </div>
+    <div style="display: inline-block;">
+      <div style="font-weight: bold;">Canvas:</div>
+      <canvas id="subscriberTwoCanvas"></canvas>
+    </div>
+    <div style="padding: 10px 0;" id="subscriberTwoChannelStatus"></div>
+  </div>
+
+  <div style="padding: 20px 5;"></div>
+    <div style="display: inline-block;">
+      <h3>Subscriber #1 stats:</h3>
+      <pre id="subscriberOneStats"></pre>
+    </div>
+    <div style="display: inline-block;">
+      <h3>Subscriber #2 stats:</h3>
+      <pre id="subscriberTwoStats"></pre>
+    </div>
+  </div>
+
+  <div style="height: 50px;"></div>
+</body>
+
+</html>

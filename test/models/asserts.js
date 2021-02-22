@@ -591,6 +591,66 @@ module.exports = class Asserts {
     await this.finishTest();
   }
 
+  async assertSyncWatch() {
+    this.assert(
+      'Max video sync between both subscribers',
+      this.page.stats.maxVideoSync,
+      config.videoAssertProfile.syncWatch_max,
+      'lte'
+    );
+
+    this.assert(
+      'Max audio sync between both subscribers',
+      this.page.stats.maxAudioSync,
+      config.audioAssertProfile.syncWatch_max,
+      'lte'
+    );
+
+    this.assert(
+      'Average video sync between both subscribers',
+      this.page.stats.averageVideoSync,
+      config.videoAssertProfile.syncWatch_average,
+      'lte'
+    );
+
+    this.assert(
+      'Average audio sync between both subscribers',
+      this.page.stats.averageAudioSync,
+      config.audioAssertProfile.syncWatch_average,
+      'lte'
+    );
+
+    this.assert(
+      'Collected subscriber one video stats count',
+      this.page.stats.subscriberOneVideo.length,
+      0,
+      'gt'
+    );
+
+    this.assert(
+      'Collected subscriber two video stats count',
+      this.page.stats.subscriberTwoVideo.length,
+      0,
+      'gt'
+    );
+
+    this.assert(
+      'Collected subscriber one audio stats count',
+      this.page.stats.subscriberOneAudio.length,
+      0,
+      'gt'
+    );
+
+    this.assert(
+      'Collected subscriber two audio stats count',
+      this.page.stats.subscriberTwoAudio.length,
+      0,
+      'gt'
+    );
+
+    await this.finishTest();
+  }
+
   async assertReceiverChat() {
     const chatReceiveProfile = config.chatAssertProfile.receive;
     const requestedHistoryStart = this.page.stats.requestedHistoryStart;

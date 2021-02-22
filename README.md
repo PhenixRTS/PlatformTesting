@@ -314,6 +314,29 @@ npm run test -- --tests=test/fixtures/room-chat-test.js --roomAlias=MyAwesomeRoo
 
 To be able to synchronize time in between send and receive client in different regions you need to configure your network settings to use `time.google.com` as your NTP server. See more information here: https://developers.google.com/time/ and https://developers.google.com/time/guides.
 
+## SyncWatch test
+
+The SyncWatch test is defined in `./test/fixtures/channel-sync-watch-test.js`
+
+Example:
+```
+npm run test -- --tests="test/fixtures/channel-sync-watch-test.js" \
+--channelAlias='syncWatchTest' \
+--applicationId='<yourAppID>' \
+--secret='<yourSecret>' \
+--browsers='chrome' \
+--runtime='PT1M' \
+--logAllStatsInReport=true \
+--saveConsoleLogs=true \
+--backendUri='<yourBackendUri>' \
+--pcastUri='<yourPcastUri>' \
+--publisherBackendUri='<yourPublisherBackendUri>' \
+--publisherPcastUri='yourPublisherPcastUri'
+```
+This will run a test where synthetic video is published and 2 subscribers join the channel. After the test it will assert video and audio synchronisation between these 2 subscribers.
+
+Average and max video and audio sync is asserted.
+
 ## Web SDK v2 support
 
 It is possible to give a path to web SDK source using `--webSdkSource=<path-to-source>`.

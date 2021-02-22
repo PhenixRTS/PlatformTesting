@@ -62,7 +62,9 @@ const videoProfile = {
   maxRTMPLag: 'PT2.5S',
   syncPublishedVideoFps: 24,
   maxAverageSync: 30,
-  maxSingleSync: 70
+  maxSingleSync: 70,
+  syncWatch_max: 100,
+  syncWatch_average: 50
 };
 const audioProfile = {
   inherits: null,
@@ -84,7 +86,9 @@ const audioProfile = {
       maxAllowed: 500,
       timesPerMinute: 0
     }
-  ]
+  ],
+  syncWatch_max: 100,
+  syncWatch_average: 50
 };
 const chatProfile = {
   inherits: null,

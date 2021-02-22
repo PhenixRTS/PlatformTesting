@@ -42,6 +42,9 @@ class App {
     app.get('/sync', (req, res) => {
       res.sendFile(path.join(__dirname, 'public', 'sync.html')); // eslint-disable-line no-undef
     });
+    app.get('/syncwatch', (req, res) => {
+      res.sendFile(path.join(__dirname, 'public', 'sync_watch.html')); // eslint-disable-line no-undef
+    });
     app.get('/chat', (req, res) => {
       res.sendFile(path.join(__dirname, 'public', 'chat.html')); // eslint-disable-line no-undef
     });
