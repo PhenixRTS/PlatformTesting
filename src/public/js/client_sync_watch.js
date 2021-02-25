@@ -23,6 +23,7 @@ let channelJoinRetriesOne = getUrlParams('channelJoinRetries');
 let channelJoinRetriesTwo = getUrlParams('channelJoinRetries');
 const publisherBackendUri = getUrlParams('publisherBackendUri');
 const publisherPcastUri = getUrlParams('publisherPcastUri');
+const pcastUriSecondSubscriber = getUrlParams('pcastUriSecondSubscriber');
 const audioFFTSize = 512;
 const mediaListenInterval = 10;
 const maxColorDifferenceFromPureWhite = 150;
@@ -108,7 +109,8 @@ function subscribe() {
     subscriberTwoVideoEl,
     channelAlias,
     joinChannelCallback,
-    subscriberTwoCallback
+    subscriberTwoCallback,
+    pcastUriSecondSubscriber
   );
 
   drawVideoToCanvas();

@@ -23,7 +23,7 @@ let channel;
 
 document.dispatchEvent(commonLoadedEvent);
 
-function joinChannel(videoElement, channelAlias, joinChannelCallback, channelJoinedCallback) {
+function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriberCallback, pcastUri = '') {
   const edgeToken = new URLSearchParams(location.search).get('edgeToken');
 
   channel = phenix.Channels.createChannel({

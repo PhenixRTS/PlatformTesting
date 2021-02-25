@@ -40,6 +40,7 @@ const argv = require('yargs')
   .describe('roomAlias', 'Alias of the room to view')
   .describe('backendUri', '')
   .describe('pcastUri', '')
+  .describe('pcastUriSecondSubscriber', 'pcastUri for second subscriber in sync watch test')
   .describe('browsers', 'Browsers in which to run test. Can run same test in multiple instances, example "chrome, chrome"')
   .describe('tests', 'Path to test file')
   .describe('runtime', 'Runtime of the test in ISO 8601 duration format')
@@ -96,6 +97,7 @@ const argv = require('yargs')
     features: undefined,
     backendUri: 'https://demo.phenixrts.com',
     pcastUri: 'https://pcast.phenixrts.com',
+    pcastUriSecondSubscriber: '',
     publisherBackendUri: 'https://demo.phenixrts.com/pcast',
     publisherPcastUri: 'https://pcast.phenixrts.com',
     browsers: 'chrome',
@@ -165,6 +167,7 @@ async function test() {
     `&publisherBackendUri=${config.publisherArgs.publisherBackendUri}` +
     `&publisherPcastUri=${config.publisherArgs.publisherPcastUri}` +
     `&pcastUri=${config.pcastUri}` +
+    `&pcastUriSecondSubscriber=${config.pcastUriSecondSubscriber}` +
     `&edgeToken=${config.args.edgeToken}` +
     `&streamToken=${config.publisherArgs.streamToken}` +
     `&authToken=${config.args.authToken}` +
@@ -327,6 +330,7 @@ function parseTestArgs() {
 
   config.backendUri = argv.backendUri;
   config.pcastUri = argv.pcastUri;
+  config.pcastUriSecondSubscriber = argv.pcastUriSecondSubscriber !== '' ? argv.pcastUriSecondSubscriber : argv.pcastUri;
 
   if (argv.channelAlias !== '') {
     config.channelAlias = argv.channelAlias;

@@ -28,7 +28,7 @@ let didValidateThatThereIsNoOtherStream = false;
 
 document.dispatchEvent(commonLoadedEvent);
 
-function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriberCallback) {
+function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriberCallback, pcastUri = '') {
   const backendUri = getUrlParams('backendUri');
   const edgeToken = getUrlParams('edgeToken');
   const authToken = getUrlParams('authToken');
@@ -46,7 +46,8 @@ function joinChannel(videoElement, channelAlias, joinChannelCallback, subscriber
   }
 
   if (channelExpress === undefined) {
-    const pcastUri = getUrlParams('pcastUri');
+    pcastUri = pcastUri === '' ? getUrlParams('pcastUri') : pcastUri;
+
     const featuresParam = getUrlParams('features');
     const features = featuresParam === undefined ? [] : featuresParam.split(',');
 

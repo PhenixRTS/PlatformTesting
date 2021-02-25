@@ -317,6 +317,7 @@ To be able to synchronize time in between send and receive client in different r
 ## SyncWatch test
 
 The SyncWatch test is defined in `./test/fixtures/channel-sync-watch-test.js`
+You can also set different pcast url for the second viewer and test across regions using `--pcastUriSecondSubscriber` argument.
 
 Example:
 ```
@@ -330,6 +331,7 @@ npm run test -- --tests="test/fixtures/channel-sync-watch-test.js" \
 --saveConsoleLogs=true \
 --backendUri='<yourBackendUri>' \
 --pcastUri='<yourPcastUri>' \
+--pcastUriSecondSubscriber='<yourPcastUriForSecondSubscriber>' \
 --publisherBackendUri='<yourPublisherBackendUri>' \
 --publisherPcastUri='yourPublisherPcastUri'
 ```
