@@ -200,7 +200,7 @@ async function validateThatThereIsNoOtherPublishers(backendUri, channelId) {
             log('Validation successful - no other publisher in the room before publishing');
             resolve(true);
           } else {
-            log(`There are other publishers [${result}] in the room before publishing`);
+            error(`There are [${result}] other publishers in the room before publishing`);
             resolve(false);
           }
         } else {
