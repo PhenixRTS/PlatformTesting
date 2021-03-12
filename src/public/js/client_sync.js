@@ -147,16 +147,20 @@ function subscriberCallback(receivedError, response) {
     });
   }
 
-  log(`[Subscriber Stream received] ${Date.now()}`);
-  subscriberStream = response.mediaStream;
+  if (response.mediaStream === undefined) {
+    error(`Undefined response.mediaStream received in subscriberCallback while response status [${response.status}]`);
+  } else {
+    log(`[Subscriber Stream received] ${Date.now()}`);
+    subscriberStream = response.mediaStream;
 
-  subscriberStream.select((track, index) => {
-    if (track.kind === 'audio') {
-      log(`Subscriber media stream audio [${index}] settings [${JSON.stringify(track.getSettings())}]`);
-    }
+    subscriberStream.select((track, index) => {
+      if (track.kind === 'audio') {
+        log(`Subscriber media stream audio [${index}] settings [${JSON.stringify(track.getSettings())}]`);
+      }
 
-    return true;
-  });
+      return true;
+    });
+  }
 
   drawVideoToCanvas();
   startFpsStatsLogging(subscriberStream, getFpsStatsCallback);
