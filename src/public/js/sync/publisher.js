@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, getUrlParams, publishTo, startMultimediaRecordingFor, showPublisherErrorMessage, showPublisherMessage, subscribe, stopPublisher */
+/* global log, error, getUrlParams, publishTo, startMultimediaRecordingFor, showPublisherErrorMessage, showPublisherMessage, subscribe, stopPublisher */
 
 const audioSampleRate = 44100;
 const fps = getUrlParams('syncFps');
@@ -123,15 +123,13 @@ async function publish(
   );
 }
 
-function publishCallback(error, response) {
-  if (error) {
-    log('PublishCallback returned error=' + error.message);
-    showPublisherErrorMessage(
-      `\nPublish callback returned error: ${error.message}\n`
-    );
-    stopPublisher(publisherChannelExpress);
+function publishCallback(err, response) {
+  if (err) {
+    const message = `Error in publish callback - ${err.message}`;
 
-    throw error;
+    showPublisherErrorMessage(`\n${message}\n`);
+    error(message);
+    stopPublisher(publisherChannelExpress);
   }
 
   if (
@@ -139,12 +137,11 @@ function publishCallback(error, response) {
     response.status !== 'ended' &&
     response.status !== 'stream-ended'
   ) {
-    stopPublisher(publisherChannelExpress);
-    showPublisherErrorMessage(
-      `\nError in publish callback. Got response status: ${response.status}\n`
-    );
+    const message = `Error in publish callback - got response status: ${response.status}`;
 
-    throw new Error(response.status);
+    showPublisherErrorMessage(`\n${message}\n`);
+    error(message);
+    stopPublisher(publisherChannelExpress);
   }
 
   if (response.status === 'ok') {

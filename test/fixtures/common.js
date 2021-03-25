@@ -257,17 +257,26 @@ const initRtmpPush = async(testType, channel) => {
 };
 
 const createOrGetChannel = async(testcafe) => {
-  const {channelAlias} = config;
-  const channel = await pcastApi.createOrGetChannel(channelAlias);
+  return new Promise((resolve, reject) => {
+    const {channelAlias} = config;
+    console.log(`Creating or getting channel with alias [${channelAlias}]`);
 
-  ok(channel !== null, `Could not create or get channel with alias [${channelAlias}]`);
+    pcastApi.createOrGetChannel(channelAlias)
+      .then((channel) => {
+        ok(channel !== undefined, `Could not create or get channel with alias [${channelAlias}]`);
 
-  if (channel === null) {
-    testcafe.ctx.testFailed = true;
-    return;
-  }
+        if (channel === undefined) {
+          testcafe.ctx.testFailed = true;
+          return;
+        }
 
-  return channel;
+        resolve(channel);
+      })
+      .catch(error => {
+        console.error(error);
+        reject(error);
+      });
+  });
 };
 
 const finishAndReport = async(testFile, page, t, createdChannel = {}) => {

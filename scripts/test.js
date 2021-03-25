@@ -435,6 +435,12 @@ function validateTestTypeArguments() {
     }
   }
 
+  if (argv.tests.indexOf('channel-sync-watch-test') > -1) {
+    if (argv.secret === '' || argv.applicationId === '') {
+      exitWithErrorMessage(`Error: --secret and --applicationId are required for sync test`);
+    }
+  }
+
   if (argv.tests.indexOf('channel-lag-test') > -1) {
     if (argv.secret === '' || argv.applicationId === '') {
       exitWithErrorMessage(`Error: --secret and --applicationId are required for lag test`);

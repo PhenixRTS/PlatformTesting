@@ -52,24 +52,23 @@ async function createOrGetChannel(name, description = '', options = []) {
     }
   };
 
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     request('PUT', '/channel', body)
       .then(response => response.json())
       .then(result => {
         config.createdChannel.channelStatus = result.status;
 
         if (result.status === 'ok') {
-          console.log(`Created channel with alias [${name}]`);
+          console.log(`Created channel with alias [${name}] id [${result.channel.channelId}]`);
           config.createdChannel.channelId = result.channel.channelId;
           resolve(result.channel);
         } else if (result.status === 'already-exists') {
-          console.log(`Using already-existing channel with alias [${name}]`);
+          console.log(`Using already-existing channel with alias [${name}] id [${result.channel.channelId}]`);
           config.createdChannel.channelId = result.channel.channelId;
           resolve(result.channel);
         } else {
-          console.error(`Got response status [${result.status}] when tried to create channel:`);
           console.log(result);
-          resolve(null);
+          reject(Error(`Got response status [${result.status}] when tried to create channel`));
         }
       });
   });

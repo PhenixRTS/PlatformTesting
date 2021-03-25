@@ -121,8 +121,6 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
 
   const authToken = getUrlParams('authToken');
   const edgeToken = getUrlParams('edgeToken');
-  const applicationId = getUrlParams('applicationId');
-  const secret = getUrlParams('secret');
 
   initialiseAdminProxyClient(backendUri, true);
 
