@@ -37,7 +37,10 @@ async function request(method, endpoint, body = null) {
     requestConf.body = JSON.stringify(body);
   }
 
-  const response = await fetch(baseUrl + endpoint, requestConf);
+  const response = await fetch(baseUrl + endpoint, requestConf)
+    .catch(error => {
+      console.error(`Failed to fetch from [${baseUrl + endpoint}]. Error: `, error);
+    });
 
   return await response;
 }
@@ -67,9 +70,11 @@ async function createOrGetChannel(name, description = '', options = []) {
           config.createdChannel.channelId = result.channel.channelId;
           resolve(result.channel);
         } else {
-          console.log(result);
+          console.error(result);
           reject(Error(`Got response status [${result.status}] when tried to create channel`));
         }
+      }).catch(error => {
+        reject(error);
       });
   });
 }
