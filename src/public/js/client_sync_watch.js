@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global canvasWidth, canvasHeight, publish, audioSampleRate, beepFrequencyOne, beepFrequencyTwo, fps, oneUnit, log, error, joinChannel, rejoinChannel, getUrlParams, startListeningToSubscriberAudioChanges, showChannelStatus, startFpsStatsLogging, logStreamAndSessionId */
+/* global canvasWidth, canvasHeight, publish, audioSampleRate, beepFrequencyOne, beepFrequencyTwo, fps, oneUnit, log, logStat, error, joinChannel, rejoinChannel, getUrlParams, startListeningToSubscriberAudioChanges, showChannelStatus, startFpsStatsLogging, logStreamAndSessionId */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelName = 'Sync Watch test';
@@ -170,7 +170,7 @@ function subscriberOneCallback(receivedError, response) {
 
   if (response.renderer) {
     logStreamAndSessionId(response.renderer, 'Stream One ID', 'Session One ID');
-    log(`[Channel Type] Channel`);
+    logStat(`[Channel Type] Channel`);
 
     const subscriberOneVideoEl = document.getElementById('subscriberOneVideoContainer');
     subscriberOneVideoEl.muted = false;
@@ -241,7 +241,7 @@ function subscriberTwoCallback(receivedError, response) {
 
   if (response.renderer) {
     logStreamAndSessionId(response.renderer, 'Stream Two ID', 'Session Two ID');
-    log(`[Channel Type] Channel`);
+    logStat(`[Channel Type] Channel`);
 
     const subscriberTwoVideoEl = document.getElementById('subscriberTwoVideoContainer');
     subscriberTwoVideoEl.muted = false;

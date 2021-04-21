@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, error, joinChannel, rejoinChannel, getUrlParams, rgbToHex, startListeningToSubscriberAudioChanges, constants, jsQR, moment, showChannelStatus, publish, startFpsStatsLogging, logStreamAndSessionId */
+/* global log, logStat, error, joinChannel, rejoinChannel, getUrlParams, rgbToHex, startListeningToSubscriberAudioChanges, constants, jsQR, moment, showChannelStatus, publish, startFpsStatsLogging, logStreamAndSessionId */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelName = 'Lag test';
@@ -209,7 +209,7 @@ function subscriberCallback(receivedError, response) {
 
   if (response.renderer) {
     logStreamAndSessionId(response.renderer);
-    log(`[Channel Type] Channel`);
+    logStat(`[Channel Type] Channel`);
 
     subscriberVideoEl.muted = false;
 

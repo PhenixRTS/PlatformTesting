@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global getUrlParams, getChannelUri, log, sdk, chat, moment */
+/* global getUrlParams, getChannelUri, log, logStat, sdk, chat, moment */
 
 let roomExpress = null;
 let messageCount = 0;
@@ -112,10 +112,10 @@ function joinRoomCallback(err, response) {
   }
 
   log('Successfully joined the room');
-  log(`[Session ID] ${response.roomService.getSelf().getSessionId()}`);
+  logStat(`[Session ID] ${response.roomService.getSelf().getSessionId()}`);
 
   log('Getting and starting ChatService');
-  log(`[Channel Type] Room`);
+  logStat(`[Channel Type] Room`);
 
   setTimeout(async() => {
     chatService = response.roomService.getChatService();

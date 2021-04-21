@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global error, getUrlParams, getChannelUri, log, sdk */
+/* global error, getUrlParams, getChannelUri, log, logStat, sdk */
 
 let roomExpress = null;
 let statsCollectingInterval = null;
@@ -138,10 +138,10 @@ function membersChangedCallback(members) {
 
         if (status === 'ok') {
           if (mediaStream) {
-            log(`[Stream received] [memberID:${memberID}] ${Date.now()}`);
-            log(`[Stream ID] ${streamId}`);
-            log(`[Session ID] ${sessionID}`);
-            log(`[Channel Type] Room`);
+            logStat(`[Stream received] [memberID:${memberID}] ${Date.now()}`);
+            logStat(`[Stream ID] ${streamId}`);
+            logStat(`[Session ID] ${sessionID}`);
+            logStat(`[Channel Type] Room`);
             streams[memberID] = mediaStream;
           } else if (failIfMemberHasNoStream) {
             const msg = `Error: [${screenName}] (session ID: [${sessionID}]) has no media stream!`;

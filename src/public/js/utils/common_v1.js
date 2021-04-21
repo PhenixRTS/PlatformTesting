@@ -15,7 +15,7 @@
  */
 
 /* eslint-disable no-unused-vars */
-/* global MRecordRTC, request, getUrlParams, log, error, getChannelUri, showPublisherMessage, showPublisherErrorMessage, validateThatThereIsNoOtherPublishers, getChannelId */
+/* global MRecordRTC, request, getUrlParams, log, logStat, error, getChannelUri, showPublisherMessage, showPublisherErrorMessage, validateThatThereIsNoOtherPublishers, getChannelId */
 
 const commonLoadedEvent = new Event('common_loaded');
 const sdk = window['phenix-web-sdk'];
@@ -108,7 +108,7 @@ function startStatsLogging(stream) {
 
 function getStatsCallback(stats) {
   stats.forEach(stat => {
-    log(`[Media Stream Stats] ${JSON.stringify({
+    logStat(`[Media Stream Stats] ${JSON.stringify({
       timestamp: Date.now(),
       stat
     })}`);
@@ -153,6 +153,7 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
 
   const successCallback = () => {
     log(`Successfully validated that it is safe to publish`);
+    log(`Publishing using ChannelExpress with publish options: [${JSON.stringify(publishOptions)}]`);
     channelExpress.publishToChannel(publishOptions, publishCallback);
 
     return channelExpress;

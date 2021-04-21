@@ -47,13 +47,27 @@ function insertCommonScript() {
   firstPageScript.parentNode.insertBefore(script, firstPageScript);
 }
 
-function log(msg) {
+function logStat(msg) {
   console.info(`\n[Acceptance Testing] ${msg}`);
 }
 
+function log(msg) {
+  let timestamp = new Date();
+  console.info(`\n[Acceptance Testing] [${timestamp.toUTCString()}] ${msg}`);
+}
+
 function error(msg, elementId = 'subscriberError') {
-  console.error(`[Acceptance Testing Error] ${msg}`);
+  let timestamp = new Date();
+  console.error(`[Acceptance Testing Error] [${timestamp.toUTCString()}] ${msg}`);
   showSubscriberError(msg, elementId);
+}
+
+function logErrorResponse(response) {
+  console.error(`Response: {
+    status: ${response.status},
+    publisher: ${JSON.stringify(response.publisher, null, 2)},
+    channelService: ${response.channelService}
+  }`);
 }
 
 function rgbToHex(color) {

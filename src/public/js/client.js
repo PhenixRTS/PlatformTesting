@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-/* global log, getUrlParams, joinChannel, RecordRTC, error, startMultimediaRecordingFor, startStatsLogging, logStreamAndSessionId, getWebSDKVersion */
+/* global log, logStat, getUrlParams, joinChannel, RecordRTC, error, startMultimediaRecordingFor, startStatsLogging, logStreamAndSessionId, getWebSDKVersion */
 
 let stream = undefined;
 let channelInformation;
 
 document.addEventListener('common_loaded', () => {
   channelInformation = `ChannelAlias [${getUrlParams('channelAlias')}], applicationId [${getUrlParams('applicationId')}], backendUri [${getUrlParams('backendUri')}]`;
-  log(`[Url loaded] ${Date.now()}`);
+  logStat(`[Url loaded] ${Date.now()}`);
 
   let sdkVersion = getWebSDKVersion();
   let callback = channelJoinedCallback;
@@ -48,7 +48,7 @@ function joinChannelCallback(err, response) {
   }
 
   if (response.status === 'ok') {
-    log(`[Channel Type] Channel`);
+    logStat(`[Channel Type] Channel`);
 
     if (response.channelService) {
       log('Successfully joined the channel');
@@ -91,7 +91,7 @@ function subscriberCallback(err, response) {
     });
   }
 
-  log(`[Stream received] ${Date.now()}`);
+  logStat(`[Stream received] ${Date.now()}`);
   stream = response.mediaStream;
 
   startStatsLogging(stream);

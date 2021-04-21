@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global canvasWidth, canvasHeight, publish, audioSampleRate, beepFrequencyOne, beepFrequencyTwo, fps, oneUnit, log, error, joinChannel, rejoinChannel, getUrlParams, startListeningToSubscriberAudioChanges, showChannelStatus, startFpsStatsLogging, logStreamAndSessionId */
+/* global canvasWidth, canvasHeight, publish, audioSampleRate, beepFrequencyOne, beepFrequencyTwo, fps, oneUnit, log, logStat, error, joinChannel, rejoinChannel, getUrlParams, startListeningToSubscriberAudioChanges, showChannelStatus, startFpsStatsLogging, logStreamAndSessionId */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelName = 'Sync test';
@@ -132,7 +132,7 @@ function subscriberCallback(receivedError, response) {
 
   if (response.renderer) {
     logStreamAndSessionId(response.renderer);
-    log(`[Channel Type] Channel`);
+    logStat(`[Channel Type] Channel`);
 
     const subscriberVideoEl = document.getElementById('subscriberVideoContainer');
     subscriberVideoEl.muted = false;

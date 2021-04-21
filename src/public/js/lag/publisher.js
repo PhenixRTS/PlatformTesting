@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherErrorMessage, showPublisherMessage, subscribe, stopPublisher, error, shouldLogPublisherStats */
+/* global log, logErrorResponse, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherErrorMessage, showPublisherMessage, subscribe, stopPublisher, error, shouldLogPublisherStats */
 
 var canvasColorArr = ['#ffff00', '#009900', '#ff0000', '#0000ff', '#000000'];
 var nextCanvasColor = canvasColorArr[0];
@@ -113,6 +113,7 @@ async function publish(
   publisherPcastUri,
   channelName
 ) {
+  log(`[${new Date()}] Starting publishing to channel with alias [${channelAlias}] and name [${channelName}]...`);
   testMediaStream = initPublisher();
 
   publisherChannelExpress = await publishTo(
@@ -127,10 +128,11 @@ async function publish(
 
 function publishCallback(err, response) {
   if (err) {
-    const message = `Error in publish callback - ${err.message}`;
+    const message = `Error in publish callback: [${err.message}]`;
 
     showPublisherErrorMessage(`\n${message}\n`);
     error(message);
+    logErrorResponse(response);
     stopPublisher(publisherChannelExpress);
   }
 
@@ -139,10 +141,11 @@ function publishCallback(err, response) {
     response.status !== 'ended' &&
     response.status !== 'stream-ended'
   ) {
-    const message = `Error in publish callback - got response status: ${response.status}`;
+    const message = `Error in publish callback - got response status: [${response.status}]`;
 
     showPublisherErrorMessage(`\n${message}\n`);
     error(message);
+    logErrorResponse(response);
     stopPublisher(publisherChannelExpress);
   }
 
