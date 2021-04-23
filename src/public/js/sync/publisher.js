@@ -111,7 +111,7 @@ async function publish(
   publisherPcastUri,
   channelName
 ) {
-  log(`[${new Date()}] Starting publishing to channel with alias [${channelAlias}] and name [${channelName}]...`);
+  log(`Starting publishing to channel with alias [${channelAlias}] and name [${channelName}]...`);
   testMediaStream = initPublisher();
 
   publisherChannelExpress = await publishTo(

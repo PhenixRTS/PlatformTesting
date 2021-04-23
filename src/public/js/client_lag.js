@@ -56,7 +56,7 @@ var shouldLogPublisherStats = false; // eslint-disable-line no-unused-vars
 const timestampDecodeInterval = 1000;
 
 document.addEventListener('common_loaded', async() => {
-  log(`[Url loaded] ${Date.now()}`);
+  logStat(`[Url loaded] ${Date.now()}`);
   await prepare();
 });
 
@@ -83,7 +83,7 @@ async function prepare() {
 }
 
 function logSubscriberAudioChanges(timestamp, frequency) {
-  log(
+  logStat(
     `[Subscriber Audio] {"timestamp": ${timestamp}, "frequency": ${frequency}}`
   );
   subscriberFrequencyValueEl.innerHTML = `Got ${frequency} Hz`;
@@ -110,7 +110,7 @@ function decodeQR() {
     const qrTime = moment.utc(Number(qrCode.data)).format();
 
     subscriberDecodedTimestamp.innerHTML = `QR Code data: ${qrTime}`;
-    log(
+    logStat(
       `[Subscriber Video] {"type": "${constants.lagType.time}", "timestamp": ${timeReceived}, "qrTimestamp": ${qrCode.data}}`
     );
   }
@@ -133,7 +133,7 @@ function listenToSubscriberVideoChanges() {
   ) {
     const timestamp = Date.now();
 
-    log(
+    logStat(
       `[Subscriber Video] {"type": "${constants.lagType.color}", "timestamp": ${timestamp}, "color": {"r": ${r}, "g": ${g}, "b": ${b}}}`
     );
 
@@ -225,7 +225,7 @@ function subscriberCallback(receivedError, response) {
     subscriberVideoEl.muted = false;
   }
 
-  log(`[Subscriber Stream received] ${Date.now()}`);
+  logStat(`[Subscriber Stream received] ${Date.now()}`);
   subscriberStream = response.mediaStream;
 
   subscriberStream.select((track, index) => {
@@ -270,7 +270,7 @@ function subscriberCallback(receivedError, response) {
 function getFpsStatsCallback(stats) {
   stats.forEach(stat => {
     if (stat.framerateMean) {
-      log(`[Stream Framerate Mean] ${JSON.stringify({
+      logStat(`[Stream Framerate Mean] ${JSON.stringify({
         timestamp: Date.now(),
         framerate: stat.framerateMean
       })}`);

@@ -24,7 +24,7 @@ const videoList = document.getElementById('videoList');
 const canvasList = document.getElementById('canvasList');
 
 document.addEventListener('common_loaded', () => {
-  log(`[Url loaded] ${Date.now()}`);
+  logStat(`[Url loaded] ${Date.now()}`);
 
   const roomAlias = getUrlParams('roomAlias');
 
@@ -172,7 +172,7 @@ function startMemberStatsLogging() {
 
 function getMemberStatsCallback(stats, memberID) {
   stats.forEach(stat => {
-    log(`[Media Stream Stats] [memberID:${memberID}] ${JSON.stringify({
+    logStat(`[Media Stream Stats] [memberID:${memberID}] ${JSON.stringify({
       timestamp: Date.now(),
       stat
     })}`);

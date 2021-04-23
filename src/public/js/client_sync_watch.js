@@ -43,7 +43,7 @@ var subscriberTwoStats;
 var lastTimeCenteredTwo = new Date();
 
 document.addEventListener('common_loaded', async() => {
-  log(`[Url loaded] ${Date.now()}`);
+  logStat(`[Url loaded] ${Date.now()}`);
   await prepare();
 });
 
@@ -76,22 +76,22 @@ async function prepare() {
 }
 
 function logSubscriberOneVideoCenter(timestamp) {
-  log(`[Subscriber One Video] {"timestamp": ${timestamp}}`);
+  logStat(`[Subscriber One Video] {"timestamp": ${timestamp}}`);
   subscriberOneStats.innerHTML += `Last centered at ${timestamp}\n`;
 }
 
 function logSubscriberTwoVideoCenter(timestamp) {
-  log(`[Subscriber Two Video] {"timestamp": ${timestamp}}`);
+  logStat(`[Subscriber Two Video] {"timestamp": ${timestamp}}`);
   subscriberTwoStats.innerHTML += `Last centered at ${timestamp}\n`;
 }
 
 function logSubscriberOneAudioBeep(timestamp) {
-  log(`[Subscriber One Audio] {"timestamp": ${timestamp}}`);
+  logStat(`[Subscriber One Audio] {"timestamp": ${timestamp}}`);
   subscriberOneStats.innerHTML += `Audio heard at ${timestamp}\n`;
 }
 
 function logSubscriberTwoAudioBeep(timestamp) {
-  log(`[Subscriber Two Audio] {"timestamp": ${timestamp}}`);
+  logStat(`[Subscriber Two Audio] {"timestamp": ${timestamp}}`);
   subscriberTwoStats.innerHTML += `Audio heard at ${timestamp}\n`;
 }
 
@@ -256,7 +256,7 @@ function subscriberTwoCallback(receivedError, response) {
     });
   }
 
-  log(`[Subscriber Stream Two received] ${Date.now()}`);
+  logStat(`[Subscriber Stream Two received] ${Date.now()}`);
   subscriberTwoStream = response.mediaStream;
 
   subscriberTwoStream.select((track, index) => {
@@ -279,7 +279,7 @@ function subscriberTwoCallback(receivedError, response) {
 function getFpsStatsOneCallback(stats) {
   stats.forEach(stat => {
     if (stat.framerateMean) {
-      log(`[Stream One Framerate Mean] ${JSON.stringify({
+      logStat(`[Stream One Framerate Mean] ${JSON.stringify({
         timestamp: Date.now(),
         framerate: stat.framerateMean
       })}`);
@@ -290,7 +290,7 @@ function getFpsStatsOneCallback(stats) {
 function getFpsStatsTwoCallback(stats) {
   stats.forEach(stat => {
     if (stat.framerateMean) {
-      log(`[Stream Two Framerate Mean] ${JSON.stringify({
+      logStat(`[Stream Two Framerate Mean] ${JSON.stringify({
         timestamp: Date.now(),
         framerate: stat.framerateMean
       })}`);

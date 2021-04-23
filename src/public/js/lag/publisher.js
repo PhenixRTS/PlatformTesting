@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, logErrorResponse, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherErrorMessage, showPublisherMessage, subscribe, stopPublisher, error, shouldLogPublisherStats */
+/* global log, logStat, logErrorResponse, getUrlParams, startMultimediaRecordingFor, publishTo, showPublisherErrorMessage, showPublisherMessage, subscribe, stopPublisher, error, shouldLogPublisherStats */
 
 var canvasColorArr = ['#ffff00', '#009900', '#ff0000', '#0000ff', '#000000'];
 var nextCanvasColor = canvasColorArr[0];
@@ -113,7 +113,7 @@ async function publish(
   publisherPcastUri,
   channelName
 ) {
-  log(`[${new Date()}] Starting publishing to channel with alias [${channelAlias}] and name [${channelName}]...`);
+  log(`Starting publishing to channel with alias [${channelAlias}] and name [${channelName}]...`);
   testMediaStream = initPublisher();
 
   publisherChannelExpress = await publishTo(
@@ -169,7 +169,7 @@ function updateCanvasColor() {
     var imgData = publisherCanvasCtx.getImageData(10, 10, 1, 1).data;
 
     if (shouldLogPublisherStats) {
-      log(
+      logStat(
         `[Publisher Video] {"timestamp": ${Date.now()}, "color": {"r": ${
           imgData[0]
         }, "g": ${imgData[1]}, "b": ${imgData[2]}}}`
@@ -197,7 +197,7 @@ function changeAudioTone() {
       panNode.pan.setValueAtTime(0, audioCtx.currentTime);
     }
 
-    log(
+    logStat(
       `[Publisher Audio] {"timestamp": ${Date.now()}, "frequency": ${
         audioFrequencies[nextFrequencyIndex]
       }}`

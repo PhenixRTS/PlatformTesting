@@ -34,7 +34,7 @@ var subscriberStats;
 var lastTimeCentered = new Date();
 
 document.addEventListener('common_loaded', async() => {
-  log(`[Url loaded] ${Date.now()}`);
+  logStat(`[Url loaded] ${Date.now()}`);
   await prepare();
 });
 
@@ -58,12 +58,12 @@ async function prepare() {
 }
 
 function logSubscriberVideoCenter(timestamp) {
-  log(`[Subscriber Video] {"timestamp": ${timestamp}}`);
+  logStat(`[Subscriber Video] {"timestamp": ${timestamp}}`);
   subscriberStats.innerHTML += `Last centered at ${timestamp}\n`;
 }
 
 function logSubscriberAudioBeep(timestamp) {
-  log(`[Subscriber Audio] {"timestamp": ${timestamp}}`);
+  logStat(`[Subscriber Audio] {"timestamp": ${timestamp}}`);
   subscriberStats.innerHTML += `Audio heard at ${timestamp}\n`;
 }
 
@@ -150,7 +150,7 @@ function subscriberCallback(receivedError, response) {
   if (response.mediaStream === undefined) {
     error(`Undefined response.mediaStream received in subscriberCallback while response status [${response.status}]`);
   } else {
-    log(`[Subscriber Stream received] ${Date.now()}`);
+    logStat(`[Subscriber Stream received] ${Date.now()}`);
     subscriberStream = response.mediaStream;
 
     subscriberStream.select((track, index) => {
@@ -175,7 +175,7 @@ function subscriberCallback(receivedError, response) {
 function getFpsStatsCallback(stats) {
   stats.forEach(stat => {
     if (stat.framerateMean) {
-      log(`[Stream Framerate Mean] ${JSON.stringify({
+      logStat(`[Stream Framerate Mean] ${JSON.stringify({
         timestamp: Date.now(),
         framerate: stat.framerateMean
       })}`);

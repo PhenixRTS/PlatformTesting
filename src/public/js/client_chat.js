@@ -39,7 +39,7 @@ const maxHistoryRequestCount = 3;
 const advisableDelayBeforeGettingChatService = 3000;
 
 document.addEventListener('common_loaded', () => {
-  log(`[Url loaded] ${Date.now()}`);
+  logStat(`[Url loaded] ${Date.now()}`);
 
   roomAlias = getUrlParams('roomAlias');
 
@@ -163,7 +163,7 @@ function startReceivingMessages(chatService) {
     });
 
     if (messageCount <= numMessages) {
-      log(`[Message received] ${jsonMessage}`);
+      logStat(`[Message received] ${jsonMessage}`);
       showReceivedMessages(`Received message [${message.messageId}]/[${messageReceived}]: ${message.message}\n`);
     }
 
@@ -388,7 +388,7 @@ function membersChangedCallback(members) {
 
 function showSentMessageResult(message) {
   const sentMessageSize = chat.byteSize(message);
-  log(`[Message Sent] ${JSON.stringify({
+  logStat(`[Message Sent] ${JSON.stringify({
     message: message,
     size: sentMessageSize
   })}`);
