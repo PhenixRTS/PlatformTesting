@@ -148,6 +148,7 @@ function listenToSubscriberVideoChanges() {
 // MARK: - Subscriber
 // eslint-disable-next-line no-unused-vars
 function subscribe() {
+  log('Subscribing from client side');
   joinChannel(
     subscriberVideoEl,
     channelAlias,

@@ -42,6 +42,8 @@ async function createOnDemandRtmpPush(file, region, channel, duration) {
 const getAudioBenchmarkStats = () => audioBenchmarkStats;
 
 async function startRtmpPush(testType, protocol, port, file, region, channel, capabilities) {
+  logger.log('Starting RTMP Push');
+
   const {audioLag, generateFrequencies} = constants;
   const {assetsPath} = config;
   const link = `${protocol}://${region}.phenixrts.com:${port}/ingest/${channel.streamKey};capabilities=${capabilities}`;
@@ -155,6 +157,7 @@ async function generateQRTimestampFile(qrImgPath, content) {
 }
 
 async function stopRtmpPush() {
+  logger.log('Stopping RTMP Push');
   clearInterval(audioBenchmarkInterval);
   clearInterval(qrGenerationInterval);
 

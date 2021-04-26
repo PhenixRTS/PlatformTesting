@@ -161,7 +161,7 @@ const monitorRoomStreams = async(testController) => {
 };
 
 const monitorRoomChat = async(testController) => {
-  const logger = new Logger('Monitor Test');
+  const logger = new Logger('Monitor Room Chat');
   logger.log('Monitoring chat test');
 
   const {testRuntimeMs} = config.args;
@@ -194,6 +194,8 @@ const monitorRoomChat = async(testController) => {
 };
 
 const monitorStream = async(testController, canvasID, videoID = '') => {
+  const logger = new Logger('Monitor Stream');
+  logger.log('Starting to monitor stream');
   const {noSignalColor, noSignalColorTolerance, noSignalWaitingTime, testRuntimeMs} = config.args;
   const waitingTimes = Math.ceil(moment.duration(noSignalWaitingTime).asSeconds());
 
@@ -218,6 +220,8 @@ const monitorStream = async(testController, canvasID, videoID = '') => {
 
     await testController.expect(noBroadcast).notEql(waitingTimes, 'No broadcast');
   }
+
+  logger.log('Stopped monitoring stream');
 };
 
 const waitForPublisher = channelId =>
@@ -242,6 +246,7 @@ const waitForPublisher = channelId =>
   });
 
 const initRtmpPush = async(testType, channel) => {
+  console.log('Initializing RTMP Push');
   const {capabilities, region} = config.publisherArgs;
   const {rtmpPushFile, rtmpLinkProtocol, rtmpPort} = config.rtmpPushArgs;
 
@@ -281,6 +286,7 @@ const createOrGetChannel = async(testcafe) => {
 
 const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   const logger = new Logger('Finish and Report');
+  logger.log('Report generation started');
   const {saveConsoleLogs, submitTelemetry} = config.args;
   let reportFileName = `${path.basename(testFile).split('.')[0]}`;
 
@@ -361,6 +367,8 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   } else {
     logger.log('Skipping telemetry.');
   }
+
+  logger.log('Report generation finished');
 };
 
 module.exports = {

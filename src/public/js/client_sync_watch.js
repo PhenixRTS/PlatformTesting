@@ -98,6 +98,7 @@ function logSubscriberTwoAudioBeep(timestamp) {
 // MARK: - Subscriber
 // eslint-disable-next-line no-unused-vars
 function subscribe() {
+  log('Subscribing first participant from client side');
   joinChannel(
     subscriberOneVideoEl,
     channelAlias,
@@ -105,6 +106,7 @@ function subscribe() {
     subscriberOneCallback
   );
 
+  log('Subscribing second participant from client side');
   joinChannel(
     subscriberTwoVideoEl,
     channelAlias,

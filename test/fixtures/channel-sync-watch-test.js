@@ -31,6 +31,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync watch of
   const isRtmpPush = config.rtmpPushArgs.rtmpPushFile !== '';
 
   createdChannel = await common.createOrGetChannel(t);
+  console.log(`Did create or got channel [${createdChannel.channelId}]`);
 
   if (isRtmpPush) {
     createdChannel = await common.initRtmpPush('syncwatch_test', createdChannel);

@@ -31,6 +31,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert lag of video/
   const isRtmpPush = config.rtmpPushArgs.rtmpPushFile !== '';
 
   createdChannel = await common.createOrGetChannel(t);
+  console.log(`Did create or got channel [${createdChannel.channelId}]`);
 
   if (isRtmpPush) {
     await common.initRtmpPush('lag_test', createdChannel);

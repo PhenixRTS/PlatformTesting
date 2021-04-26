@@ -46,6 +46,8 @@ async function request(method, endpoint, body = null) {
 }
 
 async function createOrGetChannel(name, description = '', options = []) {
+  console.log('Will create or get channel');
+
   const body = {
     channel: {
       alias: name,

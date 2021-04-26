@@ -32,6 +32,7 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync of video
   const isRtmpPush = rtmpPushFile !== '';
 
   createdChannel = await common.createOrGetChannel(t);
+  console.log(`Did create or got channel [${createdChannel.channelId}]`);
 
   if (isRtmpPush) {
     await common.initRtmpPush('sync_test', createdChannel);
