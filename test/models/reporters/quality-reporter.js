@@ -245,6 +245,9 @@ async function GetMeanVideoStats(stats) {
         meanVideoStats.mediaType = stat.mediaType;
         meanVideoStats.ssrc = stat.ssrc;
         meanVideoStats.direction = stat.direction;
+      }
+
+      if (meanVideoStats.codecName === null || meanVideoStats.codecName === '') {
         meanVideoStats.codecName = stat.nativeReport ? stat.nativeReport.googCodecName : stat.codecId;
       }
 
@@ -344,6 +347,9 @@ async function GetMeanAudioStats(stats) {
         meanAudioStats.mediaType = stat.mediaType;
         meanAudioStats.ssrc = stat.ssrc;
         meanAudioStats.direction = stat.direction;
+      }
+
+      if (meanAudioStats.codecName === null || meanAudioStats.codecName === '') {
         meanAudioStats.codecName = stat.nativeReport ? stat.nativeReport.googCodecName : stat.codecId;
       }
 
