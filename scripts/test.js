@@ -168,11 +168,11 @@ async function test() {
     `&publisherPcastUri=${config.publisherArgs.publisherPcastUri}` +
     `&pcastUri=${config.pcastUri}` +
     `&pcastUriSecondSubscriber=${config.pcastUriSecondSubscriber}` +
-    `&edgeToken=${config.args.edgeToken}` +
-    `&streamToken=${config.publisherArgs.streamToken}` +
-    `&authToken=${config.args.authToken}` +
+    `&edgeToken=${encodeURIComponent(config.args.edgeToken)}` +
+    `&streamToken=${encodeURIComponent(config.publisherArgs.streamToken)}` +
+    `&authToken=${encodeURIComponent(config.args.authToken)}` +
     `&applicationId=${config.args.applicationId}` +
-    `&secret=${config.publisherArgs.secret}` +
+    `&secret=${encodeURIComponent(config.publisherArgs.secret)}` +
     `&rtmpPush=${config.rtmpPushArgs.rtmpPushFile !== ''}` +
     `&media=${config.args.media}` +
     `&recordMs=${config.args.recordMs}` +

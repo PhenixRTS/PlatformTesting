@@ -88,7 +88,7 @@ function getUrlParams(key) {
     return '';
   }
 
-  return results[2];
+  return decodeURIComponent(results[2]);
 }
 
 function showPublisherErrorMessage(message) {
