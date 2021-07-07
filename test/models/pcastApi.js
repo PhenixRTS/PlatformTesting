@@ -151,10 +151,24 @@ async function postToTelemetry(records) {
   });
 }
 
+async function generateViewingReport(kind, channelId, startTime, endTime) {
+  const body = {
+    viewingReport: {
+      kind: kind,
+      channelIds: [channelId],
+      start: startTime,
+      end: endTime
+    }
+  };
+
+  return request('PUT', `/reporting/viewing`, body);
+}
+
 module.exports = {
   createOrGetChannel,
   deleteChannel,
   getChannelState,
   terminateStream,
-  postToTelemetry
+  postToTelemetry,
+  generateViewingReport
 };

@@ -19,9 +19,11 @@ import {Selector} from 'testcafe';
 import config from '../../config.js';
 import ChannelPage from '../models/channel-page.js';
 import reporter from '../models/reporters/sync-watch-reporter.js';
+import moment from 'moment';
 
 const common = require('./common');
 const page = new ChannelPage();
+const viewingReportStartTime = moment.utc().toISOString();
 let createdChannel;
 
 global.fixture(`Channel sync watch test${config.rtmpPushArgs.rtmpPushFile === '' ? '' : ' with RTMP push'}`)
@@ -37,13 +39,13 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync watch of
     createdChannel = await common.initRtmpPush('syncwatch_test', createdChannel);
   }
 
+  await common.subscribeFromClient(createdChannel.channelId);
+
   const publisherCount = await common.waitForPublisher(createdChannel.channelId);
 
   await t
     .expect(publisherCount)
     .eql(1, 'Failed to join the channel: publisher not ready');
-
-  await common.subscribeFromClient(createdChannel.channelId);
 
   await t
     .expect(Selector('video').withAttribute('id', 'publisherVideoContainer').exists).ok()
@@ -62,6 +64,11 @@ test(`Publish to channel for ${config.args.testRuntime} and assert sync watch of
   await page.asserts.assertSyncWatch();
 
   await page.asserts.reportAssertionResults();
+
+  const report = await common.generateViewingReport('RealTime', createdChannel.channelId, viewingReportStartTime);
+
+  await t
+    .expect(report.length).eql(2, 'Not correct amount of user that viewed published video');
 }).after(async t => {
   await common.finishAndReport(__filename, page, t, createdChannel);
 });

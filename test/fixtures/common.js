@@ -33,6 +33,7 @@ import qualityReporter from '../models/reporters/quality-reporter';
 import syncReporter from '../models/reporters/sync-reporter';
 import syncWatchReporter from '../models/reporters/sync-watch-reporter';
 import chatReporter from '../models/reporters/chat-reporter';
+import {generateJsonFromCsv} from '../models/csvConverter';
 
 const pcastApi = require('../models/pcastApi.js');
 const rtmpPush = require('../models/rtmp-push.js');
@@ -284,6 +285,21 @@ const createOrGetChannel = async(testcafe) => {
   });
 };
 
+async function generateViewingReport(kind, channelId, startTime, endTime = moment.utc().toISOString()) {
+  console.log(`${moment.utc().toISOString()} Pulling viewing report [${kind}] for ChannelId [${channelId}] and preiod [${startTime}] - [${endTime}]`);
+
+  return new Promise((resolve, reject) => {
+    pcastApi.generateViewingReport(kind, channelId, startTime, endTime)
+      .then(response => response.text())
+      .then(textResponse => generateJsonFromCsv(textResponse))
+      .then(jsonResponse => {
+        resolve(jsonResponse);
+      }).catch(error => {
+        reject(error);
+      });
+  });
+}
+
 const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   const logger = new Logger('Finish and Report');
   logger.log('Report generation started');
@@ -379,5 +395,6 @@ module.exports = {
   monitorRoomChat,
   subscribeFromClient,
   waitForPublisher,
-  createOrGetChannel
+  createOrGetChannel,
+  generateViewingReport
 };

@@ -145,6 +145,8 @@ function subscriberOneCallback(receivedError, response) {
 
   if (response.status === 'no-stream-playing') {
     console.warn('No stream playing');
+
+    return;
   } else if (response.status !== 'ok') {
     error(receivedError, 'subscriberOneError');
 
@@ -200,11 +202,7 @@ function subscriberOneCallback(receivedError, response) {
 
   startFpsStatsLogging(subscriberOneStream, getFpsStatsOneCallback);
 
-  if (subscriberOneStream === undefined) {
-    error('subscriberOneStream is undefined', 'subscriberOneError');
-  } else {
-    prepareAudioAnalyzer(subscriberOneStream.Zr, logSubscriberOneAudioBeep);
-  }
+  prepareAudioAnalyzer(subscriberOneStream.Zr, logSubscriberOneAudioBeep);
 }
 
 function subscriberTwoCallback(receivedError, response) {
@@ -216,6 +214,8 @@ function subscriberTwoCallback(receivedError, response) {
 
   if (response.status === 'no-stream-playing') {
     console.warn('No stream playing');
+
+    return;
   } else if (response.status !== 'ok') {
     error(receivedError, 'subscriberTwoError');
 
@@ -271,11 +271,7 @@ function subscriberTwoCallback(receivedError, response) {
 
   startFpsStatsLogging(subscriberTwoStream, getFpsStatsTwoCallback);
 
-  if (subscriberTwoStream === undefined) {
-    error('subscriberTwoStream is undefined');
-  } else {
-    prepareAudioAnalyzer(subscriberTwoStream.Zr, logSubscriberTwoAudioBeep);
-  }
+  prepareAudioAnalyzer(subscriberTwoStream.Zr, logSubscriberTwoAudioBeep);
 }
 
 function getFpsStatsOneCallback(stats) {
