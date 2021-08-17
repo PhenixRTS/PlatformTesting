@@ -258,7 +258,7 @@ function subscriberTwoCallback(receivedError, response) {
     });
   }
 
-  logStat(`[Subscriber Stream Two received] ${Date.now()}`);
+  log(`[Subscriber Stream Two received] ${Date.now()}`);
   subscriberTwoStream = response.mediaStream;
 
   subscriberTwoStream.select((track, index) => {
@@ -310,11 +310,7 @@ function prepareAudioAnalyzer(audioStream, beepCallback) {
     subscriberAudioAnalyser,
     mediaListenInterval,
     audioSampleRate,
-    frequency => {
-      if (frequency === beepFrequencyOne || frequency === beepFrequencyTwo) {
-        beepCallback(Date.now());
-      }
-    }
+    beepCallback
   );
 }
 
