@@ -133,6 +133,30 @@ function startListeningToSubscriberAudioChanges(audioAnalyzer, mediaListenInterv
     return;
   }
 
+  var previousFreq = 0;
+  var frequenciesData = new Float32Array(audioAnalyzer.frequencyBinCount);
+
+  setInterval(() => {
+    audioAnalyzer.getFloatFrequencyData(frequenciesData);
+
+    const indexOfMax = frequenciesData.indexOf(Math.max(... frequenciesData));
+    var frequency = indexOfMax * audioSampleRate / audioAnalyzer.fftSize;
+    frequency = Math.round(frequency / 100) * 100;
+
+    if (frequency !== previousFreq) {
+      onChange(frequency);
+      previousFreq = frequency;
+    }
+  }, mediaListenInterval);
+}
+
+function startListeningToSubscriberAudioChangesForSyncWatch(audioAnalyzer, mediaListenInterval, audioSampleRate, onChange) {
+  if (audioAnalyzer === undefined) {
+    error('Audio analyzer is undefined - cannot listen to audio changes!');
+
+    return;
+  }
+
   let previousFreq = 0;
   let previousFreqDiff = 0;
   let frequenciesData = new Float32Array(audioAnalyzer.frequencyBinCount);
