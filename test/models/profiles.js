@@ -44,7 +44,7 @@ function prepareProfiles(rootDirectory, argv, args) {
     Object.keys(argv.video).forEach(key => {
       if (args.videoProfile[key] === undefined) {
         exitWithErrorMessage(
-          `Error: unsupported argument override - key '${key}' does not exist on video profile!` +
+          `Error: unsupported argument override - key [${key}] does not exist on video profile!` +
             `\n\nAvailable keys:\n ${JSON.stringify(
               Object.keys(args.videoProfile),
               undefined,
@@ -75,7 +75,7 @@ function prepareProfiles(rootDirectory, argv, args) {
     Object.keys(argv.audio).forEach((key) => {
       if (args.audioProfile[key] === undefined) {
         exitWithErrorMessage(
-          `Error: unsupported argument override - key '${key}' does not exist on audio profile!` +
+          `Error: unsupported argument override - key [${key}] does not exist on audio profile!` +
           `\n\nAvailable keys:\n ${JSON.stringify(Object.keys(args.audioProfile), undefined, 2)}`
         );
       }
@@ -144,7 +144,7 @@ function validateProfile(profileFile, type, defaultProfile, customProfile) {
   const invalidKeys = customProfileKeys.filter(x => !validKeys.includes(x));
 
   if (invalidKeys.length > 0) {
-    exitWithErrorMessage(`Provided custom ${type} profile '${profileFile}' contains invalid keys ${JSON.stringify(invalidKeys)}.\nSee 'test/profiles/default.js' for all valid keys.`);
+    exitWithErrorMessage(`Provided custom [${type}] profile [${profileFile}] contains invalid keys [${JSON.stringify(invalidKeys)}].\nSee 'test/profiles/default.js' for all valid keys.`);
   }
 }
 

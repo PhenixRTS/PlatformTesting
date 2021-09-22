@@ -26,7 +26,7 @@ const page = new ChannelPage();
 global.fixture('Channel quality test')
   .page(`${config.localServerAddress}:${config.args.localServerPort}/${config.testPageUrlAttributes}`);
 
-test(`Measure channel for ${config.args.testRuntime} and assert quality of video and audio`, async t => {
+test(`Measure channel for [${config.args.testRuntime}] and assert quality of video and audio`, async t => {
   await t
     .wait(3 * 1000)
     .expect(page.videoEl.exists).ok()

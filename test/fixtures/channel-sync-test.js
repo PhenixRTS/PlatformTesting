@@ -27,7 +27,7 @@ let createdChannel;
 global.fixture(`Channel sync test${config.rtmpPushArgs.rtmpPushFile === '' ? '' : ' with RTMP push'}`)
   .page(`${config.localServerAddress}:${config.args.localServerPort}/sync${config.testPageUrlAttributes}`);
 
-test(`Publish to channel for ${config.args.testRuntime} and assert sync of video and audio`, async t => {
+test(`Publish to channel for [${config.args.testRuntime}] and assert sync of video and audio`, async t => {
   const {rtmpPushFile} = config.rtmpPushArgs;
   const isRtmpPush = rtmpPushFile !== '';
 

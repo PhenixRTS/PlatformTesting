@@ -28,13 +28,13 @@ global
     `${config.localServerAddress}:${config.args.localServerPort}/room${config.testPageUrlAttributes}`
   );
 
-test(`Monitor room for ${config.args.testRuntime} with multiple members and assert quality of video and audio`, async t => {
+test(`Monitor room for [${config.args.testRuntime}] with multiple members and assert quality of video and audio`, async t => {
   const {screenName} = config.args;
 
   let memberError = 'There is no member in the room';
 
   if (screenName) {
-    memberError += ` with provided screen name ${screenName}`;
+    memberError += ` with provided screen name [${screenName}]`;
   }
 
   await t

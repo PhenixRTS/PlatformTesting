@@ -28,7 +28,7 @@ global
     `${config.localServerAddress}:${config.args.localServerPort}/chat${config.testPageUrlAttributes}`
   );
 
-test(`Monitor room for ${config.args.testRuntime} with multiple members and assert chat quality`, async t => {
+test(`Monitor room for [${config.args.testRuntime}] with multiple members and assert chat quality`, async t => {
   await t
     .expect(Selector('#roomError').innerText)
     .notContains('Error', 'Error: Unable to join the room!', {timeout: 5 * 1000});
