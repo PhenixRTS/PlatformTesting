@@ -41,6 +41,10 @@ const Logger = require('../../scripts/logger.js');
 const maxWaitForPublisherCount = 30;
 const subscribeFromClient = ClientFunction(() => window.subscribe());
 
+async function pause(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const getRoomMembers = ClientFunction(() => {
   const members = [];
 
@@ -285,6 +289,37 @@ const createOrGetChannel = async(testcafe) => {
   });
 };
 
+const getPresentersStreamIds = async(channelId, numRetries = 10) => {
+  const logger = new Logger('Get Presenters Stream Ids');
+  const members = await pcastApi.getChannelMembers(channelId);
+  if (!Array.isArray(members)) {
+    logger.error(`Could not get members [${members}]`);
+  }
+  const presenters = members.filter(m => m.role === 'Presenter');
+
+  if (presenters.length === 0) {
+    if (numRetries <= 0) {
+      logger.error(`Can't get streamId, presenter not found in [${channelId}]. Members [${members}]`);
+      throw new Error();
+    }
+    await pause(1000);
+
+    return await getPresentersStreamIds(channelId, numRetries - 1);
+  }
+  const regex = /pcast:\/\/.*\/([^?]*)/;
+  const streamIds = [];
+  presenters.forEach((presenter) => {
+    let match = regex.exec(presenter.streams[0].uri);
+    if (match.length !== 2) {
+      logger.error(`Error while parsing stream uri [${presenter.streams[0].uri}]. Should only have 1 match`);
+      throw new Error();
+    }
+    streamIds.push(match[1]);
+  });
+
+  return streamIds;
+};
+
 async function generateViewingReport(kind, channelId, startTime, endTime = moment.utc().toISOString()) {
   console.log(`${moment.utc().toISOString()} Pulling viewing report [${kind}] for ChannelId [${channelId}] and preiod [${startTime}] - [${endTime}]`);
 
@@ -388,6 +423,7 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
 };
 
 module.exports = {
+  getPresentersStreamIds,
   finishAndReport,
   initRtmpPush,
   monitorStream,

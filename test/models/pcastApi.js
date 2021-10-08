@@ -88,6 +88,14 @@ async function getChannelState(channelId) {
   return response.json();
 }
 
+async function getChannelMembers(channelId) {
+  const endpoint = `/channel/${encodeURIComponent(channelId)}/members`;
+  const response = await request('GET', endpoint);
+  const responseBody = await response.json();
+
+  return responseBody.members;
+}
+
 async function deleteChannel(channelId) {
   return new Promise(resolve => {
     request('DELETE', `/channel/${encodeURIComponent(channelId)}`, {})
@@ -168,6 +176,7 @@ module.exports = {
   createOrGetChannel,
   deleteChannel,
   getChannelState,
+  getChannelMembers,
   terminateStream,
   postToTelemetry,
   generateViewingReport
