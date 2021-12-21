@@ -28,6 +28,12 @@ describe('When using the math utility', function() {
     });
   });
 
+  describe('Given an array of string numbers', function() {
+    it('it gets the average', function() {
+      assert.equal(testToolMath.average(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']), 4.5);
+    });
+  });
+
   describe('Given an array of numbers and chunk size', function() {
     it('it chunks the array of numbers to the chunks of passed size', function() {
       assert.deepStrictEqual(testToolMath.chunk([1, 2, 3, 4, 5], 2), [[1, 2], [3, 4], [5]]);

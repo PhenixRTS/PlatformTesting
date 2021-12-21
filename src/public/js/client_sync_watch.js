@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global canvasWidth, canvasHeight, publish, audioSampleRate, beepFrequencyOne, beepFrequencyTwo, fps, oneUnit, log, logStat, error, joinChannel, rejoinChannel, getUrlParams, startListeningToSubscriberAudioChangesForSyncWatch, showChannelStatus, startFpsStatsLogging, logStreamAndSessionId */
+/* global canvasWidth, canvasHeight, publish, audioSampleRate, fps, oneUnit, log, logStat, error, joinChannel, rejoinChannel, getUrlParams, startListeningToSubscriberAudioChangesForSyncWatch, showChannelStatus, startFpsStatsLogging, logStreamAndSessionId */
 
 const rtmpPush = getUrlParams('rtmpPush') === 'true';
 const channelName = 'Sync Watch test';

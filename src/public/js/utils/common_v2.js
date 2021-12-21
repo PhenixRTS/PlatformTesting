@@ -15,7 +15,7 @@
  */
 
 /* eslint-disable no-unused-vars */
-/* global phenix, getUrlParams, log, showSubscriberError */
+/* global phenix, getUrlParams, log, showSubscriberError, channelJoinedCallback */
 
 const commonLoadedEvent = new Event('common_loaded');
 

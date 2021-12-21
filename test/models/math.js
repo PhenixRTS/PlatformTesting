@@ -22,7 +22,7 @@ module.exports = {
       return 0;
     }
 
-    return arr.reduce((p, c) => p + c, 0) / arr.length;
+    return arr.reduce((p, c) => p + Number(c), 0) / arr.length;
   },
 
   chunk(arr, size) {

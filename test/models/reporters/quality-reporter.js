@@ -335,22 +335,27 @@ async function GetMeanAudioStats(stats) {
     audioStats.forEach(statData => {
       const {stat, timestamp} = statData;
 
-      if (stat.currentDelay != undefined) {
+      if (stat.currentDelay !== undefined) {
         currentDelays.push(stat.currentDelay);
       }
-      if (stat.audioOutputLevel != undefined) {
+
+      if (stat.audioOutputLevel !== undefined) {
         audioOutputLevels.push(stat.audioOutputLevel);
       }
-      if (stat.jitter != undefined) {
+
+      if (stat.jitter !== undefined) {
         jitters.push(stat.jitter);
       }
-      if (stat.jitterBuffer != undefined) {
+
+      if (stat.jitterBuffer !== undefined) {
         jitterBuffers.push(stat.jitterBuffer);
       }
-      if (stat.totalAudioEnergy != undefined) {
+
+      if (stat.totalAudioEnergy !== undefined) {
         totalAudioEnergies.push(stat.totalAudioEnergy);
       }
-      if (stat.bitrateMean != undefined) {
+
+      if (stat.bitrateMean !== undefined) {
         meanBitrates.push(stat.bitrateMean);
       }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* global log, error, logErrorResponse, getUrlParams, publishTo, startMultimediaRecordingFor, showPublisherErrorMessage, showPublisherMessage, subscribe, stopPublisher */
+/* global log, error, logErrorResponse, getUrlParams, publishTo, startMultimediaRecordingFor, showPublisherErrorMessage, showPublisherMessage, stopPublisher */
 
 const audioSampleRate = 44100;
 const fps = getUrlParams('syncFps');
