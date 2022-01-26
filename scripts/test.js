@@ -196,7 +196,7 @@ async function test() {
 
   let testcafe = null;
 
-  return createTestCafe(null, '8000', '8001').then(async tc => {
+  return createTestCafe('localhost').then(async tc => {
     app.startServer(config.args.localServerPort);
 
     const runner = tc.createRunner();

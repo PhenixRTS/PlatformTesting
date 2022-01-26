@@ -129,7 +129,7 @@ module.exports = class Asserts {
         throw Error(`Unsupported assert sign operator "${sign}"`);
     }
 
-    actual = isNaN(actual) ? actual : format.round(actual, 1);
+    actual = isNaN(actual) ? actual : format.formatMsgActualValue(actual, expected, sign);
 
     if (format.isISO8601(expected)) {
       actual = format.formatTime(actual);

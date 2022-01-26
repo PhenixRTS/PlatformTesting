@@ -28,10 +28,28 @@ const isISO8601 = duration => {
   return duration.toString().indexOf('PT') === 0;
 };
 
-const round = (value, precision) => {
+const round = (value, precision, roundingType = 'std') => {
   const multiplier = Math.pow(10, precision || 0);
+  let roundedValue = 0;
 
-  return Math.round(value * multiplier) / multiplier;
+  switch (roundingType.toLowerCase()) {
+    case ('std'):
+      roundedValue = Math.round(value * multiplier);
+
+      break;
+    case ('up'):
+      roundedValue = Math.ceil(value * multiplier);
+
+      break;
+    case ('down'):
+      roundedValue = Math.floor(value * multiplier);
+
+      break;
+    default:
+      throw Error(`Unsupported rounding type "${roundingType}"`);
+  }
+
+  return roundedValue / multiplier;
 };
 
 const parseColor = color => {
@@ -77,10 +95,38 @@ const hexToRgb = hex => {
     )` : '';
 };
 
+function formatMsgActualValue(actualValue, expected, sign) {
+  const isIso8601 = isISO8601(expected);
+  const expectedValue = isIso8601 ? expected.milliseconds() : expected;
+  const roundedValue = isIso8601 ? round(actualValue, 0, 'up') : round(actualValue, 1, 'std');
+  const wasRoundedDown = roundedValue < actualValue;
+
+  if ((sign === 'lte' || sign === 'gt') && (!wasRoundedDown || isIso8601)) {
+    return roundedValue;
+  }
+
+  if ((sign === 'gte' || sign === 'lt') && wasRoundedDown) {
+    return roundedValue;
+  }
+
+  if (roundedValue === expectedValue) {
+    if (isIso8601) {
+      return round(actualValue, 0, 'down');
+    } else if (wasRoundedDown) {
+      return round(actualValue, 1, 'up');
+    } else if (!wasRoundedDown){
+      return round(actualValue, 1, 'down');
+    }
+  }
+
+  return roundedValue;
+}
+
 module.exports = {
   formatTime,
   isISO8601,
   round,
   parseColor,
-  hexToRgb
+  hexToRgb,
+  formatMsgActualValue
 };
