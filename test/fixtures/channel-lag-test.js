@@ -19,9 +19,13 @@ import {Selector} from 'testcafe';
 import config from '../../config';
 import ChannelPage from '../models/channel-page';
 import reporter from '../models/reporters/lag-reporter';
+import Logger from '../../scripts/logger.js';
+import moment from 'moment';
 
 const common = require('./common');
 const page = new ChannelPage();
+const logger = new Logger('Channel lag test script');
+const reportStartTime = moment.utc().toISOString();
 let createdChannel;
 
 global.fixture(`Channel lag test${config.rtmpPushArgs.rtmpPushFile === '' ? '' : ' with RTMP push'}`)
@@ -38,10 +42,17 @@ test(`Publish to channel for [${config.args.testRuntime}] and assert lag of vide
   }
 
   const publisherCount = await common.waitForPublisher(createdChannel.channelId);
+  const publishersStreamIds = await common.getPresentersStreamIds(createdChannel.channelId);
 
   await t
     .expect(publisherCount)
     .eql(1, 'Failed to join the channel: publisher not ready');
+
+  await t
+    .expect(publishersStreamIds.length)
+    .eql(1, `More than one publisher stream id [${publishersStreamIds}]`);
+
+  logger.log(`Publisher stream id: [${publishersStreamIds}]`);
 
   await common.subscribeFromClient(createdChannel.channelId);
 
@@ -60,6 +71,19 @@ test(`Publish to channel for [${config.args.testRuntime}] and assert lag of vide
   await page.asserts.assertAudioLag(isRtmpPush);
 
   await page.asserts.reportAssertionResults();
+
+  const publishingReport = await common.generatePublishingReport(createdChannel.channelId, reportStartTime);
+
+  await t
+    .expect(publishingReport.length).eql(1, `Expected [1] published stream in report but was [${publishingReport.length}]`);
+
+  await t
+    .expect(publishingReport[0].StreamId).eql(publishersStreamIds[0],
+      `Expected streamId from report [${publishingReport[0].StreamId}] to be equal to presenter streamId [${publishersStreamIds[0]}] but it was not`);
+
+  await t
+    .expect(publishingReport[0].IngestStreamEndedReason).eql('',
+      `[IngestStreamEndedReason] must be an empty string but was [${publishingReport[0].IngestStreamEndedReason}]`);
 }).after(async t => {
   await common.finishAndReport(__filename, page, t, createdChannel);
 });

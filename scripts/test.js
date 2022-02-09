@@ -283,6 +283,8 @@ function CreateEdgeTokenIfNecessary() {
     .withSecret(config.args.secret)
     .expiresInSeconds(config.args.testRuntimeMs)
     .forChannelAlias(config.channelAlias)
+    .withCapability('multi-bitrate')
+    .withCapability('monitor-tracks')
     .forPublishingOnly()
     .build();
 

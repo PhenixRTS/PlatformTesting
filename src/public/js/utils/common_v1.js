@@ -145,7 +145,8 @@ async function publishTo(channelAlias, stream, backendUri, pcastUri, channelName
   if (edgeToken === '') {
     publishOptions.capabilities = [
       'hd',
-      'multi-bitrate'
+      'multi-bitrate',
+      'monitor-tracks'
     ];
   } else {
     publishOptions.streamToken = edgeToken;

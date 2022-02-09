@@ -172,6 +172,18 @@ async function generateViewingReport(kind, channelId, startTime, endTime) {
   return request('PUT', `/reporting/viewing`, body);
 }
 
+async function generatePublishingReport(channelId, startTime, endTime) {
+  const body = {
+    publishingReport: {
+      start: startTime,
+      end: endTime,
+      channelIds: [channelId]
+    }
+  };
+
+  return await request('PUT', `/reporting/publishing`, body);
+}
+
 module.exports = {
   createOrGetChannel,
   deleteChannel,
@@ -179,5 +191,6 @@ module.exports = {
   getChannelMembers,
   terminateStream,
   postToTelemetry,
-  generateViewingReport
+  generateViewingReport,
+  generatePublishingReport
 };

@@ -335,6 +335,19 @@ async function generateViewingReport(kind, channelId, startTime, endTime = momen
   });
 }
 
+async function generatePublishingReport(channelId, startTime, endTime = moment.utc().toISOString()) {
+  console.log(`${moment.utc().toISOString()} Pulling publishing report for ChannelId [${channelId}] and preiod [${startTime}] - [${endTime}]`);
+
+  try {
+    const report = await pcastApi.generatePublishingReport(channelId, startTime, endTime);
+    const textReport = await report.text();
+
+    return await generateJsonFromCsv(textReport);
+  } catch (error) {
+    throw new Error(error);
+  }
+}
+
 const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
   const logger = new Logger('Finish and Report');
   logger.log('Report generation started');
@@ -432,5 +445,6 @@ module.exports = {
   subscribeFromClient,
   waitForPublisher,
   createOrGetChannel,
-  generateViewingReport
+  generateViewingReport,
+  generatePublishingReport
 };

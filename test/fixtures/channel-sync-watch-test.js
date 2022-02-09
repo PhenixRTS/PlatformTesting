@@ -24,7 +24,7 @@ import Logger from '../../scripts/logger.js';
 
 const common = require('./common');
 const page = new ChannelPage();
-const viewingReportStartTime = moment.utc().toISOString();
+const reportStartTime = moment.utc().toISOString();
 const logger = new Logger('Channel sync watch test script');
 let createdChannel;
 
@@ -75,12 +75,25 @@ test(`Publish to channel for [${config.args.testRuntime}] and assert sync watch 
 
   await page.asserts.reportAssertionResults();
 
-  const report = await common.generateViewingReport('RealTime', createdChannel.channelId, viewingReportStartTime);
+  const viewingReport = await common.generateViewingReport('RealTime', createdChannel.channelId, reportStartTime);
 
-  report.forEach((subscriber, index) => logger.log(`Subscriber${index + 1} stream id: [${subscriber.StreamId}]`));
+  viewingReport.forEach((subscriber, index) => logger.log(`Subscriber${index + 1} stream id: [${subscriber.StreamId}]`));
 
   await t
-    .expect(report.length).eql(2, 'Not correct amount of user that viewed published video');
+    .expect(viewingReport.length).eql(2, `Expected [2] users that viewed published video but were [${viewingReport.length}]`);
+
+  const publishingReport = await common.generatePublishingReport(createdChannel.channelId, reportStartTime);
+
+  await t
+    .expect(publishingReport.length).eql(1, `Expected [1] published stream in report but was [${publishingReport.length}]`);
+
+  await t
+    .expect(publishingReport[0].StreamId).eql(publishersStreamIds[0],
+      `Expected streamId from report [${publishingReport[0].StreamId}] to be equal to presenter streamId [${publishersStreamIds[0]}] but it was not`);
+
+  await t
+    .expect(publishingReport[0].IngestStreamEndedReason).eql('',
+      `[IngestStreamEndedReason] must be an empty string but was [${publishingReport[0].IngestStreamEndedReason}]`);
 }).after(async t => {
   await common.finishAndReport(__filename, page, t, createdChannel);
 });
