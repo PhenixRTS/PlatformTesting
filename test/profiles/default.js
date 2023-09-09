@@ -17,7 +17,7 @@
 const videoProfile = {
   inherits: null,
   minBitrateMeanKbps: 1600,
-  maxBitrateMeanKps: 2050,
+  maxBitrateMeanKps: 2100,
   maxDelay: 'PT0.5S',
   maxMeanDelay: 'PT0.5S',
   maxTargetDelayOvershoot: 50,
