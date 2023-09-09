@@ -363,7 +363,7 @@ module.exports = {
     xmlContent.endDocument();
 
     const xmlFilePath = path.join(reportsPath, `${reportFileName}-XML-report-${moment().format(config.args.dateFormat)}.xml`);
-    fs.writeFileSync(xmlFilePath, xmlContent);
+    fs.writeFileSync(xmlFilePath, xmlContent.toString());
   },
 
   CreateCustomXMLAssertElements: function(assertArray, assertType, xmlContent, testName) {

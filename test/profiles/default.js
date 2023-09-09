@@ -17,11 +17,11 @@
 const videoProfile = {
   inherits: null,
   minBitrateMeanKbps: 1600,
-  maxBitrateMeanKps: 2000,
+  maxBitrateMeanKps: 2050,
   maxDelay: 'PT0.5S',
   maxMeanDelay: 'PT0.5S',
   maxTargetDelayOvershoot: 50,
-  maxAverageTargetDelay: 60,
+  maxAverageTargetDelay: 150,
   minFrameRateMean: 30,
   maxFrameRateMean: 31,
   minFrameRate: [
@@ -44,13 +44,13 @@ const videoProfile = {
   maxNacksSentPerMinute: 3,
   firsSent: 0,
   maxPlisSentPerMinute: 2,
-  codecName: 'VP8',
+  codecName: 'H264',
   maxVideoFreezes: 0,
   maxPTTFF: 3000,
   maxResolutionChangeCountPerMinute: 2,
   interframeDelayThresholds: [
     {
-      maxAllowed: 45,
+      maxAllowed: 75,
       timesPerMinute: 2
     },
     {
@@ -68,7 +68,7 @@ const videoProfile = {
 };
 const audioProfile = {
   inherits: null,
-  minBitrateMeanKbps: 60,
+  minBitrateMeanKbps: 55,
   maxJitter: 30,
   minAudioOutputLevel: 100,
   maxMeanDelay: 'PT0.5S',

@@ -1,6 +1,6 @@
 {
   "name": "phenix-acceptance-testing",
-  "version": "2020.1.4",
+  "version": "2023.0.0",
   "description": "Phenix Acceptance Testing CLI",
   "main": "./src/app.js",
   "scripts": {
@@ -18,8 +18,7 @@
     "coverage": "jest --config=test/jest.config.js --coverage --verbose",
     "clean": "node scripts/run clean",
     "lint": "eslint --cache --ext .jsx,.js ./",
-    "lint-fix": "eslint --ext .jsx,.js --fix ./",
-    "post-results": "node scripts/run post-results"
+    "lint-fix": "eslint --ext .jsx,.js --fix ./"
   },
   "author": "Phenix Real Time Solutions, Inc.",
   "keywords": [
@@ -36,7 +35,7 @@
     "mathjs": "7.1.0",
     "moment": "2.24.0",
     "node-fetch": "2.6.1",
-    "phenix-edge-auth": "1.2.4",
+    "phenix-edge-auth": "1.2.7",
     "ps-node": "0.1.6",
     "qrcode": "1.4.4",
     "testcafe": "1.9.3",

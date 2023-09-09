@@ -19,17 +19,7 @@ const videoProfile = {
   minBitrateMeanKbps: 1600,
   minFrameRateMean: 30,
   frameWidth: 720,
-  frameHeight: 1280,
-  interframeDelayThresholds: [
-    {
-      maxAllowed: 45,
-      timesPerMinute: 5
-    },
-    {
-      maxAllowed: 900,
-      timesPerMinute: 0
-    }
-  ]
+  frameHeight: 1280
 };
 const audioProfile = {inherits: 'test/profiles/default.js'};
 

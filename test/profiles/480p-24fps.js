@@ -31,17 +31,7 @@ const videoProfile = {
     }
   ],
   frameWidth: 854,
-  frameHeight: 480,
-  interframeDelayThresholds: [
-    {
-      maxAllowed: 60,
-      timesPerMinute: 5
-    },
-    {
-      maxAllowed: 900,
-      timesPerMinute: 0
-    }
-  ]
+  frameHeight: 480
 };
 const audioProfile = {inherits: 'test/profiles/default.js'};
 
