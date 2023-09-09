@@ -18,6 +18,7 @@ const videoProfile = {
   inherits: null,
   minBitrateMeanKbps: 1,
   minFrameRateMean: 1,
+  decodedFrameRateTolerance: 10,
   maxPTTFF: 25000,
   syncPublishedVideoFps: 1
 };

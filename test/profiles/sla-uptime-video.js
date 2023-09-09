@@ -25,6 +25,7 @@ const videoProfile = {
       timesPerMinute: 1
     }
   ],
+  decodedFrameRateTolerance: 10,
   maxPTTFF: 25000,
   interframeDelayThresholds: [
     {
