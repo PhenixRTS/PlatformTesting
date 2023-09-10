@@ -46,7 +46,7 @@ const videoProfile = {
   maxPlisSentPerMinute: 2,
   codecName: 'H264',
   maxVideoFreezes: 0,
-  maxPTTFF: 3000,
+  maxPTTFF: 4000,
   maxResolutionChangeCountPerMinute: 2,
   interframeDelayThresholds: [
     {
