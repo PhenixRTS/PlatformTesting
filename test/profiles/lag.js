@@ -15,26 +15,10 @@
  */
 
 const videoProfile = {
-  inherits: null,
-  minBitrateMeanKbps: 1,
-  minFrameRateMean: 1,
-  minFrameRate: [
-    {
-      allowed: 18,
-      timesPerMinute: 0
-    }
-  ],
-  decodedFrameRateTolerance: 10,
-  maxPTTFF: 25000,
-  syncPublishedVideoFps: 1
+  inherits: 'test/profiles/default.js',
+  minFrameRateMean: 1
 };
-const audioProfile = {
-  inherits: null,
-  minBitrateMeanKbps: 1,
-  totalSamplesDurationPerc: 0.1,
-  maxLag: 'PT1.5S',
-  maxRTMPLag: 'PT2.5S'
-};
+const audioProfile = {inherits: 'test/profiles/default.js'};
 
 const chatProfile = {inherits: 'test/profiles/default.js'};
 
