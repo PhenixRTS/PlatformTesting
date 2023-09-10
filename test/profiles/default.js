@@ -61,8 +61,8 @@ const videoProfile = {
   maxLag: 'PT0.35S',
   maxRTMPLag: 'PT2.5S',
   syncPublishedVideoFps: 24,
-  maxAverageSync: 30,
-  maxSingleSync: 70,
+  maxAverageSync: 66,
+  maxSingleSync: 100,
   syncWatch_max: 100,
   syncWatch_average: 50
 };
