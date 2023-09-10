@@ -16,7 +16,19 @@
 
 const videoProfile = {
   inherits: 'test/profiles/default.js',
-  minFrameRateMean: 30,
+  minFrameRateMean: 60,
+  minFrameRate: [
+    {
+      allowed: 55,
+      timesPerMinute: 0
+    }
+  ],
+  maxFrameRate: [
+    {
+      allowed: 65,
+      timesPerMinute: 0
+    }
+  ],
   frameWidth: 1280,
   frameHeight: 720
 };
