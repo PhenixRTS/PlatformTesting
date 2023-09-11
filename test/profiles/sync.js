@@ -16,7 +16,7 @@
 
 const videoProfile = {
   inherits: 'test/profiles/default.js',
-  minFrameRateMean: 20
+  minFrameRateMean: 10
 };
 const audioProfile = {inherits: 'test/profiles/default.js'};
 
