@@ -333,7 +333,7 @@ module.exports = class Asserts {
       streamStats.framerateMean,
       config.videoAssertProfile.minFrameRateMean,
       'gte',
-      0.05
+      config.videoAssertProfile.frameRateMeanTolerance
     );
 
     const {minFrameRate, maxFrameRate} = config.videoAssertProfile;
