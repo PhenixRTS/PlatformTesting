@@ -281,8 +281,8 @@ async function GetMeanVideoStats(stats) {
   meanVideoStats.targetDelay = parseFloat(math.average(targetDelays).toFixed(2));
   meanVideoStats.currentDelay = parseFloat(math.average(currentDelays).toFixed(2));
   meanVideoStats.bitrateMean = parseFloat((math.average(meanBitrates) / 1024).toFixed(2));
-  meanVideoStats.avgFrameWidth = math.average(frameWidths.slice(3));
-  meanVideoStats.avgFrameHeight = math.average(frameHeights.slice(3));
+  meanVideoStats.avgFrameWidth = math.average(frameWidths.slice(config.videoAssertProfile.resolutionIgnoreInitialSamples));
+  meanVideoStats.avgFrameHeight = math.average(frameHeights.slice(config.videoAssertProfile.resolutionIgnoreInitialSamples));
   meanVideoStats.avgFrameRateDecoded = parseFloat(math.average(frameRateDecodes).toFixed(1));
   meanVideoStats.avgFrameRateOutput = parseFloat(math.average(frameRateOutputs).toFixed(1));
   meanVideoStats.interframeDelaysPerMinute = math.chunk(allInterframeDelayMaxs, 60);

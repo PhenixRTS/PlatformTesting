@@ -39,6 +39,8 @@ const videoProfile = {
   ],
   maxDroppedFramesPerSecond: 0.01,
   maxPacketLossPerMinute: 3,
+  resolutionIgnoreInitialSamples: 3,
+  resolutionTolerance: 0.02,
   frameWidth: 1280,
   frameHeight: 720,
   decodedFrameRateTolerance: 0.1,

@@ -78,6 +78,11 @@ module.exports = class Asserts {
         assertion = actual == expected; // eslint-disable-line eqeqeq
         assertionMsg = 'equal to';
 
+        if (tolerance > 0 && !assertion) {
+          assertion = actual >= (expected - tolerance) && actual <= (expected + tolerance);
+          assertionMsg = `(with tolerance ${tolerance}) ${assertionMsg}`;
+        }
+
         break;
       case 'gt':
         assertion = actual > expected;
@@ -351,13 +356,15 @@ module.exports = class Asserts {
       'Video average frame width',
       streamStats.avgFrameWidth,
       config.videoAssertProfile.frameWidth,
-      'eql'
+      'eql',
+      config.videoAssertProfile.resolutionTolerance
     );
     this.assert(
       'Video average frame height',
       streamStats.avgFrameHeight,
       config.videoAssertProfile.frameHeight,
-      'eql'
+      'eql',
+      config.videoAssertProfile.resoultionTolerance
     );
     this.assert(
       'Video nacks sent',
