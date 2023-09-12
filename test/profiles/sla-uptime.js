@@ -26,7 +26,7 @@ const videoProfile = {
 const audioProfile = {
   inherits: null,
   minBitrateMeanKbps: 1,
-  totalSamplesDurationPerc: 0.1,
+  totalSamplesDurationPerc: 0.01,
   maxLag: 'PT1.5S',
   maxRTMPLag: 'PT2.5S'
 };
