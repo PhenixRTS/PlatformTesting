@@ -42,7 +42,7 @@ const videoProfile = {
   frameWidth: 1280,
   frameHeight: 720,
   decodedFrameRateTolerance: 0.1,
-  maxNacksSentPerMinute: 3,
+  maxNacksSentPerMinute: 5,
   firsSent: 0,
   maxPlisSentPerMinute: 2,
   codecName: 'H264',
