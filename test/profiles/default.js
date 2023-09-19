@@ -53,7 +53,7 @@ const videoProfile = {
   maxResolutionChangeCountPerMinute: 2,
   interframeDelayThresholds: [
     {
-      maxAllowed: 75,
+      maxAllowed: 90,
       timesPerMinute: 2
     },
     {
