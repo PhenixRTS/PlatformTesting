@@ -321,7 +321,7 @@ const getPresentersStreamIds = async(channelId, numRetries = 10) => {
 };
 
 async function generateViewingReport(kind, channelId, startTime, endTime = moment.utc().toISOString()) {
-  console.log(`${moment.utc().toISOString()} Pulling viewing report [${kind}] for ChannelId [${channelId}] and preiod [${startTime}] - [${endTime}]`);
+  console.log(`${moment.utc().toISOString()} Pulling viewing report [${kind}] for ChannelId [${channelId}] and period [${startTime}] - [${endTime}]`);
 
   return new Promise((resolve, reject) => {
     pcastApi.generateViewingReport(kind, channelId, startTime, endTime)
@@ -336,7 +336,7 @@ async function generateViewingReport(kind, channelId, startTime, endTime = momen
 }
 
 async function generatePublishingReport(channelId, startTime, endTime = moment.utc().toISOString()) {
-  console.log(`${moment.utc().toISOString()} Pulling publishing report for ChannelId [${channelId}] and preiod [${startTime}] - [${endTime}]`);
+  console.log(`${moment.utc().toISOString()} Pulling publishing report for ChannelId [${channelId}] and period [${startTime}] - [${endTime}]`);
 
   try {
     const report = await pcastApi.generatePublishingReport(channelId, startTime, endTime);
