@@ -158,6 +158,7 @@ async function test() {
   config.rtmpPushArgs = parseRtmpPushArgs();
   CreateEdgeTokenIfNecessary();
   CreateAuthTokenIfNecessary();
+  CreateStreamTokenIfNecessary();
   config.testPageUrlAttributes =
     `?features=${config.args.features}` +
     `&channelAlias=${config.channelAlias}` +
@@ -258,6 +259,7 @@ function CreateAuthTokenIfNecessary() {
   const authToken = new TokenBuilder()
     .withApplicationId(config.args.applicationId)
     .withSecret(config.args.secret)
+    .withUri(config.pcastUri)
     .expiresInSeconds(config.args.testRuntimeMs)
     .forChannelAlias(config.channelAlias)
     .forAuthenticateOnly()
@@ -281,6 +283,7 @@ function CreateEdgeTokenIfNecessary() {
   const edgeTokenForPublish = new TokenBuilder()
     .withApplicationId(config.args.applicationId)
     .withSecret(config.args.secret)
+    .withUri(config.pcastUri)
     .expiresInSeconds(config.args.testRuntimeMs)
     .forChannelAlias(config.channelAlias)
     .withCapability('multi-bitrate')
@@ -290,6 +293,30 @@ function CreateEdgeTokenIfNecessary() {
 
   config.args.edgeToken = edgeTokenForPublish;
   logger.log('Edge Token for publishing created using TokenBuilder');
+}
+
+function CreateStreamTokenIfNecessary() {
+  if (config.publisherArgs.streamToken !== '') {
+    return;
+  }
+
+  if (config.args.applicationId === '' || config.args.secret === '') {
+    logger.log('Will not create streamToken with TokenBuilder because secret and/or applicationId is undefined');
+
+    return;
+  }
+
+  const streamTokenForPublish = new TokenBuilder()
+    .withApplicationId(config.args.applicationId)
+    .withSecret(config.args.secret)
+    .withUri(config.pcastUri)
+    .expiresInSeconds(config.args.testRuntimeMs)
+    .forChannelAlias(config.channelAlias)
+    .forStreamingOnly()
+    .build();
+
+  config.publisherArgs.streamToken = streamTokenForPublish;
+  logger.log('Stream Token for publishing created using TokenBuilder');
 }
 
 function parseBrowsers(browsers) {

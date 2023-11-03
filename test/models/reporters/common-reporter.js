@@ -40,6 +40,10 @@ function getTestConfiguration() {
     if (!key.match(/\b.*Ms\b/g)){
       configuration[key] = args[key];
     }
+
+    if (key.match(/\bsecret\b/g)){
+      configuration[key] = args[key].length > 0 ? '*****' : '';
+    }
   }
 
   if (!args.tests.includes('test/fixtures/channel-quality-test.js')) {

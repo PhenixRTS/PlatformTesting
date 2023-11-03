@@ -169,7 +169,13 @@ function subscriberCallback(receivedError, response) {
   if (subscriberStream === undefined) {
     error('subscriberStream is undefined');
   } else {
-    prepareAudioAnalyzer(subscriberStream.Zr);
+    for (const key of Object.keys(subscriberStream)) {
+      if (subscriberStream[key] instanceof MediaStream) {
+        prepareAudioAnalyzer(subscriberStream[key]);
+
+        break;
+      }
+    }
   }
 }
 

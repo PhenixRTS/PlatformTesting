@@ -202,7 +202,13 @@ function subscriberOneCallback(receivedError, response) {
 
   startFpsStatsLogging(subscriberOneStream, getFpsStatsOneCallback);
 
-  prepareAudioAnalyzer(subscriberOneStream.Zr, logSubscriberOneAudioBeep);
+  for (const key of Object.keys(subscriberOneStream)) {
+    if (subscriberOneStream[key] instanceof MediaStream) {
+      prepareAudioAnalyzer(subscriberOneStream[key], logSubscriberOneAudioBeep);
+
+      break;
+    }
+  }
 }
 
 function subscriberTwoCallback(receivedError, response) {
@@ -271,7 +277,13 @@ function subscriberTwoCallback(receivedError, response) {
 
   startFpsStatsLogging(subscriberTwoStream, getFpsStatsTwoCallback);
 
-  prepareAudioAnalyzer(subscriberTwoStream.Zr, logSubscriberTwoAudioBeep);
+  for (const key of Object.keys(subscriberTwoStream)) {
+    if (subscriberTwoStream[key] instanceof MediaStream) {
+      prepareAudioAnalyzer(subscriberTwoStream[key], logSubscriberTwoAudioBeep);
+
+      break;
+    }
+  }
 }
 
 function getFpsStatsOneCallback(stats) {

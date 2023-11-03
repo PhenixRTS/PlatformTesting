@@ -223,13 +223,46 @@ function startFpsStatsLogging(subscriberStream, getFpsStatsCallback) {
 function logStreamAndSessionId(renderer, streamIdKey = 'Stream ID', sessionIdKey = 'Session ID') {
   log(`[${Date.now()}] Stream renderer received`);
 
-  // 2020.1.1
-  // log(`[${streamIdKey}] ${renderer.ji}`);
-  // log(`[${sessionIdKey}] ${renderer.cr.Cr}`);
+  for (const key of Object.keys(renderer)) {
+    const subStrings = [];
 
-  // 2020.2.25
-  log(`[${streamIdKey}] ${renderer.rt}`);
-  log(`[${sessionIdKey}] ${renderer.j.Be}`);
+    if (renderer[key] === null) {
+      continue;
+    }
+
+    for (const subKey of Object.keys(renderer[key])) {
+      if (typeof renderer[key][subKey] === 'string') {
+        subStrings.push(renderer[key][subKey]);
+      }
+    }
+
+    if (subStrings.length === 3) {
+      var streamMatch;
+      var sessionMatch;
+      var versionMatch;
+
+      subStrings.forEach(value => {
+        if (!streamMatch) {
+          streamMatch = value.match(/([^#]+#[^.]+)$/);
+        }
+
+        if (!sessionMatch) {
+          sessionMatch = value.match(/([^#]+#[^.]+\.[^.]+\.\d+\..+)$/);
+        }
+
+        if (!versionMatch) {
+          versionMatch = value.match(/\d+-\d+-\d+T\d+:\d+:\d+Z$/);
+        }
+      });
+
+      if (streamMatch && sessionMatch && versionMatch) {
+        log(`[${sessionIdKey}] ${sessionMatch[1]}`);
+        log(`[${streamIdKey}] ${streamMatch[1]}`);
+
+        break;
+      }
+    }
+  }
 }
 
 async function validateThatThereIsNoOtherPublishers(backendUri, channelId) {

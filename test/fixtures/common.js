@@ -422,7 +422,7 @@ const finishAndReport = async(testFile, page, t, createdChannel = {}) => {
 
   const consoleDump = await reporter.CreateConsoleDump(t);
   if (saveConsoleLogs === true || saveConsoleLogs === 'true') {
-    persistence.saveToFile(`${t.browser.name}-console-logs`, '', consoleDump);
+    persistence.saveToFile(`${t.browser.name}-console-logs`, reportFileName, consoleDump);
   }
 
   if (submitTelemetry === true) {

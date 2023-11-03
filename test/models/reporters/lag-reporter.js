@@ -149,11 +149,17 @@ async function CreateTestReport(testController, page, channel = {}) {
         page.stats.streamReceivedAt
       })`;
 
+    let videoStats = '';
+    let audioStats = '';
+
+    if (page.stats.subscriber !== undefined) {
+      videoStats = JSON.stringify(page.stats.subscriber.video, undefined, 2);
+      audioStats = JSON.stringify(page.stats.subscriber.audio, undefined, 2);
+    }
+
     content =
-      `\n\nVideo Stats:\n` +
-      JSON.stringify(page.stats.subscriber.video, undefined, 2) +
-      `\n\nAudio Stats:\n` +
-      JSON.stringify(page.stats.subscriber.audio, undefined, 2);
+      `\n\nVideo Stats:\n` + videoStats +
+      `\n\nAudio Stats:\n` + audioStats;
 
     if (channel && channel.channelId) {
       const {applicationId, channelId, streamKey, created} = channel;

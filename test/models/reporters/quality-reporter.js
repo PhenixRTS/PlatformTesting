@@ -46,6 +46,8 @@ async function CollectMediaStreamStats() {
     sessionId: undefined,
     channelId: undefined,
     streamReceivedAt: undefined,
+    audioCodecId: undefined,
+    videoCodecId: undefined,
     audio: {},
     video: {}
   };
@@ -92,6 +94,22 @@ async function CollectMediaStreamStats() {
       streamStats.channelType = channelType;
 
       return;
+    }
+
+    if (infoLogElement.startsWith(streamStatsTitle)) {
+      const codecMatch = infoLogElement.match(/"mimeType":"([^/]+)\/([^"]+)"/);
+
+      if (codecMatch) {
+        if (codecMatch[1] === 'audio') {
+          streamStats.audioCodecId = codecMatch[2];
+        }
+
+        if (codecMatch[1] === 'video') {
+          streamStats.videoCodecId = codecMatch[2];
+        }
+
+        return;
+      }
     }
 
     if (
@@ -149,8 +167,9 @@ async function CollectMediaStreamStats() {
     infoLogElement = infoLogElement.replace(streamStatsTitle, '');
 
     const stats = JSON.parse(infoLogElement);
-
     const {mediaType, ssrc} = stats.stat;
+
+    getStatsCodecIdLegacyMigration(mediaType, stats.stat.nativeReport, streamStats);
 
     if (collectedStats[mediaType][ssrc] === undefined) {
       collectedStats[mediaType][ssrc] = [];
@@ -206,27 +225,94 @@ async function GetMeanVideoStats(stats) {
 
     videoStats.forEach((statData, index) => {
       const {stat, timestamp} = statData;
+      let currentDelay;
+      let codecName;
+      let droppedFrames = stat.droppedFrames;
+      let bitrateMean = 0;
 
-      targetDelays.push(stat.targetDelay);
-      currentDelays.push(stat.currentDelay);
-      meanBitrates.push(stat.bitrateMean);
+      if (!_.isNil(stat.targetDelay)) {
+        targetDelays.push(stat.targetDelay);
+      }
+
+      if (!_.isNil(stat.currentDelay)) {
+        currentDelay = stat.currentDelay;
+        currentDelays.push(currentDelay);
+      }
+
+      if (!_.isNil(stat.bitrateMean)) {
+        bitrateMean = stat.bitrateMean;
+        meanBitrates.push(bitrateMean);
+      }
 
       if (stat.nativeReport) {
         // SDK v1
-        frameWidths.push(parseInt(stat.nativeReport.googFrameWidthReceived));
-        frameHeights.push(parseInt(stat.nativeReport.googFrameHeightReceived));
-        frameRateDecodes.push(parseInt(stat.nativeReport.googFrameRateDecoded));
-        frameRateOutputs.push(parseInt(stat.nativeReport.googFrameRateOutput));
+        if (!_.isNil(stat.nativeReport.jitterBufferTargetDelay) && !_.isNil(stat.nativeReport.jitterBufferEmittedCount)) {
+          targetDelays.push(stat.nativeReport.jitterBufferTargetDelay / stat.nativeReport.jitterBufferEmittedCount);
+        }
 
-        meanVideoStats.interframeDelayMax = parseFloat(stat.nativeReport.googInterframeDelayMax > meanVideoStats.interframeDelayMax ? stat.nativeReport.googInterframeDelayMax : meanVideoStats.interframeDelayMax);
-        meanVideoStats.freezesDetected += bytesReceived.includes(stat.nativeReport.bytesReceived) ? 1 : 0;
-        bytesReceived.push(stat.nativeReport.bytesReceived);
-        allInterframeDelayMaxs.push({
-          delay: stat.nativeReport.googInterframeDelayMax,
-          timestamp
-        });
+        if (!_.isNil(stat.nativeReport.jitterBufferDelay) && !_.isNil(stat.nativeReport.jitterBufferEmittedCount)) {
+          currentDelay = stat.nativeReport.jitterBufferDelay / stat.nativeReport.jitterBufferEmittedCount;
+          currentDelays.push(currentDelay);
+        }
+
+        if (!_.isNil(stat.nativeReport.googFrameWidthReceived)) {
+          frameWidths.push(parseInt(stat.nativeReport.googFrameWidthReceived));
+        }
+
+        if (!_.isNil(stat.nativeReport.frameWidth)) {
+          frameWidths.push(parseInt(stat.nativeReport.frameWidth));
+        }
+
+        if (!_.isNil(stat.nativeReport.googFrameHeightReceived)) {
+          frameHeights.push(parseInt(stat.nativeReport.googFrameHeightReceived));
+        }
+
+        if (!_.isNil(stat.nativeReport.frameHeight)) {
+          frameHeights.push(parseInt(stat.nativeReport.frameHeight));
+        }
+
+        if (!_.isNil(stat.nativeReport.googFrameRateDecoded) && !_.isNil(stat.nativeReport.googFrameRateOutput)) {
+          frameRateDecodes.push(parseInt(stat.nativeReport.googFrameRateDecoded));
+          frameRateOutputs.push(parseInt(stat.nativeReport.googFrameRateOutput));
+        }
+
+        if (!_.isNil(stat.nativeReport.framesDecoded) && !_.isNil(stat.nativeReport.framesDropped)) {
+          frameRateDecodes.push(parseInt(stat.nativeReport.framesDecoded));
+          frameRateOutputs.push(parseInt(stat.nativeReport.framesDecoded - stat.nativeReport.framesDropped));
+          droppedFrames = stat.nativeReport.framesDropped;
+        }
+
+        if (!_.isNil(stat.nativeReport.googInterframeDelayMax)) {
+          meanVideoStats.interframeDelayMax = parseFloat(stat.nativeReport.googInterframeDelayMax > meanVideoStats.interframeDelayMax ? stat.nativeReport.googInterframeDelayMax : meanVideoStats.interframeDelayMax);
+          allInterframeDelayMaxs.push({
+            delay: stat.nativeReport.googInterframeDelayMax,
+            timestamp
+          });
+        }
+
+        if (!_.isNil(stat.nativeReport.bytesReceived)) {
+          meanVideoStats.freezesDetected += bytesReceived.includes(stat.nativeReport.bytesReceived) ? 1 : 0;
+          bytesReceived.push(stat.nativeReport.bytesReceived);
+        }
+
+        if (!_.isNil(stat.nativeReport.googCodecName)) {
+          codecName = stat.nativeReport.googCodecName;
+        }
+
+        if (!_.isNil(stat.nativeReport.codecId)) {
+          codecName = stat.nativeReport.codecId;
+        }
       } else {
         // SDK v2
+        if (!_.isNil(stat.jitterBufferTargetDelay) && !_.isNil(stat.jitterBufferEmittedCount)) {
+          targetDelays.push(stat.jitterBufferTargetDelay / stat.jitterBufferEmittedCount);
+        }
+
+        if (!_.isNil(stat.jitterBufferDelay) && !_.isNil(stat.jitterBufferEmittedCount)) {
+          currentDelay = stat.jitterBufferDelay / stat.jitterBufferEmittedCount;
+          currentDelays.push(currentDelay);
+        }
+
         frameWidths.push(parseInt(stat.frameWidth));
         frameHeights.push(parseInt(stat.frameHeight));
         frameRateDecodes.push(parseInt(stat.framesDecoded));
@@ -248,13 +334,13 @@ async function GetMeanVideoStats(stats) {
       }
 
       if (meanVideoStats.codecName === null || meanVideoStats.codecName === '') {
-        meanVideoStats.codecName = stat.nativeReport ? stat.nativeReport.googCodecName : stat.codecId;
+        meanVideoStats.codecName = codecName ? codecName : stat.codecId;
       }
 
       meanVideoStats.maxBitrate = parseFloat(((stat.bitrateMean > meanVideoStats.maxBitrate ? stat.bitrateMean : meanVideoStats.maxBitrate) / 1024).toFixed(2));
-      meanVideoStats.maxDelay = stat.currentDelay > meanVideoStats.maxDelay ? stat.currentDelay : meanVideoStats.maxDelay;
+      meanVideoStats.maxDelay = currentDelay > meanVideoStats.maxDelay ? currentDelay : meanVideoStats.maxDelay;
       meanVideoStats.downloadRate = stat.downloadRate;
-      meanVideoStats.droppedFrames += stat.droppedFrames;
+      meanVideoStats.droppedFrames += droppedFrames;
       meanVideoStats.nativeReport = stat.nativeReport;
 
       if (stat.framerateMean === 0 && index === 0) {
@@ -334,32 +420,39 @@ async function GetMeanAudioStats(stats) {
 
     audioStats.forEach(statData => {
       const {stat, timestamp} = statData;
+      let currentDelay;
+      let codecName;
+      let bitrateMean = 0;
 
-      if (stat.currentDelay !== undefined) {
-        currentDelays.push(stat.currentDelay);
+      if (!_.isNil(stat.currentDelay)) {
+        currentDelay = stat.currentDelay;
+        currentDelays.push(currentDelay);
       }
 
-      if (stat.audioOutputLevel !== undefined) {
+      if (!_.isNil(stat.audioOutputLevel)) {
         audioOutputLevels.push(stat.audioOutputLevel);
       }
 
-      if (stat.jitter !== undefined) {
+      if (!_.isNil(stat.jitter)) {
         jitters.push(stat.jitter);
       }
 
-      if (stat.jitterBuffer !== undefined) {
+      if (!_.isNil(stat.jitterBuffer)) {
         jitterBuffers.push(stat.jitterBuffer);
       }
 
-      if (stat.totalAudioEnergy !== undefined) {
+      if (!_.isNil(stat.totalAudioEnergy)) {
         totalAudioEnergies.push(stat.totalAudioEnergy);
       }
 
-      if (stat.bitrateMean !== undefined) {
-        meanBitrates.push(stat.bitrateMean);
+      if (!_.isNil(stat.bitrateMean)) {
+        bitrateMean = stat.bitrateMean;
+        meanBitrates.push(bitrateMean);
       }
 
-      totalSamplesDurationsSum += stat.totalSamplesDuration;
+      if (!_.isNil(stat.totalSamplesDuration)) {
+        totalSamplesDurationsSum += stat.totalSamplesDuration;
+      }
 
       if (meanAudioStats.mediaType === null) {
         meanAudioStats.mediaType = stat.mediaType;
@@ -367,15 +460,36 @@ async function GetMeanAudioStats(stats) {
         meanAudioStats.direction = stat.direction;
       }
 
+      if (stat.nativeReport) {
+        if (!_.isNil(stat.nativeReport.jitterBufferDelay) && !_.isNil(stat.nativeReport.jitterBufferEmittedCount)) {
+          currentDelay = stat.nativeReport.jitterBufferDelay / stat.nativeReport.jitterBufferEmittedCount;
+          currentDelays.push(currentDelay);
+        }
+
+        if (!_.isNil(stat.nativeReport.googCodecName)) {
+          codecName = stat.nativeReport.googCodecName;
+        }
+
+        if (!_.isNil(stat.nativeReport.codecId)) {
+          codecName = stat.nativeReport.codecId;
+        }
+
+        if (!_.isNil(stat.nativeReport.audioLevel)) {
+          const audioOutputLevelLegacyToStandard = 0x8000;
+
+          audioOutputLevels.push(stat.nativeReport.audioLevel * audioOutputLevelLegacyToStandard);
+        }
+      }
+
       if (meanAudioStats.codecName === null || meanAudioStats.codecName === '') {
-        meanAudioStats.codecName = stat.nativeReport ? stat.nativeReport.googCodecName : stat.codecId;
+        meanAudioStats.codecName = codecName ? codecName : stat.codecId;
       }
 
       meanAudioStats.downloadRate = stat.downloadRate;
-      meanAudioStats.maxBitrate = parseFloat(((stat.bitrateMean > meanAudioStats.maxBitrate ? stat.bitrateMean : meanAudioStats.maxBitrate) / 1024).toFixed(2));
+      meanAudioStats.maxBitrate = parseFloat(((bitrateMean > meanAudioStats.maxBitrate ? bitrateMean : meanAudioStats.maxBitrate) / 1024).toFixed(2));
       meanAudioStats.nativeReport = stat.nativeReport;
       allDelays.push({
-        delay: stat.currentDelay,
+        delay: currentDelay,
         timestamp
       });
     });
@@ -503,6 +617,18 @@ function GenerateTelemetryRecords(page, assertions) {
   logger.log(`Generated [${telemetry.length}] telemetry records`);
 
   return telemetry;
+}
+
+function getStatsCodecIdLegacyMigration(mediaType, nativeReport, streamStats) {
+  if (nativeReport) {
+    if (mediaType === 'audio' && streamStats.audioCodecId !== undefined) {
+      nativeReport.codecId = streamStats.audioCodecId;
+    }
+
+    if (mediaType === 'video' && streamStats.videoCodecId !== undefined) {
+      nativeReport.codecId = streamStats.videoCodecId;
+    }
+  }
 }
 
 export default {
