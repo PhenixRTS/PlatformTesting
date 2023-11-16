@@ -419,12 +419,12 @@ module.exports = class Asserts {
       config.videoAssertProfile.maxPlisSentPerMinute,
       'lte'
     );
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY: this.assert(
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY:   'Video codec name',
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY:   streamStats.codecName,
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY:   config.videoAssertProfile.codecName,
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY:   'eql'
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY: );
+    this.assert(
+      'Video codec name',
+      streamStats.codecName,
+      config.videoAssertProfile.codecName,
+      'eql'
+    );
     this.assert(
       'Video frame rate decoded',
       streamStats.avgFrameRateDecoded,
@@ -492,12 +492,12 @@ module.exports = class Asserts {
       config.audioAssertProfile.totalSamplesDurationPerc ? audioStats.statsCaptureDuration * config.audioAssertProfile.totalSamplesDurationPerc / 100 : null,
       'gte'
     );
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY: this.assert(
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY:   'Audio codec name',
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY:   audioStats.codecName,
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY:   config.audioAssertProfile.codecName,
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY:   'eql'
-    // TODO (NCS) 2023-11-15 FIX IMMEDIATELY: );
+    this.assert(
+      'Audio codec name',
+      audioStats.codecName,
+      config.audioAssertProfile.codecName,
+      'eql'
+    );
 
     await this.assertAudioDelaysPerMinute(audioStats);
     await this.finishTest(memberID);

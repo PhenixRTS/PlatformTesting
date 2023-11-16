@@ -46,8 +46,6 @@ async function CollectMediaStreamStats() {
     sessionId: undefined,
     channelId: undefined,
     streamReceivedAt: undefined,
-    audioCodecId: undefined,
-    videoCodecId: undefined,
     audio: {},
     video: {}
   };
@@ -94,22 +92,6 @@ async function CollectMediaStreamStats() {
       streamStats.channelType = channelType;
 
       return;
-    }
-
-    if (infoLogElement.startsWith(streamStatsTitle)) {
-      const codecMatch = infoLogElement.match(/"mimeType":"([^/]+)\/([^"]+)"/);
-
-      if (codecMatch) {
-        if (codecMatch[1] === 'audio') {
-          streamStats.audioCodecId = codecMatch[2];
-        }
-
-        if (codecMatch[1] === 'video') {
-          streamStats.videoCodecId = codecMatch[2];
-        }
-
-        return;
-      }
     }
 
     if (
@@ -168,8 +150,6 @@ async function CollectMediaStreamStats() {
 
     const stats = JSON.parse(infoLogElement);
     const {mediaType, ssrc} = stats.stat;
-
-    getStatsCodecIdLegacyMigration(mediaType, stats.stat.nativeReport, streamStats);
 
     if (collectedStats[mediaType][ssrc] === undefined) {
       collectedStats[mediaType][ssrc] = [];
@@ -334,7 +314,7 @@ async function GetMeanVideoStats(stats) {
       }
 
       if (meanVideoStats.codecName === null || meanVideoStats.codecName === '') {
-        meanVideoStats.codecName = codecName ? codecName : stat.codecId;
+        meanVideoStats.codecName = codecName;
       }
 
       meanVideoStats.maxBitrate = parseFloat(((stat.bitrateMean > meanVideoStats.maxBitrate ? stat.bitrateMean : meanVideoStats.maxBitrate) / 1024).toFixed(2));
@@ -482,7 +462,7 @@ async function GetMeanAudioStats(stats) {
       }
 
       if (meanAudioStats.codecName === null || meanAudioStats.codecName === '') {
-        meanAudioStats.codecName = codecName ? codecName : stat.codecId;
+        meanAudioStats.codecName = codecName;
       }
 
       meanAudioStats.downloadRate = stat.downloadRate;
@@ -617,18 +597,6 @@ function GenerateTelemetryRecords(page, assertions) {
   logger.log(`Generated [${telemetry.length}] telemetry records`);
 
   return telemetry;
-}
-
-function getStatsCodecIdLegacyMigration(mediaType, nativeReport, streamStats) {
-  if (nativeReport) {
-    if (mediaType === 'audio' && streamStats.audioCodecId !== undefined) {
-      nativeReport.codecId = streamStats.audioCodecId;
-    }
-
-    if (mediaType === 'video' && streamStats.videoCodecId !== undefined) {
-      nativeReport.codecId = streamStats.videoCodecId;
-    }
-  }
 }
 
 export default {

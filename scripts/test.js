@@ -265,7 +265,7 @@ function CreateAuthTokenIfNecessary() {
     .forAuthenticateOnly();
 
   if (config.pcastUri !== '' && config.pastUri !== defaultUri) {
-    authToken.withUri(config.pcastUri)
+    authToken.withUri(config.pcastUri);
   }
 
   config.args.authToken = authToken.build();
@@ -293,7 +293,7 @@ function CreateEdgeTokenIfNecessary() {
     .forPublishingOnly();
 
   if (config.pcastUri !== '' && config.pastUri !== defaultUri) {
-    edgeTokenForPublish.withUri(config.pcastUri)
+    edgeTokenForPublish.withUri(config.pcastUri);
   }
 
   config.args.edgeToken = edgeTokenForPublish.build();
@@ -319,7 +319,7 @@ function CreateStreamTokenIfNecessary() {
     .forStreamingOnly();
 
   if (config.pcastUri !== '' && config.pastUri !== defaultUri) {
-    streamTokenForPublish.withUri(config.pcastUri)
+    streamTokenForPublish.withUri(config.pcastUri);
   }
 
   config.publisherArgs.streamToken = streamTokenForPublish.build();
