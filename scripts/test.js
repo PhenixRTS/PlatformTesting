@@ -32,6 +32,7 @@ const {prepareProfiles} = require('../test/models/profiles.js');
 const {exitWithErrorMessage} = require('../test/models/console-messaging.js');
 const {reportsPath} = config;
 const TokenBuilder = require('phenix-edge-auth');
+const defaultUri = 'https://pcast.phenixrts.com';
 const argv = require('yargs')
   .help()
   .strict()
@@ -96,7 +97,7 @@ const argv = require('yargs')
     roomAlias: '',
     features: undefined,
     backendUri: 'https://demo.phenixrts.com',
-    pcastUri: 'https://pcast.phenixrts.com',
+    pcastUri: defaultUri,
     pcastUriSecondSubscriber: '',
     publisherBackendUri: 'https://demo.phenixrts.com/pcast',
     publisherPcastUri: 'https://pcast.phenixrts.com',
@@ -259,13 +260,15 @@ function CreateAuthTokenIfNecessary() {
   const authToken = new TokenBuilder()
     .withApplicationId(config.args.applicationId)
     .withSecret(config.args.secret)
-    .withUri(config.pcastUri)
     .expiresInSeconds(config.args.testRuntimeMs)
     .forChannelAlias(config.channelAlias)
-    .forAuthenticateOnly()
-    .build();
+    .forAuthenticateOnly();
 
-  config.args.authToken = authToken;
+  if (config.pcastUri !== '' && config.pastUri !== defaultUri) {
+    authToken.withUri(config.pcastUri)
+  }
+
+  config.args.authToken = authToken.build();
   logger.log('Auth Token created using TokenBuilder');
 }
 
@@ -283,15 +286,17 @@ function CreateEdgeTokenIfNecessary() {
   const edgeTokenForPublish = new TokenBuilder()
     .withApplicationId(config.args.applicationId)
     .withSecret(config.args.secret)
-    .withUri(config.pcastUri)
     .expiresInSeconds(config.args.testRuntimeMs)
     .forChannelAlias(config.channelAlias)
     .withCapability('multi-bitrate')
     .withCapability('monitor-tracks')
-    .forPublishingOnly()
-    .build();
+    .forPublishingOnly();
 
-  config.args.edgeToken = edgeTokenForPublish;
+  if (config.pcastUri !== '' && config.pastUri !== defaultUri) {
+    edgeTokenForPublish.withUri(config.pcastUri)
+  }
+
+  config.args.edgeToken = edgeTokenForPublish.build();
   logger.log('Edge Token for publishing created using TokenBuilder');
 }
 
@@ -309,13 +314,15 @@ function CreateStreamTokenIfNecessary() {
   const streamTokenForPublish = new TokenBuilder()
     .withApplicationId(config.args.applicationId)
     .withSecret(config.args.secret)
-    .withUri(config.pcastUri)
     .expiresInSeconds(config.args.testRuntimeMs)
     .forChannelAlias(config.channelAlias)
-    .forStreamingOnly()
-    .build();
+    .forStreamingOnly();
 
-  config.publisherArgs.streamToken = streamTokenForPublish;
+  if (config.pcastUri !== '' && config.pastUri !== defaultUri) {
+    streamTokenForPublish.withUri(config.pcastUri)
+  }
+
+  config.publisherArgs.streamToken = streamTokenForPublish.build();
   logger.log('Stream Token for publishing created using TokenBuilder');
 }
 
