@@ -147,7 +147,7 @@ const argv = require('yargs')
     telemetryURI: 'https://telemetry.phenixrts.com',
     telemetrySource: undefined,
     audioMode: 'mono',
-    webSdkSource: 'https://dl.phenixrts.com/WebSDK/2020.2.25/phenix-web-sdk.min.js'
+    webSdkSource: 'https://dl.phenixrts.com/WebSDK/2023.0.latest/phenix-web-sdk.min.js'
   })
   .example('npm run test -- --browser=firefox --tests=test/fixtures/channel-quality-test.js')
   .epilog('Available browsers: chrome, chrome:headless, firefox, firefox --headless, safari, ie, edge, opera')
