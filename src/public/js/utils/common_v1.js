@@ -65,12 +65,19 @@ function startStatsLogging(stream) {
       return;
     }
 
-    stream.getStats(getStatsCallback);
+    stream.getStats(logSubscriberStats);
   }, 1000);
 }
 
-function getStatsCallback(stats) {
+function logSubscriberStats(stats) {
   stats.forEach(stat => {
+    // Workaround: WebSDK v1 returns remote-outbound-rtp entries that carry no
+    // meaningful subscriber data and corrupt framerate mean calculations.
+    // Only log inbound-rtp entries (the SDK's internal monitor already filters these out).
+    if (stat.nativeReport && stat.nativeReport.type !== 'inbound-rtp') {
+      return;
+    }
+
     logStat(`[Media Stream Stats] ${JSON.stringify({
       timestamp: Date.now(),
       stat
